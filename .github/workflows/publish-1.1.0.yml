@@ -1,0 +1,153 @@
+name: Publish Hunting Helper 1.1.0
+on:
+  push:
+    branches: [codex/release-1.1.0]
+    paths: [.github/workflows/publish-1.1.0.yml]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: publish-hunting-helper-v1.1.0
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_ID: '446495929'
+      RELEASE_TAG: v1.1.0
+      TESTED_COMMIT: 7ee3f4c7b0bdeb7fa6db61d2c931f94d5bf30d0a
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+      - name: Check out the tested source
+        uses: actions/checkout@v6
+        with:
+          ref: 7ee3f4c7b0bdeb7fa6db61d2c931f94d5bf30d0a
+          persist-credentials: false
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: microsoft
+          cache: gradle
+      - name: Verify the existing draft and successful build
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" > draft.json
+          python3 - <<'PY'
+          import json, os
+          release = json.load(open("draft.json"))
+          assert release["draft"], "The intended release is already published; stop without changing it."
+          assert release["tag_name"] == os.environ["RELEASE_TAG"]
+          assert "Hunting Helper" in release["name"]
+          PY
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/43783055045" --jq .head_sha)" = "$TESTED_COMMIT"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/43783055045" --jq .conclusion)" = success
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14188553920/zip" > release-artifact.zip
+          echo "b30eeceedd15b0ecb62d655c85904d2a89183c68ffd16dc348b6c1be1fa2b89a  release-artifact.zip" | sha256sum --check --strict
+          mkdir -p release-files
+          unzip -q release-artifact.zip -d release-files
+          test -f release-files/hunting-helper-1.1.0+mc26.2.jar
+          export TESTED_MOD_JAR="$GITHUB_WORKSPACE/release-files/hunting-helper-1.1.0+mc26.2.jar"
+          echo "TESTED_MOD_JAR=$TESTED_MOD_JAR" >> "$GITHUB_ENV"
+          sha256sum "$TESTED_MOD_JAR"
+          echo "Downloaded the successful build artifact for the exact tested source commit." >> "$GITHUB_STEP_SUMMARY"
+      - name: Prepare a graphical desktop on the GitHub runner
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb libgl1-mesa-dri mesa-utils
+      - name: Test the downloaded installable jar on GitHub
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > verify-downloaded-jar.init.gradle <<'GRADLE'
+          allprojects {
+              afterEvaluate {
+                  tasks.named('runProductionClientGameTest') {
+                      useXVFB = false
+                      mods.setFrom(files(System.getenv('TESTED_MOD_JAR')),
+                          tasks.named('gametestJar'), configurations.productionRuntimeMods)
+                  }
+              }
+          }
+          GRADLE
+          chmod +x ./gradlew
+          xvfb-run -a -s '-screen 0 1600x1000x24' ./gradlew --no-daemon build runProductionClientGameTest -I verify-downloaded-jar.init.gradle
+          cp build/run/productionClientGameTest/screenshots/0006_hunting_helper_menu.png release-files/hunting-helper-menu.png
+          cp build/run/productionClientGameTest/screenshots/0007_both_targets.png release-files/hunting-helper-both-targets.png
+          (cd release-files && sha256sum hunting-helper-1.1.0+mc26.2.jar hunting-helper-menu.png hunting-helper-both-targets.png > SHA256SUMS.txt)
+          echo "The downloaded jar passed the packaged Minecraft test and nine unit tests on the GitHub runner." >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload files to the existing release draft
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release upload "$RELEASE_TAG" \
+            release-files/hunting-helper-1.1.0+mc26.2.jar \
+            release-files/hunting-helper-1.1.0+mc26.2-sources.jar \
+            release-files/hunting-helper-menu.png \
+            release-files/hunting-helper-both-targets.png \
+            release-files/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY"
+      - name: Preserve the notes, add photos, and publish the existing draft
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" > current-draft.json
+          python3 - <<'PY'
+          import hashlib, json, os
+          release = json.load(open("current-draft.json"))
+          assert release["draft"], "Release state changed; do not overwrite a published release."
+          assert release["tag_name"] == os.environ["RELEASE_TAG"]
+          base = "https://github.com/" + os.environ["GITHUB_REPOSITORY"] + "/releases/download/" + os.environ["RELEASE_TAG"]
+          body = release.get("body") or ""
+          if "/huntinghelper" not in body:
+              body += "\n\nOpen /huntinghelper for the menu; V toggles tracers."
+          if "client-side" not in body.lower():
+              body = "Client-side tracers to loaded Vexes and Torrhus Blue Jays, with Vex / Blue Jay / Both or off.\n\n" + body
+          body = body.rstrip() + "\n\n"
+          body += "![Hunting Helper menu](" + base + "/hunting-helper-menu.png)\n\n"
+          body += "![Vex and Blue Jay tracers together in the automated test world](" + base + "/hunting-helper-both-targets.png)\n\n"
+          jar = "release-files/hunting-helper-1.1.0+mc26.2.jar"
+          digest = hashlib.sha256(open(jar, "rb").read()).hexdigest()
+          body += "Published from the successful GitHub build for commit 7ee3f4c; the downloaded jar was tested again on GitHub. SHA-256: " + digest + ".\n"
+          json.dump({"target_commitish": os.environ["TESTED_COMMIT"], "body": body,
+                     "draft": False, "prerelease": False, "make_latest": "true"},
+                    open("publish-release.json", "w"))
+          PY
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" --input publish-release.json > published-release.json
+      - name: Verify the public release and downloaded bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          release = json.load(open("published-release.json"))
+          assert release["draft"] is False and release["published_at"]
+          assert release["tag_name"] == os.environ["RELEASE_TAG"]
+          print(release["html_url"])
+          PY
+          tag_target="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha)"
+          test "$tag_target" = "$TESTED_COMMIT"
+          mkdir -p public-download-check
+          for name in hunting-helper-1.1.0+mc26.2.jar hunting-helper-menu.png hunting-helper-both-targets.png; do
+            curl -fL --retry 5 --retry-delay 3 \
+              "https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/$name" \
+              -o "public-download-check/$name"
+            cmp "release-files/$name" "public-download-check/$name"
+          done
+          echo "Published existing draft; tag target and unauthenticated public downloads match the tested bytes." >> "$GITHUB_STEP_SUMMARY"
+      - name: Save verification screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: hunting-helper-release-verification
+          path: |
+            build/run/productionClientGameTest/screenshots/
+            build/run/productionClientGameTest/logs/
+            build/test-results/
+            published-release.json
+            release-files/SHA256SUMS.txt
+          if-no-files-found: warn
