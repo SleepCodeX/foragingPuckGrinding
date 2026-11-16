@@ -1,6 +1,6 @@
 {
-  "key.category.foragingpuckgrinding.tracers": "Foraging Puck Grinding",
-  "key.foragingpuckgrinding.toggle_vex_tracers": "Toggle Vex tracers",
-  "message.foragingpuckgrinding.enabled": "Vex tracers: ON",
-  "message.foragingpuckgrinding.disabled": "Vex tracers: OFF"
+  "key.category.foragingpuckgrinding.tracers": "Hunting Helper",
+  "key.foragingpuckgrinding.toggle_vex_tracers": "Toggle tracers",
+  "message.foragingpuckgrinding.enabled": "Hunting Helper tracers: ON",
+  "message.foragingpuckgrinding.disabled": "Hunting Helper tracers: OFF"
 }

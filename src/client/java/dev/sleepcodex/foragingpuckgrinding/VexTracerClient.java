@@ -24,6 +24,7 @@ public final class VexTracerClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private final TracerConfig config = new TracerConfig(
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".properties"));
+    private boolean menuRequested;
 
     @Override
     public void onInitializeClient() {
@@ -35,17 +36,42 @@ public final class VexTracerClient implements ClientModInitializer {
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "tracers"));
         KeyMapping toggle = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.foragingpuckgrinding.toggle_vex_tracers", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, category));
+        VexTracerRenderer renderer = new VexTracerRenderer(config);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggle.consumeClick()) setEnabled(client, !config.enabled());
+            if (menuRequested) {
+                menuRequested = false;
+                client.gui.setScreen(new TracerSettingsScreen(config, toggle,
+                        enabled -> setEnabled(client, enabled), target -> setTarget(client, target)));
+            }
+            renderer.tick(client);
         });
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            dispatcher.register(
                 literal("vextracers")
                         .executes(context -> setEnabled(Minecraft.getInstance(), !config.enabled()))
                         .then(literal("on").executes(context -> setEnabled(Minecraft.getInstance(), true)))
-                        .then(literal("off").executes(context -> setEnabled(Minecraft.getInstance(), false)))));
-        VexTracerRenderer renderer = new VexTracerRenderer(config);
+                        .then(literal("off").executes(context -> setEnabled(Minecraft.getInstance(), false)))
+                        .then(literal("menu").executes(context -> requestMenu())));
+            dispatcher.register(literal("huntinghelper").executes(context -> requestMenu()));
+        });
         LevelExtractionEvents.END_EXTRACTION.register(renderer::extract);
         LevelRenderEvents.COLLECT_SUBMITS.register(renderer::submit);
+    }
+
+    private int requestMenu() {
+        menuRequested = true;
+        return 1;
+    }
+
+    private void setTarget(Minecraft client, TracerTarget target) {
+        try {
+            config.setTarget(target);
+        } catch (IOException exception) {
+            LOGGER.warn("Hunting Helper target changed, but could not be saved", exception);
+            if (client.player != null) client.player.sendSystemMessage(
+                    Component.literal("Hunting Helper setting could not be saved; see the game log."));
+        }
     }
 
     private int setEnabled(Minecraft client, boolean enabled) {

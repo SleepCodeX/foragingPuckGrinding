@@ -36,4 +36,26 @@ class TracerConfigTest {
         config.load();
         assertFalse(config.enabled());
     }
+
+    @Test void persistsTargetAndEnabledIndependentlyAndMigratesOldConfig() throws Exception {
+        Path file = directory.resolve("tracers.properties");
+        Files.writeString(file, "enabled=true\n");
+        TracerConfig config = new TracerConfig(file);
+        config.load();
+        assertTrue(config.enabled());
+        assertEquals(TracerTarget.VEX, config.target());
+        for (TracerTarget target : TracerTarget.values()) {
+            config.setTarget(target);
+            config.setEnabled(false);
+            TracerConfig restarted = new TracerConfig(file);
+            restarted.load();
+            assertEquals(target, restarted.target());
+            assertFalse(restarted.enabled());
+            config.setEnabled(true);
+        }
+        Files.writeString(file, "enabled=true\ntarget=unknown\n");
+        config.load();
+        assertTrue(config.enabled());
+        assertEquals(TracerTarget.VEX, config.target());
+    }
 }

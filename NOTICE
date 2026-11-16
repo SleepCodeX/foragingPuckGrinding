@@ -1,4 +1,16 @@
-The Vex tracer implementation is original code for SleepCodeX.
+Hunting Helper's tracer implementation and axe icon are original work for SleepCodeX.
+
+Menu typography and rounded texture helpers are adapted from the user's Trevor
+Roll mod, Copyright (c) 2026 Anish, under MIT. See licenses/Trevor-MIT.txt.
+The menu also uses its circle texture and Nunito glyph atlas/metrics. Nunito is
+Copyright 2014 The Nunito Project Authors, licensed under SIL OFL 1.1; see
+assets/foragingpuckgrinding/NUNITO-OFL.txt.
+Reference: https://github.com/SleepCodeX/trevorRngMod/tree/dac1b7e1e68fc3f803be69db5e16a97a85e4cebf
+
+Blue Jay entity identification was checked against Skyblocker's
+TorrhusCanyonGlowAdder: blue-variant parrots in Torrhus Canyon.
+No Skyblocker source or assets are included, and it is not a dependency.
+https://github.com/SkyblockerMod/Skyblocker/blob/74fc9ae67c8eddf3dbf46f3eb2a884cd853feded/src/main/java/de/hysky/skyblocker/skyblock/entity/glow/adder/TorrhusCanyonGlowAdder.java
 
 Visual reference: SkyHanni's Fast Fairy Souls Pathfinder and camera-anchored
 line rendering were inspected to understand the requested appearance.

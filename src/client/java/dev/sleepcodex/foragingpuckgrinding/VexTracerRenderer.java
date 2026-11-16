@@ -12,17 +12,20 @@ import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.monster.Vex;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
 final class VexTracerRenderer {
-    private static final RenderStateDataKey<List<Line>> LINES = RenderStateDataKey.create(() -> "Vex tracer lines");
+    private static final RenderStateDataKey<Frame> LINES = RenderStateDataKey.create(() -> "Hunting Helper lines");
+    private static final Frame EMPTY = new Frame(0, 0, 0, new float[0], 0);
     private static final RenderType RENDER_TYPE = RenderType.create("vex_tracers",
             RenderSetup.builder(RenderPipelines.register(RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                     .withLocation(Identifier.fromNamespaceAndPath(VexTracerClient.MOD_ID, "pipeline/vex_tracers"))
@@ -33,53 +36,91 @@ final class VexTracerRenderer {
                     .build())).createRenderSetup());
     private static final int COLOR = 0xFFCC55FF;
     private final TracerConfig config;
+    private final TorrhusContext torrhus = new TorrhusContext();
+    private final Vector3f look = new Vector3f();
+    private ClientLevel cachedLevel;
+    private List<Entity> candidates = List.of();
 
     VexTracerRenderer(TracerConfig config) {
         this.config = config;
     }
 
+    void tick(Minecraft client) {
+        cachedLevel = client.level;
+        boolean blueJayArea = torrhus.update(client, config.enabled() && config.target().includesBlueJay());
+        if (!config.enabled() || cachedLevel == null) {
+            candidates = List.of();
+            return;
+        }
+        // Discover targets once per client tick, rather than rescanning every rendered frame.
+        var selected = new ArrayList<Entity>();
+        for (Entity entity : cachedLevel.entitiesForRendering()) {
+            if (!entity.isAlive() || entity.isRemoved()) continue;
+            boolean vex = config.target().includesVex() && entity instanceof Vex;
+            // Skyblocker's Torrhus Blue Jay detector confirms Parrot.BLUE in this location.
+            // Other parrot colors, tamed pets, and blue parrots outside Torrhus are excluded.
+            boolean blueJay = config.target().includesBlueJay() && blueJayArea && entity instanceof Parrot parrot
+                    && parrot.getVariant() == Parrot.Variant.BLUE && !parrot.isTame();
+            if (vex || blueJay) selected.add(entity);
+        }
+        candidates = selected.isEmpty() ? List.of() : List.copyOf(selected);
+    }
+
     void extract(LevelExtractionContext context) {
         // Always replace this frame's data, including when OFF or no Vexes remain.
-        context.levelState().setData(LINES, List.of());
+        context.levelState().setData(LINES, EMPTY);
         Minecraft client = Minecraft.getInstance();
-        if (!config.enabled() || client.player == null || client.gui.hud.isHidden()) return;
-        Vec3 camera = context.camera().position();
-        Vector3f look = new Vector3f(0, 0, -1).rotate(context.camera().rotation());
+        if (!config.enabled() || candidates.isEmpty() || context.level() != cachedLevel
+                || client.player == null || client.gui.hud.isHidden()) return;
+        var camera = context.camera().position();
+        look.set(0, 0, -1).rotate(context.camera().rotation());
         // Moving the origin forward avoids near-plane clipping and anchors the line at the crosshair.
-        Vec3 origin = new Vec3(look.x, look.y, look.z).scale(2.0);
+        float ox = look.x * 2, oy = look.y * 2, oz = look.z * 2;
         float partialTick = context.deltaTracker().getGameTimeDeltaPartialTick(false);
         int chunks = client.options.getEffectiveRenderDistance();
-        List<Line> lines = new ArrayList<>();
-        for (Entity entity : context.level().entitiesForRendering()) {
-            if (!(entity instanceof Vex) || !entity.isAlive() || entity.isRemoved()) continue;
-            Vec3 position = entity.getPosition(partialTick);
-            if (!TracerRange.contains(camera.x, camera.z, position.x, position.z, chunks)) continue;
-            Vec3 target = position.add(0, entity.getBbHeight() * 0.5, 0).subtract(camera);
-            Vec3 direction = target.subtract(origin);
-            if (direction.lengthSqr() < 1.0e-10) continue;
-            lines.add(new Line(origin, target, direction.normalize()));
+        float[] lines = new float[candidates.size() * 6];
+        int count = 0;
+        for (Entity entity : candidates) {
+            if (!entity.isAlive() || entity.isRemoved()) continue;
+            double px = Mth.lerp(partialTick, entity.xOld, entity.getX());
+            double pz = Mth.lerp(partialTick, entity.zOld, entity.getZ());
+            if (!TracerRange.contains(camera.x, camera.z, px, pz, chunks)) continue;
+            float tx = (float) (px - camera.x);
+            float ty = (float) (Mth.lerp(partialTick, entity.yOld, entity.getY()) + entity.getBbHeight() * 0.5 - camera.y);
+            float tz = (float) (pz - camera.z);
+            float dx = tx - ox, dy = ty - oy, dz = tz - oz;
+            double length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (length < 1.0e-5) continue;
+            lines[count++] = tx;
+            lines[count++] = ty;
+            lines[count++] = tz;
+            lines[count++] = (float) (dx / length);
+            lines[count++] = (float) (dy / length);
+            lines[count++] = (float) (dz / length);
         }
-        // Only immutable camera-relative coordinates cross into the drawing phase.
-        context.levelState().setData(LINES, List.copyOf(lines));
+        // This privately owned array is never changed after publishing the frame.
+        if (count != 0) context.levelState().setData(LINES, new Frame(ox, oy, oz, lines, count));
     }
 
     void submit(LevelRenderContext context) {
-        List<Line> lines = context.levelState().getData(LINES);
-        if (lines == null || lines.isEmpty()) return;
+        Frame frame = context.levelState().getData(LINES);
+        if (frame == null || frame.used() == 0) return;
         context.submitNodeCollector().submitCustomGeometry(context.poseStack(), RENDER_TYPE, (pose, buffer) -> {
-            for (Line line : lines) {
-                vertex(buffer, pose, line.start(), line.normal());
-                vertex(buffer, pose, line.end(), line.normal());
+            float[] lines = frame.lines();
+            for (int i = 0; i < frame.used(); i += 6) {
+                vertex(buffer, pose, frame.ox(), frame.oy(), frame.oz(), lines[i + 3], lines[i + 4], lines[i + 5]);
+                vertex(buffer, pose, lines[i], lines[i + 1], lines[i + 2], lines[i + 3], lines[i + 4], lines[i + 5]);
             }
         });
     }
 
-    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose, Vec3 point, Vec3 normal) {
-        buffer.addVertex(pose, (float) point.x, (float) point.y, (float) point.z)
+    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float z,
+            float nx, float ny, float nz) {
+        buffer.addVertex(pose, x, y, z)
                 .setColor(COLOR)
-                .setNormal(pose, (float) normal.x, (float) normal.y, (float) normal.z)
+                .setNormal(pose, nx, ny, nz)
                 .setLineWidth(2.0f);
     }
 
-    private record Line(Vec3 start, Vec3 end, Vec3 normal) { }
+    private record Frame(float ox, float oy, float oz, float[] lines, int used) { }
 }
