@@ -1,0 +1,13 @@
+The Vex tracer implementation is original code for SleepCodeX.
+
+Visual reference: SkyHanni's Fast Fairy Souls Pathfinder and camera-anchored
+line rendering were inspected to understand the requested appearance.
+SkyHanni is distributed under LGPL-2.1; no SkyHanni source or assets are included
+and this mod does not depend on SkyHanni.
+https://github.com/SkyHanniStudios/SkyHanni
+
+Project setup is based on FabricMC's CC0 fabric-example-mod (26.2 branch).
+https://github.com/FabricMC/fabric-example-mod/tree/26.2
+
+The Gradle wrapper files are from Gradle and are licensed under Apache-2.0.
+See gradle/LICENSE for the license and the copyright notices in those files.
