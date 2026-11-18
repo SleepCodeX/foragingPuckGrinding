@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.util.Mth;
@@ -60,7 +60,7 @@ final class VexTracerRenderer {
 
     private static TracerTarget typeOf(Entity entity) {
         if (entity instanceof Vex) return TracerTarget.VEX;
-        if (entity.getType() == EntityType.GHAST) return TracerTarget.HIVE_THIEF;
+        if (entity.getType() == EntityTypes.GHAST) return TracerTarget.HIVE_THIEF;
         if (entity instanceof Parrot bird && bird.getVariant() == Parrot.Variant.BLUE && !bird.isTame()) return TracerTarget.BLUE_JAY;
         return null;
     }
