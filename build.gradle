@@ -1,0 +1,78 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+base { archivesName = 'hunting-helper' }
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        foragingpuckgrinding {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+fabricApi.configureTests {
+    createSourceSet = true
+    modId = 'foragingpuckgrinding-test'
+    enableGameTests = false
+    enableClientGameTests = true
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    productionRuntimeMods "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.register('gametestJar', Jar) {
+    archiveClassifier = 'gametest'
+    destinationDirectory = layout.buildDirectory.dir('gametest')
+    from sourceSets.gametest.output
+}
+
+// Keep the official production launcher usable under Windows command-line limits.
+abstract class PackagedClientTest extends net.fabricmc.loom.task.prod.ClientProductionRunTask {
+    @Override
+    protected void configureClasspath(org.gradle.process.ExecSpec command) {
+        def paths = streamClasspath().map { it.absolutePath.replace('\\', '/') }
+                .collect(java.util.stream.Collectors.joining(File.pathSeparator))
+        def argumentsFile = new File(temporaryDir, 'classpath.args')
+        argumentsFile.parentFile.mkdirs()
+        argumentsFile.setText('-cp\n"' + paths + '"\n', 'UTF-8')
+        command.args('@' + argumentsFile.absolutePath)
+    }
+}
+
+tasks.register('deleteProductionGameTestRunDir', Delete) {
+    delete layout.buildDirectory.dir('run/productionClientGameTest')
+}
+
+tasks.register('runProductionClientGameTest', PackagedClientTest) {
+    dependsOn tasks.named('deleteProductionGameTestRunDir')
+    mods.from tasks.named('gametestJar')
+    jvmArgs.add('-Dfabric.client.gametest')
+    runDir = layout.buildDirectory.dir('run/productionClientGameTest')
+}
+processResources {
+    def modVersion = project.version
+    inputs.property 'version', modVersion
+    filesMatching('fabric.mod.json') { expand 'version': modVersion }
+}
+tasks.withType(JavaCompile).configureEach { options.release = 25 }
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+test { useJUnitPlatform() }
+jar {
+    from('LICENSE', 'NOTICE')
+    from('licenses') { into 'licenses' }
+}
+sourcesJar {
+    from('LICENSE', 'NOTICE')
+    from('licenses') { into 'licenses' }
+}

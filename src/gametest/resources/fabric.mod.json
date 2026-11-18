@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "foragingpuckgrinding-test",
+  "version": "1.0.0",
+  "name": "Vex Tracer Tests",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": ["dev.sleepcodex.foragingpuckgrinding.VexTracerGameTest"]
+  }
+}

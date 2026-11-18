@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "foragingpuckgrinding",
+  "version": "${version}",
+  "name": "Hunting Helper",
+  "description": "Simple, toggleable Vex and Blue Jay tracers with a compact settings menu.",
+  "icon": "assets/foragingpuckgrinding/icon.png",
+  "authors": ["SleepCodeX"],
+  "contact": {"sources": "https://github.com/SleepCodeX/foragingPuckGrinding"},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {"client": ["dev.sleepcodex.foragingpuckgrinding.VexTracerClient"]},
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": ">=0.161.0+26.2"
+  }
+}
