@@ -7,6 +7,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      LIBGL_ALWAYS_SOFTWARE: 'true'
     steps:
       - uses: actions/checkout@v6
       - name: Validate Gradle wrapper
@@ -20,9 +23,30 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon build
+      - name: Install virtual display
+        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
+      - name: Exercise packaged client trackers and controls
+        run: xvfb-run -a ./gradlew --no-daemon runProductionClientGameTest
+      - name: Upload validation captures
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: tracker-validation
+          path: |
+            build/run/productionClientGameTest/screenshots/
+            build/run/productionClientGameTest/logs/
+            build/reports/tests/
+      - name: Record source commit and artifact checksums
+        run: |
+          printf 'Repository: %s\nSource commit: %s\nJava: 25\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > build/libs/BUILD-INFO.txt
+          cd build/libs
+          sha256sum hunting-helper-*.jar > SHA256SUMS
       - name: Upload mod and sources
         uses: actions/upload-artifact@v7
         with:
           name: hunting-helper-mc26.2
-          path: build/libs/hunting-helper-*.jar
+          path: |
+            build/libs/hunting-helper-*.jar
+            build/libs/SHA256SUMS
+            build/libs/BUILD-INFO.txt
           if-no-files-found: error
