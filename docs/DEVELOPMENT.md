@@ -30,8 +30,8 @@ Build from this checkout with **JDK 25**:
 
 Windows: `gradlew.bat build`. Output:
 
-- `build/libs/hunting-helper-1.6.2+mc26.2.jar` — installable mod.
-- `build/libs/hunting-helper-1.6.2+mc26.2-sources.jar` — Java source archive.
+- `build/libs/hunting-helper-1.7.0+mc26.2.jar` — installable mod.
+- `build/libs/hunting-helper-1.7.0+mc26.2-sources.jar` — Java and Kotlin source archive.
 
 [GitHub Actions](https://github.com/SleepCodeX/foragingPuckGrinding/actions/workflows/build.yml)
 builds the mod and source JARs from the visible commit and uploads both, alongside

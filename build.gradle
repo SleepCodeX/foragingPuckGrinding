@@ -29,6 +29,7 @@ repositories {
 }
 // Use the upstream Fabric jars intact so their nested dependencies, licenses and mod IDs survive packaging.
 configurations {
+    hmApiBundle { canBeConsumed = false; transitive = false }
     fabricBundle { canBeConsumed = false; transitive = false }
     kotlinBundle { canBeConsumed = false; transitive = false }
 }
@@ -44,7 +45,9 @@ dependencies {
     // Packaged as the intact upstream JAR through kotlinBundle below; this puts the Kotlin
     // language adapter and libraries on the compile and development runtime classpaths.
     implementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
-    implementation include("net.azureaaron:hm-api:${project.hm_api_version}")
+    def hmApi = "net.azureaaron:hm-api:${project.hm_api_version}"
+    implementation include(hmApi)
+    hmApiBundle hmApi
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -96,12 +99,15 @@ java {
 }
 test { useJUnitPlatform() }
 abstract class VerifyBundledMods extends DefaultTask {
+    @InputFiles abstract ConfigurableFileCollection getHmApiFiles()
     @InputFiles abstract ConfigurableFileCollection getFabricFiles()
     @InputFiles abstract ConfigurableFileCollection getKotlinFiles()
     @Input abstract Property<String> getFabricDigest()
     @Input abstract Property<String> getKotlinDigest()
 
     @TaskAction void verify() {
+        // Same bytes as the HM API shipped inside the verified Sparkling Mutuals 4.3.7 release.
+        checkFile(hmApiFiles.singleFile, 'ef517e0bb878c68cb559caf202433dd7e7b3c6c4e43f9c36f4a3aba1b6119d34')
         checkFile(fabricFiles.singleFile, fabricDigest.get())
         checkFile(kotlinFiles.singleFile, kotlinDigest.get())
     }
@@ -112,6 +118,7 @@ abstract class VerifyBundledMods extends DefaultTask {
     }
 }
 def checkEmbedded = tasks.register('verifyBundledMods', VerifyBundledMods) {
+    hmApiFiles.from(configurations.hmApiBundle)
     fabricFiles.from(configurations.fabricBundle)
     fabricDigest.set('e5b858ceb13290c274e31cb888ff5a1a40cb91067e7ffab0b5b775aec51e216a')
     kotlinFiles.from(configurations.kotlinBundle)

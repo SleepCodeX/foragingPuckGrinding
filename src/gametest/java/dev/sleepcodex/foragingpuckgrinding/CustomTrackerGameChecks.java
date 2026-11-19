@@ -17,6 +17,15 @@ final class CustomTrackerGameChecks {
         server.runCommand("time set night");
         open(c, "hh", HuntingHomeScreen.class);
         captureHome(c);
+        checkPuffs(c, world);
+        c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        open(c, "hh journal", SafariSettingsScreen.class);
+        c.runOnClient(client -> {
+            if (!"Hunting".equals(((SafariSettingsScreen) client.gui.screen()).pageName()))
+                throw new AssertionError("Legacy journal shortcut did not open the integrated hunting settings");
+        });
+        c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        c.waitForScreen(HuntingHomeScreen.class);
         c.runOnClient(client -> {
             var loader = FabricLoader.getInstance();
             for (String nested : java.util.List.of("hm-api", "fabric-language-kotlin", "fabric-api")) {
@@ -146,6 +155,40 @@ final class CustomTrackerGameChecks {
                     throw new AssertionError("Removed bee tracker still glows");
         });
         System.out.println("PASS: partial name, Tier V alias, text and stand labels, typed bodies, custom editor and library");
+    }
+
+    private static void checkPuffs(ClientGameTestContext c, TestSingleplayerContext world) {
+        var tracker = FabricLoader.getInstance().getEntrypoints("client", net.fabricmc.api.ClientModInitializer.class)
+                .stream().filter(VexTracerClient.class::isInstance).map(VexTracerClient.class::cast)
+                .findFirst().orElseThrow().puffs;
+        c.clickScreenButton("Puff Crux");
+        c.waitForScreen(PuffCruxScreen.class);
+        c.clickScreenButton("Timer off");
+        c.clickScreenButton("Alert on");
+        c.clickScreenButton("Alert off");
+        c.waitTicks(4);
+        c.takeScreenshot("puff-crux-settings");
+        c.clickScreenButton("Back");
+        c.waitForScreen(HuntingHomeScreen.class);
+        c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        var server = world.getServer();
+        server.runCommand("scoreboard objectives add hh_puff dummy");
+        server.runCommand("scoreboard players set Mountaintop hh_puff 1");
+        server.runCommand("scoreboard objectives setdisplay sidebar hh_puff");
+        server.runCommand("summon armor_stand 0 -57 4 {NoGravity:1b,CustomName:'[Lv7] Puff 100/100❤',Tags:['hh_puff']}");
+        server.runCommand("summon text_display 1 -57 5 {text:'Puff',Tags:['hh_puff']}");
+        server.runCommand("summon armor_stand 2 -57 6 {NoGravity:1b,CustomName:'Puff Crux',Tags:['hh_puff']}");
+        c.waitFor(client -> tracker.visibleCount() == 2);
+        c.takeScreenshot("puff-crux-countdown");
+        server.runCommand("kill @e[type=text_display,tag=hh_puff]");
+        c.waitFor(client -> tracker.visibleCount() == 1);
+        server.runCommand("scoreboard objectives remove hh_puff");
+        c.waitFor(client -> tracker.visibleCount() == 0);
+        server.runCommand("kill @e[tag=hh_puff]");
+        open(c, "hh puff", PuffCruxScreen.class);
+        c.clickScreenButton("Timer on");
+        c.clickScreenButton("Back");
+        c.waitForScreen(HuntingHomeScreen.class);
     }
 
     private static void captureHome(ClientGameTestContext c) {

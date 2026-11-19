@@ -52,7 +52,9 @@ final class HuntingHomeScreen extends Screen {
 
     void openCustom() { Minecraft.getInstance().gui.setScreen(new CustomLibraryScreen(this, config)); }
 
-    private void openSafari(Section section) {
+    void openPuffCrux() { Minecraft.getInstance().gui.setScreen(new PuffCruxScreen(this, config)); }
+
+    void openSafari(Section section) {
         Minecraft.getInstance().gui.setScreen(new SafariSettingsScreen(this, section == null ? null : section.target()));
     }
 
@@ -66,12 +68,15 @@ final class HuntingHomeScreen extends Screen {
         int col = (w - inset * 2 - gutter) / 2;
         int top = y + (compact ? 39 : 55);
         int featureHeight = compact ? 29 : 53;
-        tile("Hunting presets", "Vex, Blue Jay and Torrhus mobs", x + inset, top, col, featureHeight, true, () -> {
+        int featureWidth = (w - inset * 2 - gutter * 2) / 3;
+        tile("Hunting presets", "Vex, Blue Jay and Torrhus mobs", x + inset, top, featureWidth, featureHeight, true, () -> {
             presets.settle();
             Minecraft.getInstance().gui.setScreen(presets);
         });
         String detail = config.custom().all.isEmpty() ? "Build a nametag or mob type rule" : config.custom().all.size() + " saved";
-        tile("Custom trackers", detail, x + inset + col + gutter, top, col, featureHeight, true, this::openCustom);
+        tile("Custom trackers", detail, x + inset + featureWidth + gutter, top, featureWidth, featureHeight, true, this::openCustom);
+        int puffX = x + inset + (featureWidth + gutter) * 2;
+        tile("Puff Crux", "Rift despawn timer", puffX, top, x + w - inset - puffX, featureHeight, true, this::openPuffCrux);
         safariY = top + featureHeight + (compact ? 6 : 10);
         int listY = safariY + (compact ? 12 : 16);
         int footer = y + h - (compact ? 29 : 37);
@@ -147,11 +152,14 @@ final class HuntingHomeScreen extends Screen {
         c.round(bx,by,bw,bh,7,over?MenuTheme.ACCENT:MenuTheme.BORDER);
         c.round(bx+1,by+1,bw-2,bh-2,6,over?MenuTheme.HOVER:tile.featured()?0xFF292E35:MenuTheme.CARD);
         int start=bx+(compact?8:12);
-        if (tile.featured() && !compact) {
+        if (tile.featured() && !compact && bw >= 146) {
             int cy=by+bh/2;
             c.round(start,cy-13,26,26,6,0xFF1E2228);
             if (b==tiles.getFirst().button()) MobSymbols.draw(g,c,TracerTarget.VEX,start+13,cy,18);
-            else {
+            else if (b == tiles.get(2).button()) {
+                c.round(start+5,cy-3,16,9,4,0xFFDDE7ED);
+                c.round(start+9,cy-7,9,9,4,0xFFDDE7ED);
+            } else {
                 c.round(start+6,cy-6,13,9,2,MenuTheme.MUTED);
                 c.round(start+8,cy-3,13,9,2,MenuTheme.ACCENT);
                 c.round(start+11,cy,6,1,0,MenuTheme.CONTROL);

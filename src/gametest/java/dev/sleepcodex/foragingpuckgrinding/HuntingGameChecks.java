@@ -68,7 +68,7 @@ final class HuntingGameChecks {
             var root = ClientCommands.getActiveDispatcher().getRoot();
             for (String gone : List.of("cm", "ct", "critters"))
                 require(root.getChild(gone) == null, "The field journal command /" + gone + " must be gone");
-            require(root.getChild("hh").getChild("journal") == null, "/hh journal must be gone");
+            require(root.getChild("hh").getChild("journal") != null, "Legacy journal shortcut missing");
             require(root.getChild("hh").getChild("run") != null && root.getChild("hh").getChild("safari") != null, "Missing /hh run or /hh safari");
             require(!FabricLoader.getInstance().isModLoaded("crittermod") && !HuntingOutput.getCritterModLoaded(), "Unexpected standalone CritterMod");
             var config = HuntingConfig.INSTANCE;

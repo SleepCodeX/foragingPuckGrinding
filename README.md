@@ -1,12 +1,20 @@
 # Hunting Helper
 
-One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, customize through-wall highlights, and run the Critter Safari with the complete Sparkling Mutuals suite, extended with CritterMod's Hunter trades, marks and quota-aware missing list, all in Hunting Helper's matte charcoal style.
+One Fabric mod for hunting, Rift Puffs and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, time a Puff chain, and use the integrated Sparkling Mutuals suite with Hunter trades and the quota-aware missing list.
 
 **Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+**
 
-[Download Hunting Helper 1.6.2](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/hunting-helper-1.6.2%2Bmc26.2.jar) · [Safari hunting features](docs/HUNTING.md)
+[Download the latest release](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest) · [Safari hunting features](docs/HUNTING.md)
 
-![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/menu-opening.gif)
+![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest/download/menu-opening.gif)
+
+## Puff Crux
+
+Open **/hh → Puff Crux** or type **/hh puff** and switch the timer on. On the Rift Mountaintop, the HUD shows how many Puffs are loaded and the estimated time left for the oldest. The optional action-bar reminder appears at about 25 seconds left. Popping a chain clears its timers.
+
+The estimate uses the roughly 100-second Puff lifetime and starts at the first sighting on your client. A Puff already on the mountain when you arrive can pop sooner. The timer runs locally, independently of the tracer switch. [Puff farming observations](https://hypixel.net/threads/puff-crux-farming-method.5830761/)
+
+![Puff Crux countdown in the packaged Minecraft client](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.7.0/puff-hud.png)
 
 ## Custom trackers
 

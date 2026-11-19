@@ -63,6 +63,7 @@ Each modification is marked with a `// Hunting Helper:` comment (`#` in the defa
 | `config/ModUpdates.kt` | Checks `SleepCodeX/foragingPuckGrinding` releases against the installed Hunting Helper version and asset `hunting-helper-<v>+mc<mc>.jar` | Never point players at upstream SM builds |
 | `config/ReleaseUpdateChecker.kt` | Optional `asset` parameter (default = upstream name) | Used by `ModUpdates` |
 | `party/PartyManager.kt` | `requestPartyInfo` / `refreshPartyInfo` only on Hypixel | No party queries in test worlds |
+| `skyblock/market/ShardSaleGuidance.kt` | Verify the Hypixel connection before requesting the profile ID | A scoreboard titled SKYBLOCK in another world cannot trigger the market helper's command |
 | `safari/SafariCatch.kt` | Loot-share parse handles rank prefixes and catchers named like a species | Correct catch counts |
 | `safari/SafariTracking.kt` | `receive` is public | Canceled chat (GAME_CANCELED) is forwarded by `HuntingChat` |
 | `safari/SafariRun.kt` | `populationOf(name)` reads the private `knownPopulation` high-water mark | Located counts for all species (replaces upstream Hunting Helper #10's `SafariPopulationAccess` mixin) |

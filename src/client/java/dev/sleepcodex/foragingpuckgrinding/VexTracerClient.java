@@ -6,6 +6,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -27,7 +29,8 @@ public final class VexTracerClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private final TracerConfig config = new TracerConfig(
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".properties"));
-    private enum Page { HOME, CUSTOM, SAFARI, REMAINING }
+    final PuffCruxTracker puffs = new PuffCruxTracker(config);
+    private enum Page { HOME, CUSTOM, SAFARI, JOURNAL, REMAINING, PUFF }
     private Page requestedPage;
 
     @Override
@@ -50,6 +53,8 @@ public final class VexTracerClient implements ClientModInitializer {
         // Register the tint pipeline at startup instead of mid-frame when the first glow appears.
         java.util.Objects.requireNonNull(Highlight.FILL);
         VexTracerRenderer renderer = new VexTracerRenderer(config);
+        HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,
+                Identifier.fromNamespaceAndPath(MOD_ID, "puff_crux"), (graphics, delta) -> puffs.draw(graphics));
         TrackedOutlines.install(renderer);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggle.consumeClick()) setEnabled(client, !config.enabled());
@@ -65,10 +70,13 @@ public final class VexTracerClient implements ClientModInitializer {
                 var home = new HuntingHomeScreen(screen, config);
                 screen.home = home;
                 if (page == Page.CUSTOM) home.openCustom();
-                else if (page == Page.SAFARI) client.gui.setScreen(new SafariSettingsScreen(home, null));
+                else if (page == Page.PUFF) home.openPuffCrux();
+                else if (page == Page.SAFARI) home.openSafari(null);
+                else if (page == Page.JOURNAL) home.openSafari(HuntingHomeScreen.Section.HUNTING);
                 else client.gui.setScreen(home);
             }
             renderer.tick(client);
+            puffs.tick(client);
         });
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(
@@ -80,7 +88,9 @@ public final class VexTracerClient implements ClientModInitializer {
             for (String name : new String[] {"huntinghelper", "hh"}) {
                 dispatcher.register(literal(name).executes(context -> requestMenu(Page.HOME))
                         .then(literal("remaining").executes(context -> requestMenu(Page.REMAINING)))
+                        .then(literal("puff").executes(context -> requestMenu(Page.PUFF)))
                         .then(literal("safari").executes(context -> requestMenu(Page.SAFARI)))
+                        .then(literal("journal").executes(context -> requestMenu(Page.JOURNAL)))
                         .then(literal("run").executes(context -> requestMenu(Page.REMAINING)))
                         .then(literal("custom").executes(context -> requestMenu(Page.CUSTOM)))
                         .then(literal("debug").executes(context -> toggleDebug())));

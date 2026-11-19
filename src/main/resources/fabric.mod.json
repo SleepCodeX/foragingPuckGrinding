@@ -3,7 +3,7 @@
   "id": "foragingpuckgrinding",
   "version": "${version}",
   "name": "Hunting Helper",
-  "description": "Track SkyBlock mobs and every Critter Safari area. Open /hh for hunting presets, remaining catches, Hunter trades, recatch pins and party reports.",
+  "description": "Open /hh for SkyBlock hunting presets, custom mob trackers, Rift Puff despawn timers, remaining Safari catches, Hunter trades and party reports.",
   "icon": "assets/foragingpuckgrinding/textures/gui/hivethief/frost.png",
   "authors": [
     "SleepCodeX"

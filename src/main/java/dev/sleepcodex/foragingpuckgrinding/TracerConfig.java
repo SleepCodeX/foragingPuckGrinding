@@ -19,6 +19,8 @@ public final class TracerConfig {
     private CustomRules custom = new CustomRules(java.util.List.of());
     private final Path path;
     private boolean enabled;
+    private boolean puffTimer;
+    private boolean puffReminder = true;
     private EnumSet<TracerTarget> targets = EnumSet.of(TracerTarget.VEX);
     private final EnumMap<TracerTarget, OverlayColor> lines = new EnumMap<>(TracerTarget.class);
     private final EnumMap<TracerTarget, OverlayColor> glows = new EnumMap<>(TracerTarget.class);
@@ -37,6 +39,8 @@ public final class TracerConfig {
 
     public void load() throws IOException {
         enabled = false;
+        puffTimer = false;
+        puffReminder = true;
         targets = EnumSet.of(TracerTarget.VEX);
         resetColors();
         custom = new CustomRules(java.util.List.of());
@@ -46,6 +50,8 @@ public final class TracerConfig {
             properties.load(reader);
         }
         custom = CustomRules.read(properties);
+        puffTimer = Boolean.parseBoolean(properties.getProperty("puff.timer", "false").trim());
+        puffReminder = Boolean.parseBoolean(properties.getProperty("puff.reminder", "true").trim());
         enabled = Boolean.parseBoolean(properties.getProperty("enabled", "false").trim());
         for (TracerTarget target : TracerTarget.values()) {
             OverlayColor line = OverlayColor.parse(properties.getProperty("line." + target.name()), OverlayColor.defaultFor(target));
@@ -71,6 +77,15 @@ public final class TracerConfig {
 
     public boolean enabled() {
         return enabled;
+    }
+
+    boolean puffTimer() { return puffTimer; }
+    boolean puffReminder() { return puffReminder; }
+
+    void setPuffOptions(boolean timer, boolean reminder) throws IOException {
+        save(custom, timer, reminder);
+        puffTimer = timer;
+        puffReminder = reminder;
     }
 
     public void setEnabled(boolean value) throws IOException {
@@ -146,11 +161,17 @@ public final class TracerConfig {
     private void save() throws IOException { save(custom); }
 
     private void save(CustomRules savedCustom) throws IOException {
+        save(savedCustom, puffTimer, puffReminder);
+    }
+
+    private void save(CustomRules savedCustom, boolean timer, boolean reminder) throws IOException {
         Files.createDirectories(path.toAbsolutePath().getParent());
         Path temporary = Files.createTempFile(path.toAbsolutePath().getParent(), "vex-tracer-", ".tmp");
         try {
             Properties properties = new Properties();
             savedCustom.write(properties);
+            properties.setProperty("puff.timer", Boolean.toString(timer));
+            properties.setProperty("puff.reminder", Boolean.toString(reminder));
             properties.setProperty("enabled", Boolean.toString(enabled));
             properties.setProperty("targets", targets.stream().map(Enum::name).collect(Collectors.joining(",")));
             for (TracerTarget target : TracerTarget.values()) {
