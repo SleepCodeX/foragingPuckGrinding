@@ -1,3 +1,10 @@
+# Hunting Helper 1.6.1
+
+- **One JAR on Fabric Loader.** Hunting Helper includes the matching Fabric API, Sparkling Mutuals, Kotlin runtime and field journal for Minecraft 26.2.
+- **Full-clear HUD.** Track first captures across all 37 Safari species alongside strict full-clear progress. The current area's second list shows exact remaining counts, spawn ranges and unresolved sources.
+- **Browse any area.** Open **/hh remaining** or **/hh → Field journal → Remaining critters** for Forest, Cavern, Icy and Haunted. Visible, chat-helper-hidden and Fabric-filtered catch messages feed the same run.
+- [In-game remaining list](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/full-clear-remaining.png) · [Controls and spawn references](https://github.com/SleepCodeX/foragingPuckGrinding/blob/v1.6.1/docs/FIELD-JOURNAL.md)
+
 # Hunting Helper 1.6.0
 
 The **Field journal** brings Critter Safari Tracker tools into Hunting Helper. Open **/hh → Field journal**, or type **/hh journal**.

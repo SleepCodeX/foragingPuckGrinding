@@ -34,6 +34,7 @@ repositories {
 }
 configurations {
     safariBundle { canBeConsumed = false; transitive = false }
+    fabricBundle { canBeConsumed = false; transitive = false }
     kotlinBundle { canBeConsumed = false; transitive = false }
     clientCompileOnly.extendsFrom safariBundle
     gametestCompileOnly.extendsFrom safariBundle
@@ -48,7 +49,9 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    productionRuntimeMods "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // The production Fabric API excludes the development-only client test runner.
+    productionRuntimeMods(fabricApi.module("fabric-client-gametest-api-v1", project.fabric_api_version)) { transitive = false }
+    fabricBundle "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}@jar"
     clientCompileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.4.20'
     gametestCompileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.4.20'
     testImplementation platform('org.junit:junit-bom:5.11.4')
@@ -99,12 +102,15 @@ java {
 test { useJUnitPlatform() }
 abstract class VerifyBundledMods extends DefaultTask {
     @InputFiles abstract ConfigurableFileCollection getSafariFiles()
+    @InputFiles abstract ConfigurableFileCollection getFabricFiles()
     @InputFiles abstract ConfigurableFileCollection getKotlinFiles()
     @Input abstract Property<String> getSafariDigest()
+    @Input abstract Property<String> getFabricDigest()
     @Input abstract Property<String> getKotlinDigest()
 
     @TaskAction void verify() {
         checkFile(safariFiles.singleFile, safariDigest.get())
+        checkFile(fabricFiles.singleFile, fabricDigest.get())
         checkFile(kotlinFiles.singleFile, kotlinDigest.get())
     }
 
@@ -115,6 +121,8 @@ abstract class VerifyBundledMods extends DefaultTask {
 }
 def checkEmbedded = tasks.register('verifyBundledMods', VerifyBundledMods) {
     safariFiles.from(configurations.safariBundle)
+    fabricFiles.from(configurations.fabricBundle)
+    fabricDigest.set('e5b858ceb13290c274e31cb888ff5a1a40cb91067e7ffab0b5b775aec51e216a')
     kotlinFiles.from(configurations.kotlinBundle)
     safariDigest.set(safariHash)
     kotlinDigest.set(kotlinHash)
@@ -122,6 +130,7 @@ def checkEmbedded = tasks.register('verifyBundledMods', VerifyBundledMods) {
 jar {
     dependsOn checkEmbedded
     from(configurations.safariBundle) { into 'META-INF/jars'; rename { 'sparkling-mutuals.jar' } }
+    from(configurations.fabricBundle) { into 'META-INF/jars'; rename { 'fabric-api.jar' } }
     from(configurations.kotlinBundle) { into 'META-INF/jars'; rename { 'fabric-language-kotlin.jar' } }
     from('LICENSE', 'NOTICE')
     from('licenses') { into 'licenses' }

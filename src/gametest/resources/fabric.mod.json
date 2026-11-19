@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "name": "Vex Tracer Tests",
   "environment": "client",
+  "depends": { "fabric-client-gametest-api-v1": "*" },
   "entrypoints": {
     "fabric-client-gametest": ["dev.sleepcodex.foragingpuckgrinding.VexTracerGameTest"]
   }
