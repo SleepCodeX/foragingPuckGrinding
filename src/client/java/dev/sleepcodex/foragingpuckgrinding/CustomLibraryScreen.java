@@ -13,7 +13,7 @@ final class CustomLibraryScreen extends TrackerPage {
 
     CustomLibraryScreen(Screen parent, TracerConfig config) { super("Custom trackers", parent, config); }
     @Override int preferredWidth() { return 620; }
-    @Override int preferredHeight() { return 380; }
+    @Override int preferredHeight() { return Math.clamp(148 + config.custom().all.size() * 40, 230, 380); }
     @Override String subtitle() { return status.isEmpty() ? "Your nametag and mob type rules" : status; }
 
     @Override void layout() {
@@ -31,8 +31,8 @@ final class CustomLibraryScreen extends TrackerPage {
                     Tone.DANGER, () -> remove(rule));
         }
         if (pages > 1) {
-            button("‹", left + w - 78, footer - 22, 27, 17, Tone.NORMAL, () -> move(-1)).active = page > 0;
-            button("›", left + w - 46, footer - 22, 27, 17, Tone.NORMAL, () -> move(1)).active = page + 1 < pages;
+            button("←", left + w - 78, footer - 22, 27, 17, Tone.NORMAL, () -> move(-1)).active = page > 0;
+            button("→", left + w - 46, footer - 22, 27, 17, Tone.NORMAL, () -> move(1)).active = page + 1 < pages;
         }
         button("Back", left + 15, footer, 65, 23, Tone.NORMAL, this::onClose);
         button("Add tracker", left + w - 112, footer, 97, 23, Tone.PRIMARY, () -> edit(null));

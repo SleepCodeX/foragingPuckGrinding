@@ -56,7 +56,6 @@ final class CustomEditorScreen extends TrackerPage {
         field.setBordered(false);
         field.setMaxLength(96);
         field.setValue(namedMode() ? named : typed);
-        field.setHint(Component.literal(namedMode() ? "e.g. Revenant Sycophant" : "e.g. wither_skeleton"));
         field.setTextColor(MenuTheme.TEXT);
         addRenderableWidget(field);
         paletteY = (top + 117 + footer - 48) / 2;
@@ -128,7 +127,11 @@ final class CustomEditorScreen extends TrackerPage {
         c.round(x, fieldY - 1, w - 32, 21, 5, field.isFocused() ? MenuTheme.ACCENT : MenuTheme.BORDER);
         c.round(x + 1, fieldY, w - 34, 19, 4, 0xFF131519);
         field.extractRenderState(g, mx, my, delta);
-        String hint = !status.isEmpty() ? status : namedMode() ? "Matches names containing “" + named.strip() + "”"
+        if (field.getValue().isEmpty()) {
+            String example = namedMode() ? "e.g. Revenant Sycophant" : "e.g. wither_skeleton";
+            MenuFont.text(g, example, x + 14, fieldY + 5, .87, MenuTheme.MUTED);
+        }
+        String hint = !status.isEmpty() ? status : namedMode() ? "Matches names containing \"" + named.strip() + "\""
                 : CustomTracker.normalizeType(typed);
         MenuFont.text(g, MenuFont.ellipsis(hint, (w - 32) / .78), x, fieldY + 23, .78, MenuTheme.MUTED);
         String lineLabel = line.label(), glowLabel = glow.label();
