@@ -2,7 +2,7 @@
 
 Open **/hh → Field journal** or **/hh journal**. Install Hunting Helper on Fabric Loader. The journal runs inside Hunting Helper and saves its reports locally.
 
-![Hunting Helper dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/home.png)
+![Hunting Helper dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/home.png)
 
 | Control | In the Safari |
 | --- | --- |
@@ -17,7 +17,7 @@ Open **/hh → Field journal** or **/hh journal**. Install Hunting Helper on Fab
 | Move journal panels | Drag a panel to move it. Scroll over it to resize. |
 | Diagnostics | Enable area, crosshair and ten-second entity diagnostics. Rejoin a world to register the commands. |
 
-![Field report with a simulated catch](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/field-report.png)
+![Field report with a simulated catch](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/field-report.png)
 
 **Commands.** `/ct` or `/critters` opens the report. `/cm` opens the journal and `/cm gui` opens the panel editor. Under `/critters`, use `players`, `missing`, `copy`, `share`, `text`, `prices`, `history` and `import`. Import reads this instance's chat logs, reconciles overlapping runs and backfills shard counts when the logs contain them. Existing critterMod run history is copied on the first launch if present. Hunting Helper writes future reports to `config/hunting-helper-field-runs.json`.
 
@@ -36,6 +36,21 @@ The Safari has **37 species**. Forest, Cavern and Icy each have nine. Haunted ha
 - **Up to 2 left** means the minimum has been caught. Further catches or a confirmed area check resolve the row. **Check feeder**, **Check walls** and **Check mounds** identify unresolved sources. A plus sign marks a known minimum for an open-ended source.
 - Personal captures and loot shares each count once, even when the reward contains several shards. The chat helper can hide the message. An escape, floor-drop shard or quoted party message gives no catch credit.
 
-![Full-clear HUD with one Foxtrot left in a Minecraft test run](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/full-clear-hud.png)
+![Full-clear HUD with one Foxtrot left in a Minecraft test run](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/full-clear-hud.png)
 
 The game team's patch documents changed ranges for seven creatures. The roster and remaining ordinary per-instance ranges were cross-checked against the Safari spawn table, and the packaged tracker supplies local render, source and catch evidence. [Hypixel patch notes](https://hypixel.net/threads/august-11-skyblock-patch-notes.6139155/) · [Hypixel forum discussion of variable spawns](https://hypixel.net/threads/add-the-exact-spawn-ranges-for-all-critter-safari-critters.6140536/) · [Safari spawn table](https://hypixelskyblock.minecraft.wiki/w/Critter_Safari#List_of_Critters)
+
+## Per-species counts
+
+**Located** is the number of uncaught creatures supported by the run's loaded models or confirmed spawns. A dash means the run has no count from either source yet. The run keeps sightings across scans and biome changes. A capture message checks off one animal, even if the player receives multiple shards. **Remaining** also accounts for expected spawns that haven't been located. The HUD shows both numbers when they differ and the area screen keeps them in separate columns.
+
+| Area | Ordinary or fixed spawns per run | Conditional spawns |
+| --- | --- | --- |
+| Forest | Foxtrot 6–8, Treefrog 3–6, Woodchucker 3–6, Fluffling 1–3, Hideonfloor 1–3 | Honeybug 3–6 until surveyed nests give a count. Bluebird, Parakeet and Macaw depend on the feeder. |
+| Cavern | Cavernfish 4–8, Flitter 6–8, Shyworm 4–8, Driftling 3–6, Chuckwalla 2–4, Scrappy 3, Gemzie 3 | Rockmite comes from mounds. Snoozle comes from breakable walls. |
+| Icy | Strongarm 4–8, Tepid 6–8, Polaris 2–4, Shuddersquid 3–6, Billygoat 2–4, Mantis Shrimp 3–6, Nozzlenose 2–4, Troodon 3, Wumpa 1 | Wumpa appears after the Icy prerequisites. |
+| Haunted | Areita 3–6, Bloodbat 3–6, Duplico 2–4, Gazer 4, Litterbug 4–8, Solsnatcher 4–8, Hideonwall 2–4, Hideyho 1, Doomspiral 1 | Gimmiegold depends on Shining Coins. |
+
+Ranges describe a full run, including creatures unlocked through encounters. [Safari critter and spawn table](https://hypixelskyblock.minecraft.wiki/w/Critter_Safari#List_of_Critters) · [Hypixel spawn changes](https://hypixel.net/threads/august-11-skyblock-patch-notes.6139155/)
+
+![Packaged client showing partial Cavern catches](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/cavern-checklist.png)

@@ -43,7 +43,8 @@ final class FullClearScreen extends TrackerPage {
         double scale = Math.min(.86, Math.max(.58, (footer - y - 20) / 122.0));
         int step = Math.max(9, Math.min(16, (footer - y - 16) / Math.max(1, rows.size())));
         MenuFont.text(g, "Critter", x, y, .78, MenuTheme.MUTED);
-        MenuFont.text(g, "Caught", left + w * .52, y, .78, MenuTheme.MUTED);
+        MenuFont.text(g, "Caught", left + w * .40, y, .78, MenuTheme.MUTED);
+        MenuFont.text(g, "Located", left + w * .56, y, .78, MenuTheme.MUTED);
         MenuFont.text(g, "Remaining", right - MenuFont.width("Remaining") * .78, y, .78, MenuTheme.MUTED);
         y += 14;
         if (rows.isEmpty()) MenuFont.text(g, "Area cleared", x, y, .9, MenuTheme.TEXT);
@@ -51,6 +52,8 @@ final class FullClearScreen extends TrackerPage {
             MenuFont.text(g, item.species().getName(), x, y, scale, MenuTheme.TEXT);
             MenuFont.text(g, Integer.toString(item.caught()), left + w * .52, y, scale,
                     item.caught() > 0 ? MenuTheme.TEXT : MenuTheme.MUTED);
+            String located = item.located() == null ? "–" : item.located().toString();
+            MenuFont.text(g, located, left + w * .56, y, scale, item.located() == null ? MenuTheme.MUTED : MenuTheme.TEXT);
             MenuFont.text(g, item.amount(), right - MenuFont.width(item.amount()) * scale, y, scale, MenuTheme.ACCENT);
             y += step;
         }

@@ -15,7 +15,8 @@
     "SafariPartyConnectionMixin",
     "SafariCatchReceiver",
     "SafariLootShareMixin",
-    "FullClearPanelsMixin"
+    "FullClearPanelsMixin",
+    "SafariPopulationAccess"
   ],
   "injectors": {"defaultRequire": 1}
 }

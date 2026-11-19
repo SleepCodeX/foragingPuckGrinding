@@ -1,3 +1,10 @@
+# Hunting Helper 1.6.2
+
+- **All 37 Safari species** have a located-creature count in **/hh remaining**. When the total is uncertain, **/fc** can show how many have been located alongside the expected remainder. The row keeps its progress through burrows, escapes and biome changes.
+- **Cavern checklist.** See how many Shyworms, Chuckwallas, Driftlings and Scrappies are still accounted for after personal and party catches. The packaged Minecraft test also covers the other three areas, feeder birds, wall and mound critters, and coin spawns.
+- **Install on Fabric Loader** with the Hunting Helper JAR. Fabric API, Kotlin and the Safari suite are included.
+- [Cavern screenshot](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/cavern-checklist.png) · [All species and spawn counts](https://github.com/SleepCodeX/foragingPuckGrinding/blob/v1.6.2/docs/FIELD-JOURNAL.md#per-species-counts)
+
 # Hunting Helper 1.6.1
 
 - **One JAR on Fabric Loader.** Hunting Helper includes the matching Fabric API, Sparkling Mutuals, Kotlin runtime and field journal for Minecraft 26.2.
