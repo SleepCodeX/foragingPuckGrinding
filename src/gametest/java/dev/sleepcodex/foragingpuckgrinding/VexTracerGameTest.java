@@ -60,14 +60,25 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 openMenu(context);
                 captureOpening(context);
                 context.runOnClient(client -> client.options.guiScale().set(3));
-                context.getInput().resizeWindow(960,720);context.waitTicks(3);
-                requireButtonsFit(context);context.takeScreenshot("tracker-menu-compact");
+                context.getInput().resizeWindow(960,720);
+                context.runOnClient(Minecraft::resizeGui);context.waitTicks(3);
+                context.runOnClient(client -> {
+                    if(client.getWindow().getGuiScaledWidth()!=320)throw new AssertionError("Compact check must actually use a 320-pixel GUI");
+                });
+                requireButtonsFit(context);requireKeyboardReachability(context);
+                context.getInput().pressKey(GLFW.GLFW_KEY_HOME);context.takeScreenshot("tracker-menu-compact");
                 context.clickScreenButton("Tracers: OFF");context.clickScreenButton("Select all");
                 context.runOnClient(client -> client.options.guiScale().set(2));
-                context.getInput().resizeWindow(1280,720);context.waitTicks(3);requireButtonsFit(context);
+                context.getInput().resizeWindow(1280,720);
+                context.runOnClient(Minecraft::resizeGui);context.waitTicks(3);requireButtonsFit(context);
                 context.takeScreenshot("tracker-menu-all");
                 requireKeyboardReachability(context);
-                context.clickScreenButton("Vex line: Purple");context.takeScreenshot("line-color-dropdown");
+                context.clickScreenButton("Vex line: Purple");
+                context.runOnClient(client -> {
+                    for(int i=0;i<3;i++)client.gui.screen().mouseScrolled(0,0,0,-1);
+                    client.gui.screen().mouseScrolled(0,0,0,1);
+                });
+                context.takeScreenshot("line-color-dropdown");
                 context.clickScreenButton("Green");
                 context.clickScreenButton("Vex glow: Match line");
                 context.getInput().pressKey(GLFW.GLFW_KEY_END);
