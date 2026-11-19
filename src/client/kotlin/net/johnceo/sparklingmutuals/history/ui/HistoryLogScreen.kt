@@ -82,7 +82,7 @@ class HistoryLogScreen(private val parent: Screen, private val entry: SparklingE
             if (track.scrollable) {
                 val thumb = track.thumbTop(offset)
                 g.fill(width - 14, top, width - 8, bottom, 0x40555555)
-                g.fill(width - 14, thumb, width - 8, thumb + track.thumbHeight, 0xFFE8A33A.toInt())
+                g.fill(width - 14, thumb, width - 8, thumb + track.thumbHeight, 0xFFB7C7D6.toInt()) // Hunting Helper: was 0xFFE8A33A
             }
         }
         g.text(font, "Scroll to browse · Shift + scroll sideways", 10, height - 38, 0xFF999999.toInt())

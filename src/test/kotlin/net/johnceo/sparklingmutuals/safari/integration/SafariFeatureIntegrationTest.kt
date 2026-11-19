@@ -52,7 +52,9 @@ class SafariFeatureIntegrationTest {
         val exceptions = setOf("customization.biomeBorders", "modes.sparkling.allScannable", "warp.autoPartyOnlineOnly", "safari.alerts.alwaysCelebrate", "tracking.progressHud.hotspot", "espGeneral.floorVisibility.icebreaker", "warp.autoEnter", "warp.leech", "skyblock.helpers.skillOverflowNumbers", "tracking.capturesHud.enabled", "history.instaSell", "history.toParty", "warp.enabled", "espGeneral.floorVisibility.generic", "miria.warning.five", "party.startingItems",
             "espGeneral.boxes", "esp.biomeColors.enabled", "esp.floorDrops.visibility.icebreaker", "esp.floorDrops.visibility.generic",
             "modes.unique.hideCritters", "modes.unique.hideDrops", "modes.fullClear.hideCritters",
-            "modes.fullClear.hideDrops", "modes.sparkling.hideCritters", "modes.sparkling.hideDrops")
+            "modes.fullClear.hideDrops", "modes.sparkling.hideCritters", "modes.sparkling.hideDrops",
+            // Hunting Helper: opt-in hunting features (CritterMod defaults)
+            "hunting.missingHud.uniquesOnly", "hunting.marks.hideonwall", "hunting.marks.recatch")
         val modes = setOf("modes.unique.enabled", "modes.fullClear.enabled", "modes.sparkling.enabled")
         assertAll(switches.filterKeys { it !in modes && !it.startsWith("banner.") }.map { (name,value) ->
             org.junit.jupiter.api.function.Executable {

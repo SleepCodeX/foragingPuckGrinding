@@ -24,10 +24,8 @@ object BazaarPrices {
     const val SAFARI_ESSENCE = "ESSENCE_SAFARI"
     private val logger = LoggerFactory.getLogger("sparkling-mutuals/bazaar")
     private val client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build()
-    // Hunting Helper: cache internal (was private) and both given plain JVM names so the field journal (Java)
-    // reads the same quotes and shares the refresh throttle.
-    @get:JvmName("marketCache") internal val cache = BazaarPriceCache(System::currentTimeMillis, ::fetchPrices)
-    @Volatile @get:JvmName("guidanceQuotes") internal var guidanceQuotes: QuoteSnapshot? = null
+    private val cache = BazaarPriceCache(System::currentTimeMillis, ::fetchPrices)
+    @Volatile internal var guidanceQuotes: QuoteSnapshot? = null
         private set
 
     fun ensureFresh() = cache.ensureFresh()

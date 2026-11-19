@@ -22,8 +22,7 @@
       }
     ],
     "client": [
-      "dev.sleepcodex.foragingpuckgrinding.VexTracerClient",
-      "dev.sleepcodex.foragingpuckgrinding.journal.CritterMod"
+      "dev.sleepcodex.foragingpuckgrinding.VexTracerClient"
     ]
   },
   "mixins": [

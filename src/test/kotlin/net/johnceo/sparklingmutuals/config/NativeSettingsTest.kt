@@ -13,7 +13,7 @@ class NativeSettingsTest {
         assertSame(settings.customization.huds.progress,settings.tracking.progressHud.appearance)
         assertSame(settings.customization.huds.objectives,settings.tracking.objectivesHud.appearance)
         assertSame(settings.customization.huds.doomThrow,settings.safari.capture.doomAppearance)
-        assertEquals(18,catalog.pages.size)
+        assertEquals(19,catalog.pages.size) // Hunting Helper: + the Hunting page
         assertNotNull(catalog.pages.firstOrNull {it.name=="ESP General"})
         assertNotNull(catalog.pages.firstOrNull { it.name=="Mode-wide Critter Toggles" })
         assertNotNull(catalog.pages.firstOrNull { it.name=="Profitable Critter Toggles" })

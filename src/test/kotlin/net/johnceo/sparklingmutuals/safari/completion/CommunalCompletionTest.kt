@@ -6,6 +6,7 @@ import java.util.UUID
 import net.johnceo.sparklingmutuals.config.AppearanceConfig
 import net.johnceo.sparklingmutuals.config.ConfigManager
 import net.johnceo.sparklingmutuals.config.SafariEspConfig
+import net.johnceo.sparklingmutuals.config.SafariTheme
 import net.johnceo.sparklingmutuals.safari.PartySparklingState
 import net.johnceo.sparklingmutuals.safari.SafariBiome
 import net.johnceo.sparklingmutuals.safari.SafariCatch
@@ -96,7 +97,7 @@ class CommunalCompletionTest {
         AppearanceConfig.load(Properties())
         val style = AppearanceConfig.panels.getValue("run_complete")
         assertEquals(20, style.transparency)
-        assertEquals(0xCC0D0D10.toInt(), style.backgroundArgb)
+        assertEquals(0xCC000000.toInt() or SafariTheme.BACKGROUND, /* Hunting Helper: HH theme */ style.backgroundArgb)
         style.transparency = 45
         AppearanceConfig.runCompleteColor = AppearanceConfig.color(0x123456)
         val saved = Properties(); AppearanceConfig.save(saved); AppearanceConfig.load(saved)

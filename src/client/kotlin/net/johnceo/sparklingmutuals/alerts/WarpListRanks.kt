@@ -9,7 +9,8 @@ import net.minecraft.client.Minecraft
 internal object WarpListRanks {
     private val observed = linkedMapOf<String, Int>()
     private val rankedName = Regex("""^\[([A-Z+_]+)]\s+([A-Za-z0-9_]{1,16})(?=\s|:|$)""")
-    private val chatPrefix = Regex("""^(?:(?:Party|Guild|Officer)\s*[>»]\s*|(?:From|To)\s+)""")
+    // Hunting Helper: channel prefixes matched case-insensitively ("party >", "GUILD >").
+    private val chatPrefix = Regex("""^(?:(?:Party|Guild|Officer)\s*[>»]\s*|(?:From|To)\s+)""", RegexOption.IGNORE_CASE)
 
     fun register() {
         ClientReceiveMessageEvents.GAME.register { message, overlay -> if (!overlay) observeChat(message.string) }

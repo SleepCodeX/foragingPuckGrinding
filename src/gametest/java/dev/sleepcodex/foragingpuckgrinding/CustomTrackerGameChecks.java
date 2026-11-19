@@ -27,9 +27,10 @@ final class CustomTrackerGameChecks {
                 if (!host.getMetadata().getId().equals(VexTracerClient.MOD_ID)) throw new AssertionError("Unexpected parent " + host);
             }
         });
-        FieldJournalGameChecks.run(c, world);
+        SparklingMutualsGameChecks.run(c);
+        HuntingGameChecks.run(c, world);
         c.clickScreenButton("All Safari settings");
-        c.waitForScreen(net.johnceo.sparklingmutuals.config.SafariConfigScreen.class);
+        c.waitForScreen(SafariSettingsScreen.class);
         c.waitTicks(4);
         c.takeScreenshot("bundled-safari-settings");
         c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
@@ -39,7 +40,12 @@ final class CustomTrackerGameChecks {
         for (var section : HuntingHomeScreen.Section.values()) {
             if (catalog.locate(section.target()) == null) throw new AssertionError("Unknown Safari settings route " + section);
             c.clickScreenButton(section.label);
-            c.waitForScreen(net.johnceo.sparklingmutuals.config.SafariConfigScreen.class);
+            c.waitForScreen(SafariSettingsScreen.class);
+            var expected = section.page;
+            c.runOnClient(client -> {
+                String opened = ((SafariSettingsScreen) client.gui.screen()).pageName();
+                if (!opened.equals(expected)) throw new AssertionError(section + " opened " + opened);
+            });
             c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
             c.waitForScreen(HuntingHomeScreen.class);
         }

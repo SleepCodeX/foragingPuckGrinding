@@ -56,7 +56,8 @@ class ContestGui(private val parent: Screen? = null) : Screen(Component.literal(
             SafariHud.LAKE_CLEARED to net.johnceo.sparklingmutuals.safari.LakeClearAlert.preview(),
             SafariHud.OBJECTIVES to SafariPanels.objectivesPreview(),
             SafariHud.CAPTURES to SafariPanels.captures(run, SafariBiome.FOREST),
-            SafariHud.SPARKLINGS to SafariAssist.nearbyPanel(preview = true)!!) + SmallAlerts.previews() + net.johnceo.sparklingmutuals.skyblock.market.HuntingBoxHuds.previews()
+            SafariHud.SPARKLINGS to SafariAssist.nearbyPanel(preview = true)!!) + SmallAlerts.previews() + net.johnceo.sparklingmutuals.skyblock.market.HuntingBoxHuds.previews() +
+            net.johnceo.sparklingmutuals.hunting.HuntingHuds.previews() // Hunting Helper: second HUD and trades box
         SafariHud.available.filter { it !in SmallAlerts.titles.keys }.forEach { hud ->
             val panel = panels.getValue(hud)
             previews.add(Preview(hud.label, hud.layout, panel.width(HudFonts.font::width), panel.height, HudConfigLinks.target(hud)) { g, x, y ->
@@ -119,7 +120,7 @@ class ContestGui(private val parent: Screen? = null) : Screen(Component.literal(
         if(event.button()==InputConstants.MOUSE_BUTTON_RIGHT) {
             val target=hovered(event.x(),event.y()) ?: return false
             dragging=null;save()
-            minecraft.smSetScreen(SafariConfigScreen(initialTarget=target.target,returnTo=this))
+            minecraft.smSetScreen(net.johnceo.sparklingmutuals.config.SettingsScreens.create(this, target.target)) // Hunting Helper
             return true
         }
         if (event.button() != InputConstants.MOUSE_BUTTON_LEFT) return false

@@ -51,7 +51,7 @@ class SafariCustomizationTest {
         AppearanceConfig.load(saved)
         assertEquals(AppearanceConfig.color(SafariTheme.BACKGROUND), AppearanceConfig.panels.getValue("progress").backgroundColor)
         assertEquals(AppearanceConfig.color(SafariTheme.BORDER), AppearanceConfig.panels.getValue("progress").borderColor)
-        assertEquals(0xCC0D0D10.toInt(), AppearanceConfig.panels.getValue("run_complete").backgroundArgb)
+        assertEquals(0xCC000000.toInt() or SafariTheme.BACKGROUND, /* Hunting Helper: HH theme */ AppearanceConfig.panels.getValue("run_complete").backgroundArgb)
         val custom = AppearanceConfig.panels.getValue("missing")
         assertEquals("3:70:18:52:86", custom.backgroundColor)
         assertEquals(AppearanceConfig.color(0x123456), custom.borderColor)
@@ -59,7 +59,7 @@ class SafariCustomizationTest {
         AppearanceConfig.save(saved)
         AppearanceConfig.load(saved)
         assertEquals("3:70:18:52:86", custom.backgroundColor)
-        assertEquals(0xCC0D0D10.toInt(), AppearanceConfig.panels.getValue("run_complete").backgroundArgb)
+        assertEquals(0xCC000000.toInt() or SafariTheme.BACKGROUND, /* Hunting Helper: HH theme */ AppearanceConfig.panels.getValue("run_complete").backgroundArgb)
     }
     @Test fun `settings categories omit descriptors and general owns shared actions`() {
         ConfigManager.init(dir)
@@ -140,7 +140,7 @@ class SafariCustomizationTest {
         })
         assertEquals(100, AppearanceConfig.panels.getValue("miria").transparency)
         assertEquals(0, AppearanceConfig.panels.getValue("missing").transparency)
-        assertEquals(0xCC0D0D10.toInt(), AppearanceConfig.panels.getValue("captures").backgroundArgb)
+        assertEquals(0xCC000000.toInt() or SafariTheme.BACKGROUND, /* Hunting Helper: HH theme */ AppearanceConfig.panels.getValue("captures").backgroundArgb)
     }
     @Test fun `customization offers every existing critter color exactly once`() {
         ConfigManager.init(dir)

@@ -149,7 +149,7 @@ class HistoryScreen(private val parent: Screen?, private var tab: Tab = Tab.RUNS
         for (t in Tab.entries) {
             val on = t == tab
             val hover = mx in x until x + tabW && my in y until y + 18
-            g.fill(x, y, x + tabW, y + 18, if (on) t.colour and 0xFFFFFF or 0xD0000000.toInt() else if (hover) 0xC0302820.toInt() else 0xC0181410.toInt())
+            g.fill(x, y, x + tabW, y + 18, if (on) t.colour and 0xFFFFFF or 0xD0000000.toInt() else if (hover) 0xC02B2E35.toInt() else 0xC0181A1E.toInt()) // Hunting Helper: charcoal (was brown 0xC0302820 / 0xC0181410)
             g.outline(x, y, tabW, 18, t.colour)
             // A label wider than its tab is shrunk to fit, so every tab stays readable in a narrow window.
             val scale = minOf(1f, (tabW - 6f) / font.width(t.label))
@@ -622,7 +622,7 @@ class HistoryScreen(private val parent: Screen?, private var tab: Tab = Tab.RUNS
 
     private fun button(g: GuiGraphicsExtractor, mx: Int, my: Int, x: Int, y: Int, w: Int, label: String, action: () -> Unit) {
         val hover = mx in x until x + w && my in y until y + 15
-        g.fill(x, y, x + w, y + 15, if (hover) 0xC0403320.toInt() else 0xC0201A12.toInt())
+        g.fill(x, y, x + w, y + 15, if (hover) 0xFF3B4048.toInt() else 0xFF30333A.toInt()) // Hunting Helper: charcoal controls (was 0xC0403320 / 0xC0201A12)
         g.outline(x, y, w, 15, if (hover) 0xFFFFD27A.toInt() else BORDER)
         g.text(font, label, x + (w - font.width(label)) / 2, y + 4, TEXT)
         hits += Hit(x, y, w, 15, action)
@@ -727,8 +727,8 @@ class HistoryScreen(private val parent: Screen?, private var tab: Tab = Tab.RUNS
 
     companion object {
         private var rememberedNavigation = Navigation()
-        private const val BORDER = 0xFFE8A33A.toInt()
-        private const val BACKGROUND = 0xE0141210.toInt()
+        private const val BORDER = 0xFF41454D.toInt() // Hunting Helper: charcoal frame (was 0xFFE8A33A)
+        private const val BACKGROUND = 0xF0181A1E.toInt() // Hunting Helper: was 0xE0141210
         private const val ROW = 11
         private const val TEXT = 0xFFFFFFFF.toInt()
         private const val MUTED = 0xFFAAAAAA.toInt()

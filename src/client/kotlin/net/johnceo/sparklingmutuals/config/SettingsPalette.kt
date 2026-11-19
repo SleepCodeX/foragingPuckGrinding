@@ -2,9 +2,10 @@ package net.johnceo.sparklingmutuals.config
 
 /** SafariUtils settings role palettes, adapted under MIT (licenses/SafariUtils-MIT.txt). */
 object SettingsPalette {
-    val names = listOf("Default", "Midnight", "Canyon", "Forest", "Rainbow", "Amethyst", "Ocean", "Rose", "Arctic", "Cherry Blossom", "Ember", "Ender", "Golden Hour", "Monochrome", "Nebula", "Slate", "Blueprint", "Coffee", "Cyberpunk", "Desert", "Jade", "Paper", "Solarized", "Terminal", "Aurora", "Candy", "Copper", "Deep Sea", "Frostfire", "Lavender", "Matrix", "Royal", "Sunset", "Vaporwave")
+    // Hunting Helper: palette 0 is Hunting Helper's matte charcoal theme (was "Default", the blue SafariUtils palette).
+    val names = listOf("Hunting Helper", "Midnight", "Canyon", "Forest", "Rainbow", "Amethyst", "Ocean", "Rose", "Arctic", "Cherry Blossom", "Ember", "Ender", "Golden Hour", "Monochrome", "Nebula", "Slate", "Blueprint", "Coffee", "Cyberpunk", "Desert", "Jade", "Paper", "Solarized", "Terminal", "Aurora", "Candy", "Copper", "Deep Sea", "Frostfire", "Lavender", "Matrix", "Royal", "Sunset", "Vaporwave")
     private val palettes = arrayOf(
-        intArrayOf(0xF00B0D13.toInt(),0xE611141C.toInt(),0xD9181B24.toInt(),0xE3222733.toInt(),0xFF30384A.toInt(),0xFF55AAFF.toInt(),0xFF55FFFF.toInt(),0xFF55FF88.toInt(),0xFFFF6677.toInt(),0xFFFFC857.toInt(),0xFFF2F5FA.toInt(),0xFF9DA7B8.toInt(),0xFF697386.toInt()),
+        intArrayOf(0xF0121417.toInt(),0xF0181A1E.toInt(),0xF0212328.toInt(),0xFF2B2E35.toInt(),0xFF41454D.toInt(),0xFFB7C7D6.toInt(),0xFFDBE7EF.toInt(),0xFF7FD6A0.toInt(),0xFFFFA5A1.toInt(),0xFFB7C7D6.toInt(),0xFFF0F1F4.toInt(),0xFFA4A8B1.toInt(),0xFF6E727B.toInt()),
         intArrayOf(0xF0060810.toInt(),0xEB0C1020.toInt(),0xDC11172A.toInt(),0xEB18213A.toInt(),0xFF2A3557.toInt(),0xFF7A8CFF.toInt(),0xFFA6B3FF.toInt(),0xFF67E8A5.toInt(),0xFFFF6F91.toInt(),0xFFB8A7FF.toInt(),0xFFF5F6FF.toInt(),0xFFA2A9C2.toInt(),0xFF69708B.toInt()),
         intArrayOf(0xF0120B08.toInt(),0xEB21120D.toInt(),0xDC2B1810.toInt(),0xEB392116.toInt(),0xFF66402A.toInt(),0xFFFF8C42.toInt(),0xFFFFB35C.toInt(),0xFF8FDB76.toInt(),0xFFFF635D.toInt(),0xFFFFD166.toInt(),0xFFFFF4E8.toInt(),0xFFC6A993.toInt(),0xFF846A59.toInt()),
         intArrayOf(0xF0050D0A.toInt(),0xEB0A1912.toInt(),0xDC10241A.toInt(),0xEB173326.toInt(),0xFF28543E.toInt(),0xFF55B98A.toInt(),0xFF72E6AC.toInt(),0xFF7DFF9B.toInt(),0xFFFF7272.toInt(),0xFFE8C96A.toInt(),0xFFF0FFF7.toInt(),0xFF9CC2AD.toInt(),0xFF648272.toInt()),

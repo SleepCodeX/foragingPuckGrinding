@@ -9,6 +9,8 @@ class ReleaseUpdateChecker(
     private val fetch: () -> String,
     private val execute: (() -> Unit) -> Unit,
     private val clock: () -> Long = System::currentTimeMillis,
+    // Hunting Helper: the release asset to look for, so the check can follow Hunting Helper's releases.
+    private val asset: (String, String) -> String = ::upstreamAsset,
 ) {
     data class Release(val tag: String, val name: String, val notes: String)
     data class State(val label: String = "Check updates", val release: Release? = null)
@@ -23,7 +25,7 @@ class ReleaseUpdateChecker(
         execute {
             var success = false
             try {
-                val found = newest(fetch(), minecraft) ?: error("No compatible stable release")
+                val found = newest(fetch(), minecraft, asset) ?: error("No compatible stable release")
                 val comparison = compareVersions(found.tag, installed) ?: error("Unknown installed version")
                 state = State(when {
                     comparison > 0 -> "Update available"
@@ -43,14 +45,15 @@ class ReleaseUpdateChecker(
     }
 
     companion object {
-        fun newest(body: String, minecraft: String): Release? = JsonParser.parseString(body).asJsonArray
+        fun upstreamAsset(version: String, minecraft: String) = "sparkling-mutuals-$version+mc$minecraft.jar"
+        fun newest(body: String, minecraft: String, asset: (String, String) -> String = ::upstreamAsset): Release? = JsonParser.parseString(body).asJsonArray
             .map { it.asJsonObject }.mapNotNull { row ->
                 val tag = row.get("tag_name")?.takeUnless { it.isJsonNull }?.asString ?: return@mapNotNull null
                 if (compareVersions(tag, tag) == null || row.get("draft")?.asBoolean == true ||
                     row.get("prerelease")?.asBoolean == true) return@mapNotNull null
                 val version = tag.removePrefix("v")
                 if (row.getAsJsonArray("assets")?.any {
-                        it.asJsonObject.get("name")?.asString == "sparkling-mutuals-$version+mc$minecraft.jar"
+                        it.asJsonObject.get("name")?.asString == asset(version, minecraft) // Hunting Helper: was the upstream name
                     } != true) return@mapNotNull null
                 Release(tag, row.get("name")?.takeUnless { it.isJsonNull }?.asString.orEmpty(),
                     row.get("body")?.takeUnless { it.isJsonNull }?.asString.orEmpty())

@@ -9,7 +9,8 @@ import net.johnceo.sparklingmutuals.safari.completion.SafariFullClear
 
 data class PartyChat(val sender: String, val body: String) {
     companion object {
-        private val envelope = Regex("""^Party\s*>\s*(?:\[[^\]]+]\s*)*([A-Za-z0-9_]{1,16}):\s*(.*)$""")
+        // Hunting Helper: "Party >" prefix matched case-insensitively.
+        private val envelope = Regex("""^(?i:Party)\s*>\s*(?:\[[^\]]+]\s*)*([A-Za-z0-9_]{1,16}):\s*(.*)$""")
         fun parse(text: String): PartyChat? {
             val match = envelope.matchEntire(text.replace(Regex("§."), "").trim()) ?: return null
             return PartyChat(match.groupValues[1], match.groupValues[2].trim())

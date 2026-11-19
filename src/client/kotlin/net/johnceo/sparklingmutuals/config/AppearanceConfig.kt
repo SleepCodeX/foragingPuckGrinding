@@ -27,7 +27,8 @@ class PanelStyle {
 object AppearanceConfig {
     var resourcePackFont = true
     fun color(rgb: Int) = "0:255:${rgb shr 16 and 255}:${rgb shr 8 and 255}:${rgb and 255}"
-    val panels = listOf("hotspot", "miria", "progress", "profitable", "lake_cleared", "missing", "objectives", "captures", "sparklings", "alert", "gems", "bird_food", "incense", "coins", "warp", "run_complete", "doom_throw", "entry_cooldown", "developer", "shard_guidance", "hunting_box_value").associateWith { PanelStyle() }
+    val panels = listOf("hotspot", "miria", "progress", "profitable", "lake_cleared", "missing", "objectives", "captures", "sparklings", "alert", "gems", "bird_food", "incense", "coins", "warp", "run_complete", "doom_throw", "entry_cooldown", "developer", "shard_guidance", "hunting_box_value",
+        "hunting_missing", "hunting_trades").associateWith { PanelStyle() } // Hunting Helper: hunting_* panels
     var runCompleteColor = color(0x55FF55)
     var selectedHex = "#FFD700"
     var nestColor = color(0x55FF55)
@@ -51,9 +52,10 @@ object AppearanceConfig {
             val background = saved("backgroundColor")
             val legacyCompletion = id == "run_complete" && background == color(0xAAFFAA)
             // Upgrade exact old defaults only; user-picked colors, alpha and chroma remain intact.
-            style.borderColor = migratedColor(saved("borderColor"), SafariTheme.BORDER, setOf(0xE3C77E))
+            // Hunting Helper: the upstream theme defaults are migrated too (SafariTheme.UPSTREAM_*).
+            style.borderColor = migratedColor(saved("borderColor"), SafariTheme.BORDER, setOf(0xE3C77E, SafariTheme.UPSTREAM_BORDER))
             style.backgroundColor = migratedColor(background, SafariTheme.BACKGROUND,
-                if (id == "run_complete") setOf(0x241F18, 0xAAFFAA) else setOf(0x241F18))
+                if (id == "run_complete") setOf(0x241F18, 0xAAFFAA, SafariTheme.UPSTREAM_BACKGROUND) else setOf(0x241F18, SafariTheme.UPSTREAM_BACKGROUND))
             val transparency = saved("transparency")?.toIntOrNull()
             style.transparency = if (legacyCompletion && transparency == 80) 20 else transparency ?: 20
         }

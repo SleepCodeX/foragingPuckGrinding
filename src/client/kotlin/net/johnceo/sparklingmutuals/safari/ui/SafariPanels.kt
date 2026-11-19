@@ -20,11 +20,6 @@ import net.johnceo.sparklingmutuals.safari.structures.WallSummary
 object SafariPanels {
     private fun completedRow(text: String) = HudRow(text, color = 0xFF55FF55.toInt(), complete = true)
     private fun missingCompleteText(sparkling: Boolean) = if (sparkling) "All checked!" else "All caught and checked!"
-    // Hunting Helper: in full-clear mode Hunting Helper's FullClearProgress replaces the progress panel (first-capture
-    // coverage) and the missing panel (remaining counts). Installed by VexTracerClient (formerly FullClearPanelsMixin);
-    // unset in unit tests, which keep checking upstream behavior.
-    @JvmField var fullClearProgress: ((SafariRun?, HudPanel) -> HudPanel)? = null
-    @JvmField var fullClearMissing: ((SafariRun?, SafariBiome) -> HudPanel)? = null
     private val fixedChecks = mapOf("Scrappy" to 3, "Gemzie" to 3, "Troodon" to 3, "Gazer" to 4)
     fun fixedCounter(name: String, run: SafariRun?, mode: SafariMode, party: PartySparklingState): String? {
         val total = fixedChecks[name] ?: return null
@@ -33,11 +28,6 @@ object SafariPanels {
         return "${count.coerceIn(0, total)}/$total " + if (mode == SafariMode.FULL_CLEAR) "captured" else "checked"
     }
     fun progress(run: SafariRun?, unique: Boolean, now: Long, party: PartySparklingState = SafariSparklingMode.state): HudPanel {
-        val panel = upstreamProgress(run, unique, now, party)
-        val override = fullClearProgress // Hunting Helper: see fullClearProgress
-        return if (override != null && SafariFullClear.mode == SafariMode.FULL_CLEAR) override(run, panel) else panel
-    }
-    private fun upstreamProgress(run: SafariRun?, unique: Boolean, now: Long, party: PartySparklingState): HudPanel { // Hunting Helper: upstream progress body
         val seconds = (run?.elapsed(now) ?: 0) / 1000
         val time = "%d:%02d".format(seconds / 60, seconds % 60)
         val title = when { run == null -> "Critter Safari (ready)"; run.endedAt != null -> "Last Safari  $time"; else -> "Critter Safari  $time" }
@@ -89,7 +79,6 @@ object SafariPanels {
     }
     fun missing(run: SafariRun?, biome: SafariBiome, unique: Boolean, nests: Int, mounds: Int = 0,
         walls: WallSummary = WallSummary(emptyList()), party: PartySparklingState = SafariSparklingMode.state): HudPanel {
-        fullClearMissing?.let { if (SafariFullClear.mode == SafariMode.FULL_CLEAR) return it(run, biome) } // Hunting Helper: see fullClearProgress
         val sparkling = SafariFullClear.mode == SafariMode.SPARKLING
         if(run?.biomeComplete(SafariFullClear.mode,biome,party)==true && !ScannableCritterChecks.pending(biome,run,party))
             return HudPanel("${biome.label} ${if(sparkling) "Unchecked" else "Biome"} — 0 left",biome.color,listOf(completedRow(missingCompleteText(sparkling))))

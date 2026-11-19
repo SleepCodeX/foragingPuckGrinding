@@ -56,6 +56,13 @@ object RunHistory {
         }
     }
 
+    // Hunting Helper: lines another mod canceled (GAME_CANCELED) still count towards the run's shards and history.
+    fun receiveCanceled(raw: String) = chat(raw)
+
+    /** Hunting Helper: shards received by species in the live run, for the hunting run report. */
+    fun liveShards(run: SafariRun): Map<String, Int> = if (session.active === run) LinkedHashMap(tally.shards)
+        else data.runs.firstOrNull { it.start == run.startedAt }?.shards.orEmpty()
+
     private fun chat(raw: String) {
         val client = Minecraft.getInstance()
         HistoryServerPolicy.allows(client)

@@ -65,8 +65,9 @@ object SparklingCommand {
             })
             dispatcher.register(
                 historyShortcuts
-                    .executes { open(::SafariConfigScreen) }
-                    .then(ClientCommands.literal("config").executes { open(::SafariConfigScreen) })
+                    // Hunting Helper: SettingsScreens opens Hunting Helper's settings in place of SafariConfigScreen.
+                    .executes { open { net.johnceo.sparklingmutuals.config.SettingsScreens.create(null, null) } }
+                    .then(ClientCommands.literal("config").executes { open { net.johnceo.sparklingmutuals.config.SettingsScreens.create(null, null) } })
                     .then(ClientCommands.literal("help").executes { context ->
                         CommandHelp.localLines().forEach { context.source.sendFeedback(LocalChat.component(it)) }; 1
                     })

@@ -42,6 +42,8 @@ class SafariSettings {
     @JvmField @Category(name = "Floor Drop Always On Toggle", desc = "")
     val alwaysOnFloorDrops = FloorDropToggleSettings()
     @JvmField @Category(name="ESP General",desc="") val espGeneral=EspGeneralSettings(esp.biomes,esp.floorDrops)
+    // Hunting Helper: CritterMod features (hunting/HuntingSettings.kt), appended so upstream page indices stay put.
+    @JvmField @Category(name="Hunting",desc="") val hunting=net.johnceo.sparklingmutuals.hunting.HuntingSettings()
     init {
         esp.critterColors = customization.critters
         esp.waypointColors = customization.waypoints
@@ -508,7 +510,7 @@ class SafariSettings {
             8 -> { apply(); client.execute { client.smSetScreen(CatchCountScreen(client.smScreen)) } }
             9 -> { apply(); if (saveSparklingSound()) SparklingEncounters.playSound(client) }
             10 -> { apply(); client.execute { client.smSetScreen(HistoryScreen(client.smScreen)) } }
-            13 -> { apply(); client.smSetScreen(CatchCelebrationPreviewScreen(client.smScreen ?: SafariConfigScreen(this))) }
+            13 -> { apply(); client.smSetScreen(CatchCelebrationPreviewScreen(client.smScreen ?: SettingsScreens.create(null, null))) } // Hunting Helper: SettingsScreens
             12 -> { apply(); client.execute { client.smSetScreen(net.johnceo.sparklingmutuals.alerts.WarpListScreen(client.smScreen,
                 autoPartyChanged = { warp.autoParty = it }, onlineOnlyChanged = { warp.autoPartyOnlineOnly = it })) } }
             11 -> { apply(); client.execute {
@@ -545,6 +547,7 @@ class SafariSettings {
     private var lastAppliedMode = net.johnceo.sparklingmutuals.safari.completion.SafariFullClear.mode
     fun apply(notifyMode: Boolean = false) {
         saveDelay()
+        hunting.apply() // Hunting Helper
         val currentMode = net.johnceo.sparklingmutuals.safari.completion.SafariFullClear.mode
         if (currentMode != lastAppliedMode) {
             tracking.captures = ConfigManager.catchCountPanel

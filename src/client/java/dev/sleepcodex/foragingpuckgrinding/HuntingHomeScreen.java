@@ -3,8 +3,6 @@ package dev.sleepcodex.foragingpuckgrinding;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.LongSupplier;
-import net.johnceo.sparklingmutuals.config.SafariConfigScreen;
-import net.johnceo.sparklingmutuals.config.SafariSettings;
 import net.johnceo.sparklingmutuals.config.SettingsTarget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,12 +10,14 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-/** The shared front door. Safari screens edit the upstream settings model directly. */
+/** The shared front door. Safari sections open Sparkling Mutuals' settings in Hunting Helper's style. */
 final class HuntingHomeScreen extends Screen {
     enum Section {
         MODES("Safari modes", "Unique, Sparkling and Full Clear", "Modes", "unique"),
-        ESP("Critter highlights", "Glow, boxes and floor drops", "ESP General", "glow"),
-        HUD("HUDs & alerts", "Progress panels and appearance", "HUDs", "progressHud"),
+        HUNTING("Hunting & journal", "Missing HUD, trades, marks, run report", "Hunting", "missingHud"),
+        ESP("Visuals & ESP", "Glow, boxes and floor drops", "ESP General", "glow"),
+        HUD("HUD layout", "Progress panels and appearance", "HUDs", "progressHud"),
+        ALERTS("Alerts", "Banners, sounds and encounters", "Banner", "enabled"),
         CAPTURE("Capture tools", "Capsule paths and catch helpers", "Safari helpers", "capture"),
         PARTY("Party & sync", "Shared runs and party interactions", "Party Interactions", "biomeReports"),
         CONTEST("Miria contests", "Tickets, alerts and Honeyhives", "Miria contest", "ticketMode"),
@@ -53,8 +53,7 @@ final class HuntingHomeScreen extends Screen {
     void openCustom() { Minecraft.getInstance().gui.setScreen(new CustomLibraryScreen(this, config)); }
 
     private void openSafari(Section section) {
-        Minecraft.getInstance().gui.setScreen(new SafariConfigScreen(new SafariSettings(),
-                section == null ? null : section.target(), this));
+        Minecraft.getInstance().gui.setScreen(new SafariSettingsScreen(this, section == null ? null : section.target()));
     }
 
     @Override protected void init() {
@@ -77,15 +76,16 @@ final class HuntingHomeScreen extends Screen {
         int listY = safariY + (compact ? 12 : 16);
         int footer = y + h - (compact ? 29 : 37);
         int rowGap = compact ? 3 : 5;
-        int rowH = (footer - 7 - listY - rowGap * 3) / 4;
+        int rows = (Section.values().length + 1) / 2;
+        int rowH = (footer - 7 - listY - rowGap * (rows - 1)) / rows;
         for (Section section : Section.values()) {
             int i = section.ordinal();
             tile(section.label, section.detail, x + inset + (i % 2) * (col + gutter),
                     listY + (i / 2) * (rowH + rowGap), col, rowH, false, () -> openSafari(section));
         }
         all = button("All Safari settings", x + inset, footer, 116, compact ? 20 : 25, () -> openSafari(null));
-        journal = button("Field journal", x + inset + 121, footer, 83, compact ? 20 : 25,
-                () -> Minecraft.getInstance().gui.setScreen(new FieldJournalScreen(this)));
+        journal = button("This run", x + inset + 121, footer, 83, compact ? 20 : 25,
+                () -> Minecraft.getInstance().gui.setScreen(new RunReportScreen(this)));
         done = button("Done", x + w - inset - 66, footer, 66, compact ? 20 : 25, this::onClose);
     }
 

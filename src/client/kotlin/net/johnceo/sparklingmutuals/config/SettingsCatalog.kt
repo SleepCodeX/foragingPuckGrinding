@@ -33,7 +33,8 @@ class SettingsCatalog(settings: SafariSettings) {
         val routes=mapOf("General" to "HUDs → Overview","HUDs" to "HUDs → HUDs","Customization" to "HUDs → Appearance",
             "Modes" to "Safari → Modes","Safari helpers" to "Safari → Helpers","Miria contest" to "Safari → Contest",
             "Banner" to "Safari → Banner","Party Interactions" to "Party → Interactions","Sparkle Warping" to "Party → Sparkle Warping",
-            "History" to "History → History","API key" to "Advanced → API","SkyBlock" to "Advanced → SkyBlock","ESP" to "ESP → Customization","ESP General" to "ESP → General")
+            "History" to "History → History","API key" to "Advanced → API","SkyBlock" to "Advanced → SkyBlock","ESP" to "ESP → Customization","ESP General" to "ESP → General",
+            "Hunting" to "Safari → Hunting") // Hunting Helper
         fun collect(rows: List<Row>,parent: String) { rows.forEach { row ->
             put(row,parent);collect(row.children,"$parent → ${row.name}")
         } }

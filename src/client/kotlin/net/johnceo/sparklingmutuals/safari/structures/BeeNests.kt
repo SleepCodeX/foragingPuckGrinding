@@ -54,8 +54,7 @@ object BeeNests {
         }
         WorldRenderCompat.register(::render)
     }
-    // Hunting Helper: public (was private) so a confirmed Honeybug release feeds the same survey as a nest click.
-    fun clicked(level: Level, pos: BlockPos) {
+    private fun clicked(level: Level, pos: BlockPos) {
         if (!level.isClientSide || !SafariAssist.inSafari || SafariTracking.ledger.current == null ||
             !level.isLoaded(pos) || !level.getBlockState(pos).`is`(Blocks.BEE_NEST)) return
         val site = Triple(pos.x, pos.y, pos.z)
