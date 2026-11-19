@@ -39,7 +39,11 @@ final class FieldJournalGameChecks {
         c.clickScreenButton("Marker colors");
         c.clickScreenButton("Unchecked perch");
         c.waitForScreen(JournalColorScreen.class);
+        c.clickScreenButton("Gold");
+        c.clickScreenButton("Opacity");
+        c.clickScreenButton("Cycle hue");
         c.clickScreenButton("Save color");
+        c.runOnClient(client -> { if (!"#C0FFC655@4".equals(ConfigManager.get().display.hideonwallColour)) throw new AssertionError("Color controls did not compose"); });
         c.clickScreenButton("Back");
         c.clickScreenButton("Move journal panels");
         c.waitForScreen(HudEditorScreen.class);

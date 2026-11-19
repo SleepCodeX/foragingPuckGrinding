@@ -12,7 +12,7 @@ Open **/hh → Field journal** or **/hh journal**. Install Hunting Helper and Fa
 | Encounter alerts | Enable individual Gemzie, Doomspiral and Wumpa stages, the all-except-Macaw milestone or Bluebird and Parakeet banners. Limit encounter stages to your biome. |
 | Party sharing | Choose an audience per event. Offers and taken-trade messages work with other Hunting Helper or critterMod players through Hypixel party chat. Automatic journal broadcasts start off. |
 | Shard values | Compare the current top bid and ask. Choose whether to deduct the 1.25% sale tax. Values appear when the shared Bazaar feed has loaded. |
-| Marker colors | Choose a marker's ARGB color and optional chroma period. Edit its opacity with the first two hex digits. |
+| Marker colors | Pick a swatch, cycle opacity, or enable chroma. The hex field accepts an exact ARGB color and an optional hue-cycle period. |
 | Move journal panels | Drag a panel to move it. Scroll over it to resize. |
 | Diagnostics | Enable area, crosshair and ten-second entity diagnostics. Rejoin a world to register the commands. |
 
