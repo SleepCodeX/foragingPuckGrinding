@@ -45,7 +45,7 @@ Install the Hunting Helper JAR on Fabric Loader. It includes Fabric API, Sparkli
 
 ## Full-clear tracking
 
-Use **/fc** for the run HUD. **Species caught** credits the first capture of each creature, including a teammate's loot share. **Fully Collected** counts species cleared under the Safari completion rules. The current biome's **remaining** panel lists every unfinished species, with partially caught creatures first. A three-Gazer run shows **Gazer · 1 remaining**. Catch the fourth and the row clears.
+Use **/fc** for the run HUD. **Species caught** credits the first capture of each creature, including a teammate's loot share. **Fully Collected** counts species cleared under the Safari completion rules. The current biome's **remaining** panel lists every unfinished species, with partially caught creatures first. Three Gazer catches show **Gazer · 1 remaining**. Catch the fourth and the row clears.
 
 Open **/hh remaining** or **Field journal → Remaining critters** to inspect Forest, Cavern, Icy or Haunted from anywhere. Published spawn ranges narrow with loaded mobs and catch messages. Feeder, mound, wall and coin checks stay visible while their spawns are unresolved. The tracker also receives loot shares hidden from chat.
 

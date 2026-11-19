@@ -34,6 +34,7 @@ names = {
     "field-journal": "field-journal",
     "field-report": "field-report",
     "field-markers": "field-markers",
+    "full-clear-hud": "full-clear-hud",
     "full-clear-remaining": "full-clear-remaining"
 }
 for original, published in names.items():

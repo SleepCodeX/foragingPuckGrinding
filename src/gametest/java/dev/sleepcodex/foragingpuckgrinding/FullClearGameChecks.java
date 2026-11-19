@@ -38,6 +38,39 @@ final class FullClearGameChecks {
             throw new AssertionError(label + " expected " + value + " but displayed " + actual);
     }
 
+    private static void checkLoadedFoxes(ClientGameTestContext c, TestSingleplayerContext world) {
+        var journal = c.computeOnClient(client -> client.gui.screen());
+        String restore = c.computeOnClient(client -> String.format(java.util.Locale.ROOT,
+                "tp @p %.4f %.4f %.4f %.2f %.2f", client.player.getX(), client.player.getY(), client.player.getZ(),
+                client.player.getYRot(), client.player.getXRot()));
+        var server = world.getServer();
+        server.runCommand("fill -11 66 25 13 66 40 minecraft:grass_block");
+        server.runCommand("tp @p 1 67 27 0 8");
+        c.runOnClient(client -> { client.gui.setScreen(null); SafariAssist.INSTANCE.markEntered(); });
+        c.waitFor(client -> SafariAssist.INSTANCE.getBiome() == SafariBiome.FOREST);
+        for (int i = 0; i < 8; i++) {
+            String group = i == 7 ? "fc_last" : "fc_caught";
+            server.runCommand("summon fox " + (i * 4 - 13) + " 67 36 {NoAI:1b,NoGravity:1b,Silent:1b,"
+                    + "CustomName:'Foxtrot',CustomNameVisible:1b,Tags:['fc_fixture','" + group + "']}");
+        }
+        c.waitFor(client -> SafariTracking.INSTANCE.getRun().capturesLeft("Foxtrot") == 8);
+        c.runOnClient(client -> expect(panel(SafariTracking.INSTANCE.getRun(), SafariBiome.FOREST), "Foxtrot", "8 remaining"));
+        server.runCommand("kill @e[tag=fc_caught]");
+        c.runOnClient(client -> {
+            for (int i = 0; i < 7; i++) hidden(FOX);
+            expect(panel(SafariTracking.INSTANCE.getRun(), SafariBiome.FOREST), "Foxtrot", "1 remaining");
+        });
+        c.waitTicks(6);
+        c.takeScreenshot("full-clear-hud");
+        server.runCommand("kill @e[tag=fc_last]");
+        c.runOnClient(client -> {
+            hidden(FOX);
+            expect(panel(SafariTracking.INSTANCE.getRun(), SafariBiome.FOREST), "Foxtrot", null);
+        });
+        server.runCommand(restore);
+        c.runOnClient(client -> client.gui.setScreen(journal));
+    }
+
     static void run(ClientGameTestContext c, TestSingleplayerContext world) {
         var previousMode = c.computeOnClient(client -> SafariFullClear.INSTANCE.getMode());
         boolean previousFilter = c.computeOnClient(client -> ConfigManager.INSTANCE.getHideCaptureChat());
@@ -103,6 +136,9 @@ final class FullClearGameChecks {
             expect(panel(SafariTracking.INSTANCE.getRun(), SafariBiome.HAUNTED), "Gazer", null);
             SafariTracking.INSTANCE.getLedger().enter(System.currentTimeMillis());
             expect(panel(SafariTracking.INSTANCE.getRun(), SafariBiome.HAUNTED), "Gazer", "4 remaining");
+        });
+        checkLoadedFoxes(c, world);
+        c.runOnClient(client -> {
             SafariFullClear.INSTANCE.select(SafariMode.UNIQUE);
             if (panel(SafariTracking.INSTANCE.getRun(), SafariBiome.HAUNTED).getTitle().equals("Haunted remaining"))
                 throw new AssertionError("Unique mode picked up full-clear rows");

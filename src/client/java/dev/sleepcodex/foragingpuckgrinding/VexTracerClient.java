@@ -2,18 +2,18 @@ package dev.sleepcodex.foragingpuckgrinding;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.sleepcodex.foragingpuckgrinding.mixin.SafariCatchReceiver;
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.johnceo.sparklingmutuals.safari.SafariCatch;
-import net.johnceo.sparklingmutuals.safari.SafariMessages;
-import net.johnceo.sparklingmutuals.safari.SafariTracking;
 import java.io.IOException;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.johnceo.sparklingmutuals.safari.SafariCatch;
+import net.johnceo.sparklingmutuals.safari.SafariMessages;
+import net.johnceo.sparklingmutuals.safari.SafariTracking;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -29,7 +29,8 @@ public final class VexTracerClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private final TracerConfig config = new TracerConfig(
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".properties"));
-    private boolean menuRequested, customRequested, journalRequested, remainingRequested;
+    private enum Page { HOME, CUSTOM, JOURNAL, REMAINING }
+    private Page requestedPage;
 
     @Override
     public void onInitializeClient() {
@@ -43,8 +44,7 @@ public final class VexTracerClient implements ClientModInitializer {
         ClientReceiveMessageEvents.GAME_CANCELED.register((message, overlay) -> {
             if (overlay) return;
             Minecraft.getInstance().execute(() -> {
-                var receiver = (SafariCatchReceiver)
-                        (Object) SafariTracking.INSTANCE;
+                var receiver = (SafariCatchReceiver) (Object) SafariTracking.INSTANCE;
                 for (String line : SafariMessages.INSTANCE.lines(message.getString(), null, null)) {
                     if (SafariCatch.Companion.parse(line) != null)
                         receiver.huntingHelper$receive(line);
@@ -62,20 +62,20 @@ public final class VexTracerClient implements ClientModInitializer {
         TrackedOutlines.install(renderer);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggle.consumeClick()) setEnabled(client, !config.enabled());
-            while (settings.consumeClick()) requestMenu();
-            if (menuRequested) {
-                menuRequested = false;
+            while (settings.consumeClick()) requestMenu(Page.HOME);
+            Page page = requestedPage;
+            requestedPage = null;
+            if (page == Page.REMAINING) {
+                client.gui.setScreen(new FullClearScreen(null));
+            } else if (page != null) {
                 var screen = new TracerSettingsScreen(config, toggle,
                         enabled -> setEnabled(client, enabled), targets -> setTargets(client, targets),
                         (target, glow, color) -> setColor(client, target, glow, color));
                 var home = new HuntingHomeScreen(screen, config);
                 screen.home = home;
-                if (remainingRequested) client.gui.setScreen(new FullClearScreen(null));
-                else if (customRequested) home.openCustom();
-                else if (journalRequested) client.gui.setScreen(new FieldJournalScreen(home));
+                if (page == Page.CUSTOM) home.openCustom();
+                else if (page == Page.JOURNAL) client.gui.setScreen(new FieldJournalScreen(home));
                 else client.gui.setScreen(home);
-                journalRequested = false;
-                customRequested = false;
             }
             renderer.tick(client);
         });
@@ -85,12 +85,12 @@ public final class VexTracerClient implements ClientModInitializer {
                         .executes(context -> setEnabled(Minecraft.getInstance(), !config.enabled()))
                         .then(literal("on").executes(context -> setEnabled(Minecraft.getInstance(), true)))
                         .then(literal("off").executes(context -> setEnabled(Minecraft.getInstance(), false)))
-                        .then(literal("menu").executes(context -> requestMenu())));
+                        .then(literal("menu").executes(context -> requestMenu(Page.HOME))));
             for (String name : new String[] {"huntinghelper", "hh"}) {
-                dispatcher.register(literal(name).executes(context -> requestMenu())
-                        .then(literal("remaining").executes(context -> { requestMenu(); remainingRequested = true; return 1; }))
-                        .then(literal("journal").executes(context -> { requestMenu(); journalRequested = true; return 1; }))
-                        .then(literal("custom").executes(context -> { requestMenu(); customRequested = true; return 1; }))
+                dispatcher.register(literal(name).executes(context -> requestMenu(Page.HOME))
+                        .then(literal("remaining").executes(context -> requestMenu(Page.REMAINING)))
+                        .then(literal("journal").executes(context -> requestMenu(Page.JOURNAL)))
+                        .then(literal("custom").executes(context -> requestMenu(Page.CUSTOM)))
                         .then(literal("debug").executes(context -> toggleDebug())));
             }
         });
@@ -106,11 +106,8 @@ public final class VexTracerClient implements ClientModInitializer {
         return 1;
     }
 
-    private int requestMenu() {
-        customRequested = false;
-        journalRequested = false;
-        remainingRequested = false;
-        menuRequested = true;
+    private int requestMenu(Page page) {
+        requestedPage = page;
         return 1;
     }
 

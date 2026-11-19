@@ -36,4 +36,6 @@ The Safari has **37 species**. Forest, Cavern and Icy each have nine. Haunted ha
 - **Up to 2 left** means the minimum has been caught. Further catches or a confirmed area check resolve the row. **Check feeder**, **Check walls** and **Check mounds** identify unresolved sources. A plus sign marks a known minimum for an open-ended source.
 - Personal captures and loot shares each count once, even when the reward contains several shards. The chat helper can hide the message. An escape, floor-drop shard or quoted party message gives no catch credit.
 
+![Full-clear HUD with one Foxtrot left in a Minecraft test run](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/full-clear-hud.png)
+
 The game team's patch documents changed ranges for seven creatures. The roster and remaining ordinary per-instance ranges were cross-checked against the Safari spawn table, and the packaged tracker supplies local render, source and catch evidence. [Hypixel patch notes](https://hypixel.net/threads/august-11-skyblock-patch-notes.6139155/) · [Hypixel forum discussion of variable spawns](https://hypixel.net/threads/add-the-exact-spawn-ranges-for-all-critter-safari-critters.6140536/) · [Safari spawn table](https://hypixelskyblock.minecraft.wiki/w/Critter_Safari#List_of_Critters)

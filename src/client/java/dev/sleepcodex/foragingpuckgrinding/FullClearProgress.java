@@ -7,6 +7,7 @@ import net.johnceo.sparklingmutuals.hud.HudRow;
 import net.johnceo.sparklingmutuals.hud.UiIcons;
 import net.johnceo.sparklingmutuals.safari.SafariBiome;
 import net.johnceo.sparklingmutuals.safari.SafariCritter;
+import net.johnceo.sparklingmutuals.safari.SafariMode;
 import net.johnceo.sparklingmutuals.safari.SafariRoster;
 import net.johnceo.sparklingmutuals.safari.SafariRun;
 import net.johnceo.sparklingmutuals.safari.completion.SafariFullClear;
@@ -90,14 +91,18 @@ public final class FullClearProgress {
         if (left == 0) {
             if (upper > 0 && caught >= upper) return null;
             if (run != null && (run.fullClearMissingComplete(name) || run.sharedCritterComplete(name,
-                    net.johnceo.sparklingmutuals.safari.SafariMode.FULL_CLEAR))) return null;
+                    SafariMode.FULL_CLEAR))) return null;
         }
         if (upper > 0) {
             int high = Math.max(left, upper - caught);
             if (left == high) return left + " remaining";
             return left == 0 ? "Up to " + high + " left" : left + "–" + high + " remaining";
         }
-        if (left > 0) return left + (run != null && bird && run.birdSpawnsComplete(false) ? " remaining" : "+ remaining");
+        if (left > 0) {
+            boolean sourcesResolved = run != null && (bird && run.birdSpawnsComplete(false)
+                    || name.equals("Rockmite") && run.getAllMoundsBroken());
+            return left + (sourcesResolved ? " remaining" : "+ remaining");
+        }
         if (bird) return "Check feeder";
         return switch (name) {
             case "Snoozle" -> "Check walls";
