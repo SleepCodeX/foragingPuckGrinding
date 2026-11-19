@@ -1,15 +1,16 @@
 # Hunting Helper 1.5.0
 
-Open **/hh → Custom trackers** or **/hh custom** to manage as many rules as you need. Each has its own switch, line color and model glow.
+The HD ivory-and-honey Frost Hivethief opens into a matte charcoal dashboard. Type **`/hh`** for hunting presets, custom trackers and the complete Sparkling Mutuals Safari suite.
 
-- **Nametag** reads floating SkyBlock armor stands, text displays and names attached directly to mobs. Enter **Revenant Sycophant** for the miniboss, or **rev** for partial Revenant names and the Tier V **Atoned Horror**.
-- **Mob type** accepts IDs such as **wither_skeleton** and **zombie** across their different SkyBlock names.
-- **All Safari settings** on the new **/hh** dashboard opens the full bundled Sparkling Mutuals 4.3.7 suite, including party sync. Its Kotlin runtime and upstream notices ship in the same JAR.
-- The ivory-and-honey Frost Hivethief unfolds into the charcoal dashboard and settles into its header.
-- The charcoal settings screen opens with a shorter Hivethief fade. Five presets and the custom library share a six-card grid. A separate, rebindable settings key is available in Minecraft Controls.
-- Rules save on disk and run together across all loaded entities in the effective client render distance. The five original hunting presets keep their original names and location rules.
+![Frost Hivethief opening the in-game dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.5.0/menu-opening.gif)
 
-Minecraft 26.2 · Fabric Loader 0.19.5+ · Fabric API 0.161.0+26.2 · Java 25
+- **Custom trackers** can run together. Add, edit, toggle or remove individual rules, each with its own line and glow colors.
+- **Nametag** reads floating armor stands, text displays and direct mob names. Enter **Revenant Sycophant** for the miniboss or **rev** to include Revenant names and the Tier V **Atoned Horror**.
+- **Mob type** accepts IDs such as **wither_skeleton** and **zombie** across different SkyBlock names. Tracking checks all loaded entities across the effective render distance every tick.
+- **Critter Safari** has eight dashboard shortcuts and **All Safari settings**. The full Sparkling Mutuals 4.3.7 mod, including party sync, and Fabric Language Kotlin ship inside the Hunting Helper JAR.
+- **Existing players** keep their five hunting presets, saved colors and toggles. **V** toggles tracers. A separate settings shortcut can be assigned in Minecraft Controls.
+
+**Install** the Hunting Helper JAR with Fabric API for Minecraft 26.2, Fabric Loader 0.19.5+ and Java 25. Downloadable screenshots, SHA-256 checksums and a source archive accompany the release.
 
 # Hunting Helper 1.4.0
 

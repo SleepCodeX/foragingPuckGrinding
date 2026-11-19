@@ -1,10 +1,12 @@
 # Hunting Helper
 
-Hunting Helper draws tracers, matching boxes and colored model outlines for mobs in Hypixel SkyBlock. Open **`/hh`** for hunting presets, custom trackers, and the complete Sparkling Mutuals Safari suite.
+One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, customize through-wall highlights, or use the complete Sparkling Mutuals suite.
 
-![Hunting Helper's in-game settings opening](docs/media/1.5.0/menu-opening.gif)
+**Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+ · Fabric API 0.161.0+26.2**
 
-The settings open with a high-resolution ivory-and-honey Frost Hivethief that settles into the header.
+[Download Hunting Helper 1.5.0](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.5.0/hunting-helper-1.5.0%2Bmc26.2.jar) · [In-game visual guide](docs/media/1.5.0)
+
+![The HD Frost Hivethief opening into the matte charcoal dashboard](docs/media/1.5.0/menu-opening.gif)
 
 ## Custom trackers
 
@@ -33,7 +35,7 @@ Nametag matching ignores capitalization and Minecraft formatting. The tracker re
 
 ## Sparkling Mutuals Safari suite
 
-**/hh → All Safari settings** opens the full Sparkling Mutuals 4.3.7 interface. Closing it takes you back to Hunting Helper. The dashboard also takes you directly to modes, critter highlights, HUDs, capture tools, party settings, contests, history, and SkyBlock helpers. The original **/sm** commands, settings and history also work. Safari HUDs and ESP, party sync, capture tools, warping, history, achievements, contests, Hunting Box value and the other upstream tools are included.
+**/hh → All Safari settings** opens the full Sparkling Mutuals 4.3.7 interface. Closing it takes you back to Hunting Helper. The dashboard also takes you directly to modes, critter highlights, HUDs, capture tools, party settings, contests, history, and SkyBlock helpers. Party sync, auto-entry, warping, history, achievements and Hunting Box valuation use the original implementation. The upstream **/sm** commands and saved settings are available.
 
 Install the Hunting Helper JAR and Fabric API. Hunting Helper includes the matching Sparkling Mutuals and Fabric Language Kotlin JARs. The custom trackers and settings run locally. Party synchronization, live Bazaar/profile data and other online features use their respective services when active.
 
@@ -43,8 +45,6 @@ Install the Hunting Helper JAR and Fabric API. Hunting Helper includes the match
 
 ## Install
 
-**Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+ · Fabric API 0.161.0+26.2**
-
-[Download Hunting Helper 1.5.0](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.5.0/hunting-helper-1.5.0%2Bmc26.2.jar) and replace the previous tracer JAR in `mods`. Your settings carry over.
+Put the Hunting Helper JAR and matching Fabric API in `mods`. Replace the previous Hunting Helper JAR when updating. Your saved trackers and colors carry over.
 
 [In-game screenshots](docs/media/1.5.0) · [Build and behavior](docs/DEVELOPMENT.md) · [Release downloads](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest)

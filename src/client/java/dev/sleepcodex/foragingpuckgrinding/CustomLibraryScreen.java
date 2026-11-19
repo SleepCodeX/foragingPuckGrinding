@@ -31,8 +31,8 @@ final class CustomLibraryScreen extends TrackerPage {
                     Tone.DANGER, () -> remove(rule));
         }
         if (pages > 1) {
-            button("←", left + w - 78, footer - 22, 27, 17, Tone.NORMAL, () -> move(-1)).active = page > 0;
-            button("→", left + w - 46, footer - 22, 27, 17, Tone.NORMAL, () -> move(1)).active = page + 1 < pages;
+            button("Prev", left + w - 98, footer - 22, 36, 17, Tone.NORMAL, () -> move(-1)).active = page > 0;
+            button("Next", left + w - 57, footer - 22, 38, 17, Tone.NORMAL, () -> move(1)).active = page + 1 < pages;
         }
         button("Back", left + 15, footer, 65, 23, Tone.NORMAL, this::onClose);
         button("Add tracker", left + w - 112, footer, 97, 23, Tone.PRIMARY, () -> edit(null));

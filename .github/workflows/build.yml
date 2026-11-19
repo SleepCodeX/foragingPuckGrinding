@@ -119,7 +119,10 @@ jobs:
       - name: Collect native captures for review
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          if test "$(git rev-parse HEAD)" != "${{ github.event.pull_request.head.sha }}"; then
+            echo "A newer commit is building its own gallery."
+            exit 0
+          fi
           python3 -m pip install --quiet Pillow
           python3 - <<'PY'
           from pathlib import Path

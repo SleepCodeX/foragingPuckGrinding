@@ -161,7 +161,11 @@ final class HuntingHomeScreen extends Screen {
         MenuFont.text(g,label,start,by+bh/2.-(twoLines?10:4),scale,MenuTheme.TEXT);
         if (twoLines) MenuFont.text(g,MenuFont.ellipsis(tile.detail(),(b.getRight()-start-16)/.75),
                 start,by+bh/2.+3,.75,MenuTheme.MUTED);
-        MenuFont.text(g,"→",b.getRight()-13,by+bh/2.-5,1,MenuTheme.ACCENT);
+        int arrowX = b.getRight() - 14, midY = by + bh / 2;
+        for (int step = 0; step < 4; step++) {
+            c.round(arrowX + step, midY - 3 + step, 2, 1, 0, MenuTheme.ACCENT);
+            if (step < 3) c.round(arrowX + step, midY + 3 - step, 2, 1, 0, MenuTheme.ACCENT);
+        }
     }
 
     private void footer(GuiGraphicsExtractor g,MenuCanvas c,Button b,int mx,int my,boolean primary) {

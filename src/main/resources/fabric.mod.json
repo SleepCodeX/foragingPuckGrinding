@@ -3,13 +3,14 @@
   "id": "foragingpuckgrinding",
   "version": "${version}",
   "name": "Hunting Helper",
-  "description": "Hypixel SkyBlock hunting presets, custom nametag and mob-type trackers, and the bundled Sparkling Mutuals Safari suite.",
-  "icon": "assets/foragingpuckgrinding/icon.png",
+  "description": "Track Hypixel SkyBlock mobs by nametag or mob type with colored tracers, boxes and model glow. Open /hh for hunting presets, custom rules and the complete Sparkling Mutuals Safari suite.",
+  "icon": "assets/foragingpuckgrinding/textures/gui/hivethief/frost.png",
   "authors": [
     "SleepCodeX"
   ],
   "contact": {
-    "sources": "https://github.com/SleepCodeX/foragingPuckGrinding"
+    "sources": "https://github.com/SleepCodeX/foragingPuckGrinding",
+    "homepage": "https://github.com/SleepCodeX/foragingPuckGrinding#hunting-helper"
   },
   "license": "MIT",
   "environment": "client",

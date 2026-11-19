@@ -251,7 +251,7 @@ public final class TracerSettingsScreen extends Screen {
         center(g, total == 0 ? "Nametag or mob type" : total + (total == 1 ? " saved rule" : " saved rules"),
                 mid, y + h / 2 + 5, .76, MenuTheme.MUTED);
         c.round(x + 10, y + h - 25, w - 20, 19, 5, MenuTheme.CONTROL);
-        center(g, "Open library  →", mid, y + h - 20, .8, MenuTheme.TEXT);
+        center(g, "Open library", mid, y + h - 20, .8, MenuTheme.TEXT);
     }
 
     private void drawTarget(GuiGraphicsExtractor graphics, MenuCanvas canvas, TracerTarget target, int mouseX, int mouseY) {
