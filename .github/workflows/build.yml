@@ -1,5 +1,9 @@
 name: Build Hunting Helper
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -50,3 +54,32 @@ jobs:
             build/libs/SHA256SUMS
             build/libs/BUILD-INFO.txt
           if-no-files-found: error
+
+  publish_1_2_0:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          name: hunting-helper-mc26.2
+          path: release-assets
+      - name: Publish the built mod, source and checksums
+        run: |
+          if gh release view v1.2.0 --json isDraft --jq .isDraft > /tmp/hunting-release-state; then
+            if test "$(cat /tmp/hunting-release-state)" = false; then
+              echo 'Preserving the published 1.2.0 release.'
+              exit 0
+            fi
+          else
+            gh release create v1.2.0 --draft --target "$GITHUB_SHA" --title 'Hunting Helper 1.2.0' --notes-file RELEASE-NOTES.md
+          fi
+          gh release upload v1.2.0 release-assets/hunting-helper-1.2.0+mc26.2.jar release-assets/hunting-helper-1.2.0+mc26.2-sources.jar release-assets/SHA256SUMS release-assets/BUILD-INFO.txt --clobber
+          gh release edit v1.2.0 --target "$GITHUB_SHA" --draft=false --prerelease=false --latest --title 'Hunting Helper 1.2.0' --notes-file RELEASE-NOTES.md
