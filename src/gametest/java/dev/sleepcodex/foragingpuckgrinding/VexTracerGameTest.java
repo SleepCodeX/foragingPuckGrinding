@@ -85,7 +85,13 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 context.getInput().resizeWindow(1280,720);
                 context.runOnClient(client -> {client.options.guiScale().set(2);client.resizeGui();});context.waitTicks(3);requireButtonsFit(context);
                 captureOpening(context);
+                requireAllTrackersVisible(context);
                 context.takeScreenshot("tracker-menu-all");
+                context.getInput().resizeWindow(1920,1080);
+                context.runOnClient(client -> {client.options.guiScale().set(2);client.resizeGui();});context.waitTicks(3);
+                requireAllTrackersVisible(context);requireButtonsFit(context);context.takeScreenshot("tracker-menu-large");
+                context.getInput().resizeWindow(1280,720);
+                context.runOnClient(client -> {client.options.guiScale().set(2);client.resizeGui();});context.waitTicks(3);
                 requireKeyboardReachability(context);
                 context.clickScreenButton("Vex line: Purple");
                 for(int i=0;i<3;i++)context.getInput().scroll(-1);
@@ -158,6 +164,8 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     }
     private void requireNametagDetection(ClientGameTestContext context, TestSingleplayerContext world) {
         var server=world.getServer();
+        context.runOnClient(client -> { if (HuntingDebug.enabled()) throw new AssertionError("Debug starts disabled"); });
+        command(context,"hh debug");
         // Hypixel shows a SkyBlock mob's name on an invisible armor stand about two blocks above it.
         server.runCommand("summon minecraft:parched -4 -57 14 {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b}");
         server.runCommand(stand(-4,-55,14,"[Lv58] Parched 25,000/25,000\u2764"));
@@ -191,6 +199,50 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 && renderedPollendartTint==green && renderedPlainBeeTint==0
                 && renderedFarPollendart && !renderedFarPlainBee && HuntingDebug.FILLS.get()!=fills);
         context.takeScreenshot("nametag-parched-and-pollendart");
+        // Duplicate nametags must not produce duplicate candidates. Keep the original Hypixel name rules.
+        server.runCommand(stand(4,-54,14,"[Lv24] Pollendart"));
+        context.waitTicks(3);
+        context.runOnClient(client -> {
+            int count=0;
+            for (var entity:client.level.entitiesForRendering())
+                if (entity.getType()==EntityTypes.BEE && near(entity.getX(),4)
+                        && TrackedOutlines.targetFor(entity)==TracerTarget.POLLENDART) count++;
+            if(count!=1)throw new AssertionError("Duplicate tags duplicated a tracked body");
+        });
+        // Both new targets follow the same location and master/F1 gates as the existing Torrhus trackers.
+        context.getInput().pressKey(GLFW.GLFW_KEY_F1);context.waitTicks(3);
+        context.waitFor(client -> renderedParchedGlow==0 && renderedPollendartTint==0);
+        context.getInput().pressKey(GLFW.GLFW_KEY_F1);context.waitTicks(3);
+        server.runCommand("scoreboard objectives setdisplay sidebar");context.waitTicks(14);
+        requireNoCustomGlow(context);
+        server.runCommand("scoreboard objectives setdisplay sidebar hh_test");context.waitTicks(14);
+        context.waitFor(client -> renderedParchedGlow==red && renderedPollendartTint==green);
+        // Cross a spatial-column boundary; moving mobs must be found on the next discovery tick.
+        server.runCommand("tp @e[type=minecraft:bee,x=4,y=-56,z=14,distance=..1] 5 -56 14");
+        server.runCommand("tp @e[type=minecraft:armor_stand,x=4,y=-54,z=14,distance=..1] 5 -54 14");
+        context.waitTicks(5);
+        context.runOnClient(client -> {
+            for (var entity:client.level.entitiesForRendering())
+                if(entity.getType()==EntityTypes.BEE && near(entity.getX(),5)
+                        && TrackedOutlines.colorFor(entity)!=green)
+                    throw new AssertionError("Moving Pollendart lost its nametag pairing");
+        });
+        server.runCommand("tp @e[type=minecraft:bee,x=5,y=-56,z=14,distance=..1] 4 -56 14");
+        server.runCommand("tp @e[type=minecraft:armor_stand,x=5,y=-54,z=14,distance=..1] 4 -54 14");
+        context.waitTicks(5);
+        server.runCommand("summon minecraft:vex -8 -54 18 {NoAI:1b}");
+        server.runCommand("summon minecraft:parrot -10 -52 20 {NoAI:1b,NoGravity:1b,Variant:1}");
+        server.runCommand("summon minecraft:ghast 10 -53 24 {NoAI:1b,NoGravity:1b}");
+        context.waitTicks(10);
+        requireOutlines(context,OverlayColor.PURPLE.argb(),OverlayColor.GOLD.argb());
+        requireColors(context.takeScreenshot("all-five-trackers"),true,true,true);
+        command(context,"huntinghelper debug");
+        context.waitTicks(5);
+        context.runOnClient(client -> {
+            if(HuntingDebug.enabled()||HuntingDebug.STATES.get()!=0||HuntingDebug.FILLS.get()!=0)
+                throw new AssertionError("Disabled diagnostics still record render counters");
+        });
+
 
         // /hh opens the same menu; the second card row (Parched, Pollendart) is reached by scrolling.
         command(context,"hh");context.waitForScreen(TracerSettingsScreen.class);
@@ -218,7 +270,25 @@ public final class VexTracerGameTest implements FabricClientGameTest {
         context.runOnClient(client -> { if (HuntingDebug.enabled()) throw new AssertionError("/huntinghelper debug did not toggle debug logging"); });
         server.runCommand("kill @e[type=minecraft:parched]");server.runCommand("kill @e[type=minecraft:bogged]");
         server.runCommand("kill @e[type=minecraft:bee]");server.runCommand("kill @e[type=minecraft:armor_stand]");
-        context.waitTicks(20);
+        server.runCommand("kill @e[type=minecraft:vex]");server.runCommand("kill @e[type=minecraft:parrot]");
+        server.runCommand("kill @e[type=minecraft:ghast]");
+        context.waitTicks(40);
+        requireNoCustomGlow(context);
+    }
+    private static void requireNoCustomGlow(ClientGameTestContext context) {
+        context.runOnClient(client -> {
+            for(var entity:client.level.entitiesForRendering())
+                if(TrackedOutlines.colorFor(entity)!=0)throw new AssertionError("A hidden/removed target still glows");
+        });
+    }
+    private static void requireAllTrackersVisible(ClientGameTestContext context) {
+        context.runOnClient(client -> {
+            var buttons=client.gui.screen().children().stream()
+                    .filter(net.minecraft.client.gui.components.Button.class::isInstance)
+                    .map(net.minecraft.client.gui.components.Button.class::cast).filter(b->b.visible).toList();
+            if(buttons.size()!=TracerTarget.values().length*3+4)
+                throw new AssertionError("The normal menu must show every tracker and color control without scrolling");
+        });
     }
     private static String stand(int x,int y,int z,String name) {
         return "summon minecraft:armor_stand "+x+" "+y+" "+z+" {NoGravity:1b,Invisible:1b,Marker:1b,CustomNameVisible:1b,CustomName:\""+name+"\"}";

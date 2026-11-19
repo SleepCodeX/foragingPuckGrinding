@@ -23,7 +23,7 @@ final class TorrhusContext {
             boolean was = present;
             present = detect(client);
             remainingTicks = 9;
-            if (present != was) {
+            if (HuntingDebug.enabled() && present != was) {
                 if (present) HuntingDebug.LOG.info("[Hunting Helper] Entered Torrhus via {}", matched);
                 else HuntingDebug.LOG.info("[Hunting Helper] Left Torrhus (no matching Area/Zone label any more)");
             }

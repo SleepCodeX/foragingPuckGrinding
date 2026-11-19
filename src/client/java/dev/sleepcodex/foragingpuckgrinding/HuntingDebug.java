@@ -22,7 +22,7 @@ public final class HuntingDebug {
     public static final AtomicInteger STATES = new AtomicInteger();
     public static final AtomicInteger FILLS = new AtomicInteger();
     private static final int PERIOD_TICKS = 100, MAX_LINES = 8;
-    private static boolean enabled;
+    private static volatile boolean enabled;
     private static int ticks;
     private static boolean modEnabled, inTorrhus;
     private static String matched = "";
@@ -40,6 +40,9 @@ public final class HuntingDebug {
     }
 
     static boolean enabled() { return enabled; }
+
+    public static void recordState() { if (enabled) STATES.incrementAndGet(); }
+    public static void recordFill() { if (enabled) FILLS.incrementAndGet(); }
 
     /** True on the one tick per period that writes a summary; detail logging only happens then. */
     static boolean due() { return enabled && ticks % PERIOD_TICKS == 0; }

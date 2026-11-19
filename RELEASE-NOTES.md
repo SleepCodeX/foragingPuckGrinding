@@ -1,10 +1,21 @@
-# Unreleased
+# Hunting Helper 1.4.0
 
-- **Parched** (red) and **Pollendart** (green) trackers, Torrhus only, each with its own line and glow colors and a card in the menu. Cards wrap into rows; rows that do not fit scroll.
-- **Nametag detection** for every tracker: Hypixel's floating name (for example `[Lv58] Parched`) is paired with the mob just below it. Parched and Pollendart use only their nametag, so plain bees and skeletons never match. Vex, Blue Jay and Hivethief keep their type detection as a fallback.
-- A light see-through **tint** under the outline glow, in the glow color. Glow **Off** removes both.
-- Glow now reaches as far as the tracer line for small mobs such as bees and Vex, and stays visible with the EntityCulling mod.
-- **`/hh`** opens the menu; **`/hh debug`** (or `/huntinghelper debug`) writes a detection summary to `latest.log` every 5 seconds.
+A matte charcoal redesign and five Hypixel hunting trackers.
+
+![Matte charcoal settings](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.4.0/settings.png)
+
+- **Parched** and **Pollendart** join Vex, Blue Jay and Hivethief, each with independent Line and Glow colors.
+- Smaller icons and an adaptive two-row layout fit all five trackers at the usual GUI size. Compact windows retain scrolling and keyboard navigation.
+- Hypixel nametags remain authoritative. Every loaded entity across the full render distance is checked on every client tick; a reusable horizontal index speeds up pairing without adding a tracking radius or a height limit.
+- Through-wall model outlines gain a light matching tint and full-distance rendering for small mobs. Glow **Off** disables both outline and tint.
+- **Match line**, separate colors, saved settings, the Hivethief opening fade, **V**, and **F1** remain available.
+- **`/hh`** opens settings; **`/hh debug`** toggles diagnostics. Debug logging and render counters stay idle while diagnostics are off.
+
+![All five trackers through a wall](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.4.0/trackers.png)
+
+**Install:** Minecraft 26.2, Java 25, Fabric Loader 0.19.5+ and Fabric API 0.161.0+26.2. Replace the older Hunting Helper JAR.
+
+Tests cover unit/config migration, the packaged Minecraft client, small and large menu layouts, palette controls, name pairing, movement, distance, tint, location/F1/master gates and entity removal. Live Hypixel and the user's complete modpack are not reproduced by CI.
 
 # Hunting Helper 1.3.0
 

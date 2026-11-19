@@ -27,7 +27,7 @@ abstract class LivingEntityRendererMixin {
         original.call(collector, model, state, pose, type, light, overlay, tint, sprite, outline, crumbling);
         int color = state instanceof HighlightState highlight ? highlight.huntingHelper$glow() : 0;
         if (color == 0) return;
-        HuntingDebug.FILLS.incrementAndGet();
+        HuntingDebug.recordFill();
         collector.submitModel(model, state, pose, Highlight.FILL, Highlight.FULL_BRIGHT, overlay,
                 Highlight.fillColor(color), null, 0, null);
     }

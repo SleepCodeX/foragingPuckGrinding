@@ -51,6 +51,7 @@ final class VexTracerRenderer {
     private final IdentityHashMap<Entity, TracerTarget> resolved = new IdentityHashMap<>();
     private final Set<Entity> byNametag = Collections.newSetFromMap(new IdentityHashMap<>());
     private final ArrayList<Entity> tags = new ArrayList<>(), mobs = new ArrayList<>();
+    private final SpatialBuckets<Entity> mobIndex = new SpatialBuckets<>();
     private int candidateCount;
     private TracerRange.Bounds range;
     private int rangeChunkX, rangeChunkZ, rangeChunks;
@@ -85,6 +86,7 @@ final class VexTracerRenderer {
                 if (entity.hasCustomName()) tags.add(entity);
             } else if (entity instanceof LivingEntity && !(entity instanceof Player)) {
                 mobs.add(entity);
+                mobIndex.add(entity, entity.getX(), entity.getZ());
             }
         }
         boolean debug = HuntingDebug.due();
@@ -110,6 +112,7 @@ final class VexTracerRenderer {
         }
         tags.clear();
         mobs.clear();
+        mobIndex.clear();
         int count = 0;
         for (var entry : resolved.entrySet()) {
             if (count == candidates.length) {
@@ -141,17 +144,26 @@ final class VexTracerRenderer {
     private Entity mobBelow(Entity tag, TracerTarget target) {
         Entity best = null;
         double bestDistance = Double.MAX_VALUE;
-        for (Entity mob : mobs) {
+        int cx = SpatialBuckets.cell(tag.getX()), cz = SpatialBuckets.cell(tag.getZ());
+        // All loaded mobs are indexed. Adjacent 4-block columns cover the existing 1.5-block
+        // pairing tolerance, with no vertical cap or reduction in the overall tracking distance.
+        for (int x = cx - 1; x <= cx + 1; x++) for (int z = cz - 1; z <= cz + 1; z++)
+        for (Entity mob : mobIndex.column(x, z)) {
             if (target == TracerTarget.POLLENDART && !(mob instanceof Bee)) continue;
             double dx = mob.getX() - tag.getX(), dz = mob.getZ() - tag.getZ(), dy = tag.getY() - mob.getY();
             if (dy < -0.5 || dy > mob.getBbHeight() + 2.5 || dx * dx + dz * dz > 2.25) continue;
             double distance = dx * dx + dz * dz + dy * dy;
-            if (distance < bestDistance) { bestDistance = distance; best = mob; }
+            if (distance < bestDistance || (distance == bestDistance && best != null && mob.getId() < best.getId())) {
+                bestDistance = distance; best = mob;
+            }
         }
         return best;
     }
 
     private void clearCandidates() {
+        tags.clear();
+        mobs.clear();
+        mobIndex.clear();
         resolved.clear();
         byNametag.clear();
         Arrays.fill(candidates, 0, candidateCount, null);
@@ -209,7 +221,7 @@ final class VexTracerRenderer {
         int count = 0;
         for (int candidate = 0; candidate < candidateCount; candidate++) {
             Entity entity = candidates[candidate];
-            if (!entity.isAlive() || entity.isRemoved()) continue;
+            if (!entity.isAlive() || entity.isRemoved() || entity.level() != cachedLevel) continue;
             TracerTarget type = candidateTypes[candidate];
             if (type == null || !config.isSelected(type)) continue;
             double px = Mth.lerp(partial, entity.xOld, entity.getX());

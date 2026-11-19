@@ -36,6 +36,12 @@ class TracerTargetTest {
         assertNull(TracerTarget.fromNametag(""));
         assertNull(TracerTarget.fromNametag(null));
     }
+    @Test void decoratedHypixelNamesRemainAuthoritative() {
+        assertEquals(TracerTarget.PARCHED, TracerTarget.fromNametag("§6✦ [Lv58] §cParched §a25,000/25,000❤"));
+        assertEquals(TracerTarget.POLLENDART, TracerTarget.fromNametag("[Lv24] Angry Pollendart 300❤"));
+        assertEquals(TracerTarget.BLUE_JAY, TracerTarget.fromNametag("§bBlue Jay"));
+        assertNull(TracerTarget.fromNametag("[Lv24] Pollendartling"));
+    }
     @Test void wireBoxConnectsAllEightCornersWithEveryAxisEdgeExactlyOnce() {
         var edges = new java.util.HashSet<String>();int[] degrees = new int[8];
         for (int i = 0; i < BoxEdges.CORNERS.length; i += 2) {

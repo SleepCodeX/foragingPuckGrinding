@@ -20,7 +20,7 @@ abstract class EntityOutlineMixin {
         ((HighlightState) state).huntingHelper$setGlow(color);
         if (color != 0) {
             state.outlineColor = color;
-            HuntingDebug.STATES.incrementAndGet();
+            HuntingDebug.recordState();
         }
     }
 }

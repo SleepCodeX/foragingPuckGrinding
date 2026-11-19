@@ -30,8 +30,8 @@ Build from this checkout with **JDK 25**:
 
 Windows: `gradlew.bat build`. Output:
 
-- `build/libs/hunting-helper-1.3.0+mc26.2.jar` — installable mod.
-- `build/libs/hunting-helper-1.3.0+mc26.2-sources.jar` — Java source archive.
+- `build/libs/hunting-helper-1.4.0+mc26.2.jar` — installable mod.
+- `build/libs/hunting-helper-1.4.0+mc26.2-sources.jar` — Java source archive.
 
 [GitHub Actions](https://github.com/SleepCodeX/foragingPuckGrinding/actions/workflows/build.yml)
 builds the mod and source JARs from the visible commit and uploads both, alongside
@@ -63,8 +63,8 @@ Every tracker except Vex requires a Torrhus Canyon/Heights/Springs location labe
 in sidebar or tab.
 
 Hypixel names each SkyBlock mob with a custom-named armor stand about two blocks above it.
-Each tick, named stands are matched against the tracker names (whole words, formatting
-removed) and paired with the closest living non-player mob 0.5 blocks above to 4 blocks below
+Each tick, every loaded entity across the complete render-distance footprint is checked.
+Named stands are matched against the tracker names (whole words, formatting removed) and paired with the closest living non-player mob 0.5 blocks above to 4 blocks below
 within 1.5 blocks horizontally; Pollendart pairs only with bees. Without a mob below, the
 nametag itself is tracked. Parched and Pollendart are nametag-only. Vex, Blue Jay and
 Hivethief additionally keep type detection for mobs without a matching nametag: the
@@ -112,3 +112,11 @@ render snapshots. The menu uses a 560 ms Hivethief-to-header crossfade with no i
 Client mixins add outline colors during native entity-state extraction, permit matching mobs through section occlusion, and lift only the size-based entity distance cull for glowing mobs, so their glow reaches as far as the line; frustum checks remain. Glowing mobs also report as glowing to the client, which keeps the EntityCulling mod from hiding them behind walls. A second, see-through model pass adds a light tint (19% alpha) in the glow color under the outline. The native outline post-process draws the actual animated model silhouette through walls. Entity flags, scoreboard teams, server data and other mobs' vanilla glow are preserved.
 
 Native tests inspect actual extracted outline colors behind a wall, independent palette persistence, Off/F1/master behavior, dropdown keyboard scrolling and every menu control, plus nametag pairing for Parched and Pollendart (only the bee under a Pollendart tag glows), the tint color, and glow on a bee beyond the vanilla distance cull. The opening frames use a deterministic clock with the real Minecraft renderer.
+
+## 1.4.0 implementation notes
+
+Hypixel nametag parsing and the existing pairing tolerance are preserved. A reusable index groups **all** loaded living mobs into 4-block horizontal columns. Looking in adjacent columns is only a nametag/body association optimization, not a range cap; there is no vertical bucketing or height limit. Clearing the index each tick and on world/disabled transitions removes stale references. A tie between equally close bodies is resolved by entity ID.
+
+The shared `MenuTheme` defines charcoal surfaces, cool gray text and restrained accents. At a 640 × 360 GUI, five compact cards and all 19 controls fit without scrolling; narrower windows keep the scrollable list and keyboard reveal. No extra blur shader or continuous animation loop is installed.
+
+Debug render counters and location-change logs run only while diagnostics are enabled. The native client tests cover disabled diagnostics, the new trackers' F1/location gates, moving nametags, entity removal, full-distance bee rendering, and normal/large/compact menus. EntityCulling interoperability follows its glow exemption but a live third-party modpack is not part of the automated test.

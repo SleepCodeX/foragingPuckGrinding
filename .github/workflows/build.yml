@@ -60,7 +60,7 @@ jobs:
             build/libs/BUILD-INFO.txt
           if-no-files-found: error
 
-  publish_1_3_0:
+  publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-24.04
@@ -76,15 +76,73 @@ jobs:
         with:
           name: hunting-helper-mc26.2
           path: release-assets
-      - name: Publish the built mod, source and checksums
+      - name: Publish the tested version and visual guide
         run: |
-          if gh release view v1.3.0 --json isDraft --jq .isDraft > /tmp/hunting-release-state; then
+          set -euo pipefail
+          version=$(sed -n 's/^version=//p' gradle.properties)
+          tag="v${version%%+*}"
+          title="Hunting Helper ${version%%+*}"
+          jar="hunting-helper-$version.jar"
+          source="hunting-helper-$version-sources.jar"
+          (cd release-assets && sha256sum -c SHA256SUMS)
+          awk '/^# Hunting Helper / { sections++; if (sections > 1) exit } { print }' RELEASE-NOTES.md > /tmp/hunting-release-notes
+          if gh release view "$tag" --json isDraft --jq .isDraft > /tmp/hunting-release-state; then
             if test "$(cat /tmp/hunting-release-state)" = false; then
-              echo 'Preserving the published 1.3.0 release.'
+              echo "Preserving the published $tag release."
               exit 0
             fi
           else
-            gh release create v1.3.0 --draft --target "$GITHUB_SHA" --title 'Hunting Helper 1.3.0' --notes-file RELEASE-NOTES.md
+            gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$title" --notes-file /tmp/hunting-release-notes
           fi
-          gh release upload v1.3.0 release-assets/hunting-helper-1.3.0+mc26.2.jar release-assets/hunting-helper-1.3.0+mc26.2-sources.jar release-assets/SHA256SUMS release-assets/BUILD-INFO.txt --clobber
-          gh release edit v1.3.0 --target "$GITHUB_SHA" --draft=false --prerelease=false --latest --title 'Hunting Helper 1.3.0' --notes-file RELEASE-NOTES.md
+          gh release upload "$tag" "release-assets/$jar" "release-assets/$source" release-assets/SHA256SUMS release-assets/BUILD-INFO.txt docs/media/1.4.0/settings.png docs/media/1.4.0/compact.png docs/media/1.4.0/colors.png docs/media/1.4.0/trackers.png docs/media/1.4.0/menu-opening.gif --clobber
+          gh release edit "$tag" --target "$GITHUB_SHA" --draft=false --prerelease=false --latest --title "$title" --notes-file /tmp/hunting-release-notes
+          gh release download "$tag" --pattern "$jar" --dir verified-download
+          cmp "release-assets/$jar" "verified-download/$jar"
+
+  capture_gallery:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'codex/integrate-nametag-trackers'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: codex/integrate-nametag-trackers
+      - uses: actions/download-artifact@v4
+        with:
+          name: tracker-validation
+          path: validation-captures
+      - name: Prepare the native Minecraft visual guide
+        run: |
+          python -m pip install pillow
+          python - <<'PY'
+          from pathlib import Path
+          import shutil
+          from PIL import Image
+          root = Path("validation-captures")
+          dest = Path("docs/media/1.4.0")
+          dest.mkdir(parents=True, exist_ok=True)
+          captures = {
+              "tracker-menu-all": "settings", "tracker-menu-compact": "compact",
+              "tracker-menu-large": "large", "line-color-dropdown": "colors",
+              "all-five-trackers": "trackers", "nametag-parched-and-pollendart": "nametags"
+          }
+          for original, name in captures.items():
+              matches = list(root.rglob(original + ".png"))
+              assert len(matches) == 1, (original, matches)
+              shutil.copyfile(matches[0], dest / (name + ".png"))
+          paths = sorted(root.rglob("menu-opening-*.png"))
+          assert len(paths) == 15, len(paths)
+          frames = [Image.open(p).convert("RGB").quantize(colors=128) for p in paths]
+          frames[0].save(dest / "menu-opening.gif", save_all=True, append_images=frames[1:],
+                         duration=[40] * 14 + [1300], loop=0, disposal=2)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/media/1.4.0
+          if ! git diff --cached --quiet; then
+            git commit -m 'Capture the matte charcoal settings and five-target overlays in Minecraft'
+            git push origin HEAD:codex/integrate-nametag-trackers
+          fi
