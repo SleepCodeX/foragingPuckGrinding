@@ -1,3 +1,17 @@
+# Hunting Helper 1.5.0
+
+The HD ivory-and-honey Frost Hivethief opens into a matte charcoal dashboard. Type **`/hh`** for hunting presets, custom trackers and the complete Sparkling Mutuals Safari suite.
+
+![Frost Hivethief opening the in-game dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.5.0/menu-opening.gif)
+
+- **Custom trackers** can run together. Add, edit, toggle or remove individual rules, each with its own line and glow colors.
+- **Nametag** reads floating armor stands, text displays and direct mob names. Enter **Revenant Sycophant** for the miniboss or **rev** to include Revenant names and the Tier V **Atoned Horror**.
+- **Mob type** accepts IDs such as **wither_skeleton** and **zombie** across different SkyBlock names. Tracking checks all loaded entities across the effective render distance every tick.
+- **Critter Safari** has eight dashboard shortcuts and **All Safari settings**. The full Sparkling Mutuals 4.3.7 mod, including party sync, and Fabric Language Kotlin ship inside the Hunting Helper JAR.
+- **Existing players** keep their five hunting presets, saved colors and toggles. **V** toggles tracers. A separate settings shortcut can be assigned in Minecraft Controls.
+
+**Install** the Hunting Helper JAR with Fabric API for Minecraft 26.2, Fabric Loader 0.19.5+ and Java 25. Downloadable screenshots, SHA-256 checksums and a source archive accompany the release.
+
 # Hunting Helper 1.4.0
 
 A matte charcoal redesign and five Hypixel hunting trackers.

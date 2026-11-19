@@ -20,7 +20,9 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.bee.Bee;
@@ -46,9 +48,9 @@ final class VexTracerRenderer {
     private final Vector3f look = new Vector3f();
     private ClientLevel cachedLevel;
     private Entity[] candidates = new Entity[0];
-    private TracerTarget[] candidateTypes = new TracerTarget[0];
+    private TrackingRule[] candidateTypes = new TrackingRule[0];
     // Resolved once per tick, so glow lookups also cover nametag-detected mobs; reused between ticks.
-    private final IdentityHashMap<Entity, TracerTarget> resolved = new IdentityHashMap<>();
+    private final IdentityHashMap<Entity, TrackingRule> resolved = new IdentityHashMap<>();
     private final Set<Entity> byNametag = Collections.newSetFromMap(new IdentityHashMap<>());
     private final ArrayList<Entity> tags = new ArrayList<>(), mobs = new ArrayList<>();
     private final SpatialBuckets<Entity> mobIndex = new SpatialBuckets<>();
@@ -84,31 +86,45 @@ final class VexTracerRenderer {
             if (!entity.isAlive() || entity.isRemoved()) continue;
             if (entity instanceof ArmorStand) {
                 if (entity.hasCustomName()) tags.add(entity);
+            } else if (entity instanceof Display.TextDisplay && config.custom().hasNames()) {
+                tags.add(entity);
             } else if (entity instanceof LivingEntity && !(entity instanceof Player)) {
                 mobs.add(entity);
                 mobIndex.add(entity, entity.getX(), entity.getZ());
             }
         }
         boolean debug = HuntingDebug.due();
-        // Hypixel names every SkyBlock mob with a custom-named armor stand about two blocks above it.
+        CustomRules customs = config.custom();
         for (Entity tag : tags) {
-            TracerTarget target = TracerTarget.fromNametag(tag.getCustomName().getString());
-            if (target == null || !tracked(target, area)) continue;
-            Entity mob = mobBelow(tag, target);
-            if (debug) HuntingDebug.nametag(tag, target, mob, mobs);
-            // Without a mob below, name-only targets still get a tracer to the nametag itself. Targets with
-            // type detection skip it: the type pass below finds the mob, and one creature never gets two tracers.
-            if (mob == null && target.typeDetected()) continue;
-            Entity entity = mob != null ? mob : tag;
-            if (range.contains(entity.getX(), entity.getZ()) && resolved.putIfAbsent(entity, target) == null) byNametag.add(entity);
+            String text = tag instanceof Display.TextDisplay display ? display.getText().getString() : tag.getCustomName().getString();
+            TracerTarget preset = TracerTarget.fromNametag(text);
+            CustomTracker named = customs.name(text);
+            boolean presetActive = tag instanceof ArmorStand && preset != null && tracked(preset, area);
+            if (named == null && !presetActive) continue;
+            Entity mob = mobBelow(tag, preset);
+            TrackingRule rule = named != null ? named : preset;
+            if (debug) HuntingDebug.nametag(tag, rule, mob, mobs);
+            if (mob == null && named == null && preset.typeDetected()) continue;
+            assignName(mob != null ? mob : tag, rule, customs);
         }
-        // The original three keep their type detection for mobs without a matching nametag.
-        // Parched and Pollendart are nametag-only: plain bees and skeleton variants never match.
         for (Entity mob : mobs) {
-            TracerTarget type = typeOf(mob);
-            if (type == null) continue;
+            if (!range.contains(mob.getX(), mob.getZ())) continue;
+            if (customs.hasNames() && mob.hasCustomName()) {
+                CustomTracker direct = customs.name(mob.getCustomName().getString());
+                if (direct != null) assignName(mob, direct, customs);
+            }
+            if (resolved.containsKey(mob)) continue;
+            if (customs.hasTypes()) {
+                CustomTracker typed = customs.type(BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString());
+                if (typed != null) {
+                    resolved.put(mob, typed);
+                    continue;
+                }
+            }
+            TracerTarget preset = typeOf(mob);
+            if (preset == null) continue;
             if (debug) HuntingDebug.nametagsNear(mob, tags);
-            if (tracked(type, area) && range.contains(mob.getX(), mob.getZ())) resolved.putIfAbsent(mob, type);
+            if (tracked(preset, area)) resolved.put(mob, preset);
         }
         tags.clear();
         mobs.clear();
@@ -131,6 +147,15 @@ final class VexTracerRenderer {
         HuntingDebug.endTick(resolved, byNametag, config);
     }
 
+    private void assignName(Entity entity, TrackingRule rule, CustomRules customs) {
+        if (!range.contains(entity.getX(), entity.getZ())) return;
+        TrackingRule previous = resolved.get(entity);
+        if (previous == null || (rule instanceof CustomTracker named && customs.preferName(named, previous))) {
+            resolved.put(entity, rule);
+            byNametag.add(entity);
+        }
+    }
+
     private boolean torrhusTargetSelected() {
         for (TracerTarget target : TracerTarget.values()) if (target.torrhusOnly() && config.isSelected(target)) return true;
         return false;
@@ -142,7 +167,12 @@ final class VexTracerRenderer {
 
     /** The mob a nametag floats over: the closest living mob just below it (only bees for Pollendart). */
     private Entity mobBelow(Entity tag, TracerTarget target) {
+        Entity vehicle = tag.getVehicle();
+        if (vehicle instanceof LivingEntity && !(vehicle instanceof Player) && !(vehicle instanceof ArmorStand)
+                && vehicle.isAlive() && !vehicle.isRemoved() && (target != TracerTarget.POLLENDART || vehicle instanceof Bee))
+            return vehicle;
         Entity best = null;
+        double bestHorizontal = Double.MAX_VALUE;
         double bestDistance = Double.MAX_VALUE;
         int cx = SpatialBuckets.cell(tag.getX()), cz = SpatialBuckets.cell(tag.getZ());
         // All loaded mobs are indexed. Adjacent 4-block columns cover the existing 1.5-block
@@ -153,7 +183,10 @@ final class VexTracerRenderer {
             double dx = mob.getX() - tag.getX(), dz = mob.getZ() - tag.getZ(), dy = tag.getY() - mob.getY();
             if (dy < -0.5 || dy > mob.getBbHeight() + 2.5 || dx * dx + dz * dz > 2.25) continue;
             double distance = dx * dx + dz * dz + dy * dy;
-            if (distance < bestDistance || (distance == bestDistance && best != null && mob.getId() < best.getId())) {
+            double horizontal = dx * dx + dz * dz;
+            if (horizontal < bestHorizontal || (horizontal == bestHorizontal && (distance < bestDistance
+                    || (distance == bestDistance && best != null && mob.getId() < best.getId())))) {
+                bestHorizontal = horizontal;
                 bestDistance = distance; best = mob;
             }
         }
@@ -191,18 +224,18 @@ final class VexTracerRenderer {
     }
 
     /** The target this entity was resolved to this tick, or null. */
-    TracerTarget trackedTarget(Entity entity) { return resolved.get(entity); }
+    TracerTarget trackedTarget(Entity entity) { return resolved.get(entity) instanceof TracerTarget preset ? preset : null; }
 
     int glowColor(Entity entity) {
         // Called by several render mixins for every entity each frame; untracked mobs stop at this lookup.
-        TracerTarget type = resolved.isEmpty() ? null : resolved.get(entity);
+        TrackingRule type = resolved.isEmpty() ? null : resolved.get(entity);
         // A nametag stand used as tracer fallback gets the line and box, never a glowing armor-stand silhouette.
-        if (type == null || entity instanceof ArmorStand) return 0;
+        if (type == null || !(entity instanceof LivingEntity) || entity instanceof ArmorStand) return 0;
         Minecraft client = Minecraft.getInstance();
         if (!config.enabled() || client.player == null || client.level != cachedLevel || range == null
                 || client.gui.hud.isHidden() || !entity.isAlive() || entity.isRemoved()
                 || entity.level() != cachedLevel || !range.contains(entity.getX(), entity.getZ())) return 0;
-        if (!config.isSelected(type) || (type.torrhusOnly() && !activeTorrhus)) return 0;
+        if (!config.isSelected(type) || (type instanceof TracerTarget preset && preset.torrhusOnly() && !activeTorrhus)) return 0;
         return config.glowColor(type);
     }
 
@@ -222,7 +255,7 @@ final class VexTracerRenderer {
         for (int candidate = 0; candidate < candidateCount; candidate++) {
             Entity entity = candidates[candidate];
             if (!entity.isAlive() || entity.isRemoved() || entity.level() != cachedLevel) continue;
-            TracerTarget type = candidateTypes[candidate];
+            TrackingRule type = candidateTypes[candidate];
             if (type == null || !config.isSelected(type)) continue;
             double px = Mth.lerp(partial, entity.xOld, entity.getX());
             double py = Mth.lerp(partial, entity.yOld, entity.getY());
@@ -250,6 +283,14 @@ final class VexTracerRenderer {
         }
         // The two privately owned arrays are never mutated after publishing this frame.
         if (count > 0) context.levelState().setData(LINES, new Frame(ox, oy, oz, targets, colors, count));
+    }
+
+    /** Read-only inspection of the line batch published for this frame. */
+    static boolean drawsColor(LevelExtractionContext context, int argb) {
+        Frame frame = context.levelState().getData(LINES);
+        if (frame == null) return false;
+        for (int i = 0; i < frame.count(); i++) if (frame.colors()[i] == argb) return true;
+        return false;
     }
 
     void submit(LevelRenderContext context) {

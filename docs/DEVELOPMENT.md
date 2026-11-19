@@ -10,8 +10,8 @@ Colored tracers and matching mob boxes for **Minecraft 26.2 / Fabric**.
 | Parched | Red | Mobs below a "Parched" nametag in Torrhus |
 | Pollendart | Green | Bees below a "Pollendart" nametag in Torrhus |
 
-Open **`/huntinghelper`**. Toggle each mob separately, use **Select all / Clear all**,
-or use the master switch. **V** toggles all selected trackers; F1 hides the overlays.
+Open **`/hh` → Hunting presets**. Toggle each mob separately, use **All presets / Clear presets**,
+or use the master switch. **V** toggles all selected trackers and F1 hides the overlays.
 Lines and boxes match their mob's color and remain visible through blocks.
 
 ## Full source and build
@@ -30,8 +30,8 @@ Build from this checkout with **JDK 25**:
 
 Windows: `gradlew.bat build`. Output:
 
-- `build/libs/hunting-helper-1.4.0+mc26.2.jar` — installable mod.
-- `build/libs/hunting-helper-1.4.0+mc26.2-sources.jar` — Java source archive.
+- `build/libs/hunting-helper-1.5.0+mc26.2.jar` — installable mod.
+- `build/libs/hunting-helper-1.5.0+mc26.2-sources.jar` — Java source archive.
 
 [GitHub Actions](https://github.com/SleepCodeX/foragingPuckGrinding/actions/workflows/build.yml)
 builds the mod and source JARs from the visible commit and uploads both, alongside
@@ -59,7 +59,7 @@ migrate without automatically enabling new targets.
 ## Behavior and implementation
 
 Targets must already be loaded by Minecraft; this does not discover unloaded mobs.
-Every tracker except Vex requires a Torrhus Canyon/Heights/Springs location label
+Every built-in tracker except Vex requires a Torrhus Canyon/Heights/Springs location label
 in sidebar or tab.
 
 Hypixel names each SkyBlock mob with a custom-named armor stand about two blocks above it.
@@ -103,7 +103,7 @@ Candidate entity/type arrays grow only when needed and are reused between ticks.
 Dead/world references are cleared promptly. Extraction uses cached classifications
 and four range comparisons, then publishes privately owned immutable frame arrays
 for the native renderer. There is no per-frame world scan or reuse of in-flight
-render snapshots. The menu uses a 560 ms Hivethief-to-header crossfade with no input lock. Smaller icons leave room for independent line/glow color dropdowns; compact screens scroll the card body while header/footer stay fixed.
+render snapshots. The dashboard opens in 400 ms. A 1254 × 1254 transparent Frost Hivethief travels from the expanding badge to the header. The controls accept input throughout. Smaller icons leave room for independent line/glow color dropdowns; compact screens scroll the card body while header/footer stay fixed.
 
 ## Model outlines and color preferences
 
@@ -115,8 +115,26 @@ Native tests inspect actual extracted outline colors behind a wall, independent 
 
 ## 1.4.0 implementation notes
 
-Hypixel nametag parsing and the existing pairing tolerance are preserved. A reusable index groups **all** loaded living mobs into 4-block horizontal columns. Looking in adjacent columns is only a nametag/body association optimization, not a range cap; there is no vertical bucketing or height limit. Clearing the index each tick and on world/disabled transitions removes stale references. A tie between equally close bodies is resolved by entity ID.
+Hypixel nametag parsing and the existing pairing tolerance are preserved. A reusable index groups **all** loaded living mobs into 4-block horizontal columns. Looking in adjacent columns is only a nametag/body association optimization, not a range cap; there is no vertical bucketing or height limit. Clearing the index each tick and on world/disabled transitions removes stale references. The current build prioritizes a living mounted body, then horizontal alignment, 3D distance and entity ID.
 
-The shared `MenuTheme` defines charcoal surfaces, cool gray text and restrained accents. At a 640 × 360 GUI, five compact cards and all 19 controls fit without scrolling; narrower windows keep the scrollable list and keyboard reveal. No extra blur shader or continuous animation loop is installed.
+The shared `MenuTheme` defines charcoal surfaces, cool gray text and restrained accents. At a 640 × 360 GUI, the hunting cards and custom library entry fit without scrolling; narrower windows keep the scrollable list and keyboard reveal. No extra blur shader or continuous animation loop is installed.
 
 Debug render counters and location-change logs run only while diagnostics are enabled. The native client tests cover disabled diagnostics, the new trackers' F1/location gates, moving nametags, entity removal, full-distance bee rendering, and normal/large/compact menus. EntityCulling interoperability follows its glow exemption but a live third-party modpack is not part of the automated test.
+
+## Custom rules in 1.5.0
+
+`custom.ids` lists stable UUIDs in creation order. Each rule stores its mode, query, enabled state, line and glow. The config writes a new snapshot atomically before publishing it to the tracker. The reader skips damaged custom entries independently. Older configs start with an empty library.
+
+Each tick indexes all loaded living, non-player, non-stand bodies. A named stand or text display uses its living vehicle when available, then looks in nearby spatial buckets for the best horizontally aligned body in the pairing window. Vertical proximity and entity ID settle ties. Unpaired labels can receive a line and box. Direct custom names on bodies are also eligible. Identically positioned, unmounted bodies with indistinguishable labels remain ambiguous.
+
+Case-insensitive substring matching and a narrow alias for **Atoned Horror** cover short queries such as **rev**. Exact registry IDs handle type matching. The registration order of matches is custom name, built-in name, custom type, built-in type. Per-tick discovery and identity checks keep deleted or edited rules out of render lookups. The type index and normalized queries are rebuilt when the saved rule list changes.
+
+The packaged game checks exercise the library, editor and persistence with multiple active rules, close bees, a text display, an armor stand above an Atoned Horror fixture, a direct miniboss name and two differently named wither skeletons.
+
+Reference implementations consulted for the distinction between named and typed selectors and for floating-label association include [Athen MobHighlight](https://github.com/skies-starred/Athen/blob/4168236a9fdf9ad50947fa6df12f9c53161512de/src/main/kotlin/foo/starred/athen/modules/impl/render/highlight/MobHighlight.kt) and [ESP's label manager](https://github.com/noname-mods/ESP/blob/54d7092e0c3c3e6fe29cc4a441204a61cdd99501/src/main/java/com/esp/core/EspManager.java). Hunting Helper implements these rules in its own discovery and rendering code. [Revenant Horror tiers](https://hypixelskyblock.minecraft.wiki/w/Revenant_Horror) documents the Tier V display name.
+
+## Bundled Safari suite
+
+The Gradle build resolves the official Sparkling Mutuals 4.3.7 release for 26.2 and Fabric Language Kotlin 1.14.1+kotlin.2.4.20, checks their published SHA-256 values, and nests both unchanged with Fabric Loader's jar-in-jar metadata. The upstream sync, chat and API behavior comes with the original release. Core tracking requires no account or backend beyond the loaded Minecraft world.
+
+The native packaged-client test opens Safari settings through Hunting Helper and returns to the original menu. It runs with only the distributed Hunting Helper JAR, Fabric API and the game-test harness. Live party synchronization and external services require an eligible session and peers. See [Sparkling Mutuals source](https://github.com/johnceoskyblock/sparkling-mutuals/tree/2b361320476d7e6e6a42390d4b1c3b7ab5e20731) and [NOTICE](../NOTICE).

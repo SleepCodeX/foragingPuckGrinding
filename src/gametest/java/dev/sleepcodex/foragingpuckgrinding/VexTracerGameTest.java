@@ -24,11 +24,17 @@ import org.lwjgl.glfw.GLFW;
 
 /** Real packaged-client rendering and input checks; this mod is never distributed. */
 public final class VexTracerGameTest implements FabricClientGameTest {
+    private static volatile int visibleLineMask;
     private volatile int renderedVexGlow, renderedGhastGlow;
     private volatile int renderedParchedGlow, renderedPlainParchedGlow, renderedPollendartTint, renderedPlainBeeTint;
     private volatile boolean renderedFarPollendart, renderedFarPlainBee;
     @Override public void runTest(ClientGameTestContext context) {
         LevelExtractionEvents.END_EXTRACTION.register(extraction -> {
+            int lines = 0;
+            if (VexTracerRenderer.drawsColor(extraction, OverlayColor.PURPLE.argb())) lines |= 1;
+            if (VexTracerRenderer.drawsColor(extraction, OverlayColor.CYAN.argb())) lines |= 2;
+            if (VexTracerRenderer.drawsColor(extraction, OverlayColor.GOLD.argb())) lines |= 4;
+            visibleLineMask = lines;
             int vex = 0, ghast = 0, parched = 0, plainParched = 0, pollendart = 0, plainBee = 0;
             boolean farPollendart = false, farPlainBee = false;
             for (var state : extraction.levelState().entityRenderStates) {
@@ -81,7 +87,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 });
                 requireButtonsFit(context);requireKeyboardReachability(context);
                 context.getInput().pressKey(GLFW.GLFW_KEY_HOME);context.takeScreenshot("tracker-menu-compact");
-                context.clickScreenButton("Tracers: OFF");context.clickScreenButton("Select all");
+                context.clickScreenButton("Tracers: OFF");context.clickScreenButton("All presets");
                 context.getInput().resizeWindow(1280,720);
                 context.runOnClient(client -> {client.options.guiScale().set(2);client.resizeGui();});context.waitTicks(3);requireButtonsFit(context);
                 captureOpening(context);
@@ -142,9 +148,10 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 requireColors(context.takeScreenshot("ghast-outside-torrhus"),false,false,false);
                 world.getServer().runCommand("scoreboard objectives setdisplay sidebar hh_test");context.waitTicks(14);
                 requireColors(context.takeScreenshot("hivethief-in-torrhus"),false,false,true);
-                openMenu(context);context.clickScreenButton("Clear all");context.clickScreenButton("Done");context.waitTicks(3);
+                openMenu(context);context.clickScreenButton("Clear presets");context.clickScreenButton("Done");context.waitTicks(3);
+                requireOutlines(context, 0, 0);
                 requireColors(context.takeScreenshot("no-selected-mobs"),false,false,false);
-                openMenu(context);context.clickScreenButton("Select all");context.clickScreenButton("Tracers: ON");context.clickScreenButton("Done");context.waitTicks(3);
+                openMenu(context);context.clickScreenButton("All presets");context.clickScreenButton("Tracers: ON");context.clickScreenButton("Done");context.waitTicks(3);
                 requireColors(context.takeScreenshot("master-hides-all-three"),false,false,false);
                 requireOutlines(context,0,0);
                 command(context,"vextracers on");
@@ -153,6 +160,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 world.getServer().runCommand("kill @e[type=minecraft:vex]");world.getServer().runCommand("kill @e[type=minecraft:parrot]");context.waitTicks(40);
                 requireColors(context.takeScreenshot("unrelated-entities-excluded"),false,false,false);
                 requireNametagDetection(context,world);
+                CustomTrackerGameChecks.run(context, world);
                 command(context,"vextracers off");
                 System.out.println("PASS: native colored model outlines through walls, independent saved line/glow colors, scrollable dropdown keyboard controls, Hivethief crossfade, tracker selection, F1, location gating and removal, nametag detection for Parched and Pollendart, tint fill, far glow, /hh menu and debug");
             } finally {
@@ -247,7 +255,8 @@ public final class VexTracerGameTest implements FabricClientGameTest {
 
 
         // /hh opens the same menu; the second card row (Parched, Pollendart) is reached by scrolling.
-        command(context,"hh");context.waitForScreen(TracerSettingsScreen.class);
+        command(context,"hh");context.waitForScreen(HuntingHomeScreen.class);
+        context.clickScreenButton("Hunting presets");context.waitForScreen(TracerSettingsScreen.class);
         long until=System.nanoTime()+MenuOpening.DURATION_NANOS;context.waitFor(client->System.nanoTime()>=until);
         context.getInput().pressKey(GLFW.GLFW_KEY_END);requireButtonsFit(context);
         context.runOnClient(client -> {
@@ -288,7 +297,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
             var buttons=client.gui.screen().children().stream()
                     .filter(net.minecraft.client.gui.components.Button.class::isInstance)
                     .map(net.minecraft.client.gui.components.Button.class::cast).filter(b->b.visible).toList();
-            if(buttons.size()!=TracerTarget.values().length*3+4)
+            if(buttons.size()!=TracerTarget.values().length*3+6)
                 throw new AssertionError("The normal menu must show every tracker and color control without scrolling");
         });
     }
@@ -298,7 +307,8 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     private static boolean near(double value,double expected) { return Math.abs(value-expected)<1; }
 
     private static void openMenu(ClientGameTestContext c) {
-        command(c,"huntinghelper");c.waitForScreen(TracerSettingsScreen.class);
+        command(c,"huntinghelper");c.waitForScreen(HuntingHomeScreen.class);
+        c.clickScreenButton("Hunting presets");c.waitForScreen(TracerSettingsScreen.class);
         long until=System.nanoTime()+MenuOpening.DURATION_NANOS;c.waitFor(client->System.nanoTime()>=until);
     }
     private void requireOutlines(ClientGameTestContext context,int vex,int ghast) {
@@ -317,7 +327,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     private static void requireKeyboardReachability(ClientGameTestContext context) {
         HashSet<String> reached=new HashSet<>();
         context.runOnClient(client -> client.gui.screen().setFocused(null));
-        int controls=TracerTarget.values().length*3+4;
+        int controls=TracerTarget.values().length*3+6;
         for(int i=0;i<controls;i++) {
             context.getInput().pressKey(GLFW.GLFW_KEY_TAB);
             context.runOnClient(client -> {
@@ -356,14 +366,26 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     private static void requireColors(Path screenshot,boolean vex,boolean blueJay,boolean hiveThief) {
         try {
             BufferedImage image=ImageIO.read(screenshot.toFile());int[] count=new int[3];
-            for(int y=0;y<image.getHeight()*2/3;y++)for(int x=0;x<image.getWidth();x++){
+            // Sample the wall in front of the test mobs. Chat, the sidebar and other mods' HUD text
+            // may legitimately contain the same RGB values around the edge of the screen.
+            int left = image.getWidth() / 8, right = image.getWidth() - left;
+            int top = image.getHeight() / 6, bottom = image.getHeight() * 2 / 3;
+            for (int y = top; y < bottom; y++) for (int x = left; x < right; x++) {
                 int p=image.getRGB(x,y),r=p>>16&255,g=p>>8&255,b=p&255;
                 if(r>140&&b>170&&g<150&&r>g*1.3&&b>g*1.5)count[0]++;
                 if(r<100&&g>190&&b>220)count[1]++;
                 if(r>220&&g>160&&g<225&&b<125)count[2]++;
             }
             boolean[] expected={vex,blueJay,hiveThief};
-            for(int i=0;i<3;i++)if(expected[i]?count[i]<80:count[i]>5)throw new AssertionError("Mob color "+i+" expected="+expected[i]+" pixels="+count[i]+" in "+screenshot);
+            int actual = visibleLineMask;
+            for (int i = 0; i < expected.length; i++) {
+                // A vanilla mob, unrelated HUD or particle can legitimately contain the same color
+                // with tracers off. Inspect the submitted batch for absence and the pixels for visibility.
+                boolean submitted = (actual & (1 << i)) != 0;
+                if (expected[i] != submitted || (expected[i] && count[i] < 80))
+                    throw new AssertionError("Mob color " + i + " expected=" + expected[i]
+                            + " submitted=" + submitted + " pixels=" + count[i] + " in " + screenshot);
+            }
         } catch(IOException e){throw new AssertionError(e);}
     }
 }

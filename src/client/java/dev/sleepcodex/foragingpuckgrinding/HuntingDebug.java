@@ -1,7 +1,7 @@
 package dev.sleepcodex.foragingpuckgrinding;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +57,7 @@ public final class HuntingDebug {
     }
 
     /** A target nametag and the mob it was paired with, or the closest mobs when none qualified. */
-    static void nametag(Entity tag, TracerTarget target, Entity mob, List<Entity> mobs) {
+    static void nametag(Entity tag, TrackingRule target, Entity mob, List<Entity> mobs) {
         if (lines.size() >= MAX_LINES) return;
         StringBuilder line = new StringBuilder(String.format("  Nametag '%s' (%s) at %s -> ", name(tag), target.label(), pos(tag)));
         if (mob != null) {
@@ -82,9 +82,9 @@ public final class HuntingDebug {
         }
     }
 
-    static void endTick(Map<Entity, TracerTarget> resolved, Set<Entity> byNametag, TracerConfig config) {
+    static void endTick(Map<Entity, TrackingRule> resolved, Set<Entity> byNametag, TracerConfig config) {
         if (!due()) return;
-        Map<TracerTarget, int[]> counts = new EnumMap<>(TracerTarget.class);
+        Map<TrackingRule, int[]> counts = new LinkedHashMap<>();
         resolved.forEach((entity, target) -> {
             int[] c = counts.computeIfAbsent(target, k -> new int[2]);
             c[0]++;
