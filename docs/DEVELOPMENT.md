@@ -76,8 +76,8 @@ Live Hypixel, the full personal modpack and shader combinations are not reproduc
 Ghast model in Torrhus. [Skyblocker's Torrhus detector](https://github.com/SkyblockerMod/Skyblocker/blob/74fc9ae67c8eddf3dbf46f3eb2a884cd853feded/src/main/java/de/hysky/skyblocker/skyblock/entity/glow/adder/TorrhusCanyonGlowAdder.java)
 is the Blue Jay identity reference; no Skyblocker code or dependency is bundled.
 
-The original axe icon and Trevor-inspired navy/lavender menu are included. Adapted
-Trevor helpers use MIT; Nunito assets use OFL. See [LICENSE](../LICENSE), [NOTICE](../NOTICE)
+The menu uses an original axe icon and OneClient-inspired navy/lavender controls.
+Adapted helpers retain their MIT notices; Nunito assets use OFL. See [LICENSE](../LICENSE), [NOTICE](../NOTICE)
 and [licenses](../licenses).
 
 
