@@ -5,6 +5,7 @@ Open **/hh → Custom trackers** or **/hh custom** to manage as many rules as yo
 - **Nametag** reads floating SkyBlock armor stands, text displays and names attached directly to mobs. Enter **Revenant Sycophant** for the miniboss, or **rev** for partial Revenant names and the Tier V **Atoned Horror**.
 - **Mob type** accepts IDs such as **wither_skeleton** and **zombie** across their different SkyBlock names.
 - **All Safari settings** on the new **/hh** dashboard opens the full bundled Sparkling Mutuals 4.3.7 suite, including party sync. Its Kotlin runtime and upstream notices ship in the same JAR.
+- **Appearance** offers Frost, Amber and Graphite Hivethief models. Selecting one previews the badge unfolding into the dashboard.
 - The charcoal settings screen opens with a shorter Hivethief fade. Five presets and the custom library share a six-card grid. A separate, rebindable settings key is available in Minecraft Controls.
 - Rules save on disk and run together across all loaded entities in the effective client render distance. The five original hunting presets keep their original names and location rules.
 

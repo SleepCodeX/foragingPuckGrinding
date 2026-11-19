@@ -192,7 +192,7 @@ public final class TracerSettingsScreen extends Screen {
         canvas.round(left + 16, top + 1, panelWidth - 32, 1, 0, 0x357E8794);
         MenuFont.opacity(opacity);
         try {
-            MobSymbols.draw(graphics, canvas, TracerTarget.HIVE_THIEF, left + 31, top + 27, 29);
+            canvas.hivethief(config.style(), left + 31, top + 27, 34);
             MenuFont.text(graphics, "Hunting Helper", left + 55, top + 16, titleScale, MenuTheme.TEXT);
             MenuFont.text(graphics, shortcut, left + 56, top + 36, .7, MenuTheme.MUTED);
             canvas.round(left + 16, top + (cards ? 57 : 54), panelWidth - 32, 1, 0, MenuTheme.BORDER);
@@ -231,7 +231,7 @@ public final class TracerSettingsScreen extends Screen {
             var intro = new MenuCanvas(graphics, iconOpacity);
             int halo = size + 24;
             intro.round(x - halo / 2, y - halo / 2, halo, halo, halo / 2, 0x14FFC655);
-            MobSymbols.draw(graphics, intro, TracerTarget.HIVE_THIEF, x, y, size);
+            intro.hivethief(config.style(), x, y, size);
         }
     }
 

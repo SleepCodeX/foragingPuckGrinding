@@ -17,6 +17,15 @@ final class CustomTrackerGameChecks {
         server.runCommand("time set night");
         open(c, "hh", HuntingHomeScreen.class);
         captureHome(c);
+        c.clickScreenButton("Appearance");
+        c.waitForScreen(AppearanceScreen.class);
+        c.waitTicks(3);
+        c.takeScreenshot("hivethief-models");
+        for (var style : new HivethiefStyle[]{HivethiefStyle.GRAPHITE, HivethiefStyle.AMBER, HivethiefStyle.FROST}) {
+            c.clickScreenButton(style.label);
+            c.waitForScreen(HuntingHomeScreen.class);
+            if (style != HivethiefStyle.FROST) c.clickScreenButton("Appearance");
+        }
         c.runOnClient(client -> {
             var loader = FabricLoader.getInstance();
             for (String nested : java.util.List.of("sparkling-mutuals", "fabric-language-kotlin")) {

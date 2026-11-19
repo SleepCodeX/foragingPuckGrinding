@@ -4,6 +4,8 @@ Hunting Helper draws tracers, matching boxes and colored model outlines for mobs
 
 ![Hunting Helper's in-game settings opening](docs/media/1.5.0/menu-opening.gif)
 
+**Appearance** lets you preview Frost, Amber or Graphite. Picking a model replays the opening and saves your choice.
+
 ## Custom trackers
 
 Open **Custom trackers → Add tracker**, or go straight to the library with **`/hh custom`**. Rules can run together. Each row has an on/off switch, **Edit** and **Remove**. Choose a line color and a separate glow color, **Match line**, or **Off**.

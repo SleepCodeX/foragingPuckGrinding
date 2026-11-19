@@ -9,6 +9,11 @@ import net.minecraft.resources.Identifier;
 final class MenuCanvas {
     private static final Identifier CIRCLE = Identifier.fromNamespaceAndPath(VexTracerClient.MOD_ID, "textures/gui/circle.png");
     private static final Identifier AXE = Identifier.fromNamespaceAndPath(VexTracerClient.MOD_ID, "icon.png");
+    private static final java.util.EnumMap<HivethiefStyle, Identifier> HIVETHIEVES = new java.util.EnumMap<>(HivethiefStyle.class);
+    static {
+        for (var style : HivethiefStyle.values()) HIVETHIEVES.put(style,
+                Identifier.fromNamespaceAndPath(VexTracerClient.MOD_ID, "textures/gui/hivethief/" + style.texture + ".png"));
+    }
     private final GuiGraphicsExtractor graphics;
     private final double opacity;
 
@@ -37,6 +42,11 @@ final class MenuCanvas {
     private void corner(int x, int y, int u, int v, int size, int color) {
         if (size > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, CIRCLE, x, y, u, v,
                 size, size, 64, 64, 128, 128, color);
+    }
+
+    void hivethief(HivethiefStyle style, int centerX, int centerY, int size) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, HIVETHIEVES.get(style), centerX - size / 2, centerY - size / 2, 0, 0,
+                size, size, 96, 96, 96, 96, tint(0xFFFFFFFF));
     }
 
     void axe(int x, int y, int size) {

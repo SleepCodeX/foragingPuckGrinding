@@ -61,6 +61,18 @@ class CustomRulesTest {
         assertNull(new CustomRules(List.of(narrow)).name("Atoned Horror"));
     }
 
+    @Test void appearancePersistsIndependentlyOfTheTrackers() throws Exception {
+        var config = new TracerConfig(directory.resolve("settings.properties"));
+        for (var style : HivethiefStyle.values()) {
+            config.setStyle(style);
+            config.setTargets(Set.of(TracerTarget.PARCHED));
+            config.load();
+            assertEquals(style, config.style());
+            assertEquals(Set.of(TracerTarget.PARCHED), config.selectedTargets());
+        }
+        assertEquals(HivethiefStyle.FROST, HivethiefStyle.parse("unknown"));
+    }
+
     @Test void failedSaveKeepsPreviousSnapshot() throws Exception {
         Path blocked = Files.writeString(directory.resolve("file"), "occupied");
         var config = new TracerConfig(blocked.resolve("subfile"));
