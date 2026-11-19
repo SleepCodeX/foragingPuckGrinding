@@ -42,6 +42,7 @@ final class VexTracerRenderer {
     private int candidateCount;
     private TracerRange.Bounds range;
     private int rangeChunkX, rangeChunkZ, rangeChunks;
+    private boolean activeTorrhus;
 
 
     VexTracerRenderer(TracerConfig config) { this.config = config; }
@@ -55,6 +56,7 @@ final class VexTracerRenderer {
         boolean tracking = config.enabled() && config.hasTargets() && client.player != null && cachedLevel != null;
         boolean area = torrhus.update(client, tracking &&
                 (config.isSelected(TracerTarget.BLUE_JAY) || config.isSelected(TracerTarget.HIVE_THIEF)));
+        activeTorrhus = area;
         if (!tracking) {
             clearCandidates();
             return;
@@ -107,6 +109,16 @@ final class VexTracerRenderer {
         return null;
     }
 
+    int glowColor(Entity entity) {
+        Minecraft client = Minecraft.getInstance();
+        if (!config.enabled() || client.player == null || client.level != cachedLevel || range == null
+                || client.gui.hud.isHidden() || !entity.isAlive() || entity.isRemoved()
+                || entity.level() != cachedLevel || !range.contains(entity.getX(), entity.getZ())) return 0;
+        TracerTarget type = typeOf(entity);
+        if (type == null || !config.isSelected(type) || (type != TracerTarget.VEX && !activeTorrhus)) return 0;
+        return config.glowColor(type);
+    }
+
     void extract(LevelExtractionContext context) {
         context.levelState().setData(LINES, EMPTY);
         Minecraft client = Minecraft.getInstance();
@@ -147,7 +159,7 @@ final class VexTracerRenderer {
             targets[at + 9] = (float) (nx / length);
             targets[at + 10] = (float) (ny / length);
             targets[at + 11] = (float) (nz / length);
-            colors[count++] = type.color();
+            colors[count++] = config.lineColor(type);
         }
         // The two privately owned arrays are never mutated after publishing this frame.
         if (count > 0) context.levelState().setData(LINES, new Frame(ox, oy, oz, targets, colors, count));

@@ -28,8 +28,8 @@ Build from this checkout with **JDK 25**:
 
 Windows: `gradlew.bat build`. Output:
 
-- `build/libs/hunting-helper-1.2.0+mc26.2.jar` — installable mod.
-- `build/libs/hunting-helper-1.2.0+mc26.2-sources.jar` — Java source archive.
+- `build/libs/hunting-helper-1.3.0+mc26.2.jar` — installable mod.
+- `build/libs/hunting-helper-1.3.0+mc26.2-sources.jar` — Java source archive.
 
 [GitHub Actions](https://github.com/SleepCodeX/foragingPuckGrinding/actions/workflows/build.yml)
 builds the mod and source JARs from the visible commit and uploads both, alongside
@@ -60,7 +60,7 @@ Blue Jay and Ghast tracking require a Torrhus Canyon/Heights/Springs location la
 in sidebar or tab. The Ghast tracker uses the entity type, so other Ghasts in the
 same area also match. Other parrot colors, tamed birds and Allays are excluded.
 
-Discovery runs once per client tick; location text is cached. One native render
+Discovery runs once per client tick; location text is cached. One native line render
 submission draws the interpolated tracers and twelve-edge boxes. OFF and an empty
 selection skip discovery and frame-array allocation. Changing worlds and removing
 entities clear their overlays. It does not send gameplay commands or perform hunts.
@@ -92,4 +92,12 @@ Candidate entity/type arrays grow only when needed and are reused between ticks.
 Dead/world references are cleared promptly. Extraction uses cached classifications
 and four range comparisons, then publishes privately owned immutable frame arrays
 for the native renderer. There is no per-frame world scan or reuse of in-flight
-render snapshots. The menu has a 160 ms fade and no blocking intro.
+render snapshots. The menu uses a 560 ms Hivethief-to-header crossfade with no input lock. Smaller icons leave room for independent line/glow color dropdowns; compact screens scroll the card body while header/footer stay fixed.
+
+## Model outlines and color preferences
+
+`line.<TARGET>` and `glow.<TARGET>` store named palette choices. Existing settings gain the original per-mob line colors and matching glow. `MATCH` resolves to the current line color; `OFF` disables only the custom glow. Changing a target, master switch, area, world or F1 visibility also gates glow.
+
+Two client mixins add outline colors during native entity-state extraction and permit matching mobs through section occlusion. Native entity distance/frustum checks remain in place. The native outline post-process draws the actual animated model silhouette through walls. Entity flags, scoreboard teams, server data and other mobs' vanilla glow are preserved.
+
+Native tests inspect actual extracted outline colors behind a wall, independent palette persistence, Off/F1/master behavior, dropdown keyboard scrolling and all thirteen menu controls. The opening frames use a deterministic clock with the real Minecraft renderer.

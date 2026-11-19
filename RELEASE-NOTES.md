@@ -1,17 +1,13 @@
-# Hunting Helper 1.2.0
+# Hunting Helper 1.3.0
 
-![Colored tracers and matching mob boxes](https://raw.githubusercontent.com/SleepCodeX/foragingPuckGrinding/v1.2.0/docs/media/1.2.0/trackers.png)
+![Hivethief opening fade and smaller tracker cards](https://raw.githubusercontent.com/SleepCodeX/foragingPuckGrinding/v1.3.0/docs/media/1.3.0/menu-opening.gif)
 
-**Purple Vex · Cyan Blue Jay · Gold Hivethief (Ghast)**
+Smaller icons, wider card spacing and scrollable per-mob color dropdowns. A Hivethief fades into the settings header as the menu opens.
 
-Independent mob toggles, **Select all / Clear all**, and matching wire boxes.
-The scan now covers every loaded chunk in your render distance, including corners.
-Reused discovery buffers and cached range bounds keep frame work small.
+![Through-wall model glow, matching boxes and tracers](https://raw.githubusercontent.com/SleepCodeX/foragingPuckGrinding/v1.3.0/docs/media/1.3.0/trackers.png)
 
-![OneClient-inspired selection menu](https://raw.githubusercontent.com/SleepCodeX/foragingPuckGrinding/v1.2.0/docs/media/1.2.0/settings.png)
+Native model glow shows tracked mobs through walls. Set **Line** and **Glow** independently; glow also offers **Match line** and **Off**. All choices persist.
 
-A cleaner OneClient-inspired menu with original mob icons, responsive cards and a quick opening fade.
-Open **`/huntinghelper`**; **V** toggles the selected trackers.
+Open **`/huntinghelper`**; **V** toggles your selection and **F1** hides overlays. Full loaded render-distance coverage is preserved.
 
-**Install:** Minecraft 26.2, Java 25, Fabric Loader 0.19.5+ and Fabric API 0.161.0+26.2.
-Replace the old tracer JAR. The source JAR, checksums and source commit information are included below.
+**Install:** Minecraft 26.2, Java 25, Fabric Loader 0.19.5+ and Fabric API 0.161.0+26.2. Replace the older mod JAR. Source archive and checksums are included.
