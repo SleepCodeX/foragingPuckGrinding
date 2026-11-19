@@ -58,7 +58,6 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 context.getInput().pressKey(GLFW.GLFW_KEY_V);context.waitTicks(3);
                 requireColors(context.takeScreenshot("keybind-off"),false,false,false);
                 openMenu(context);
-                captureOpening(context);
                 context.getInput().resizeWindow(960,720);
                 context.runOnClient(client -> {client.options.guiScale().set(3);client.resizeGui();});context.waitTicks(3);
                 context.runOnClient(client -> {
@@ -69,13 +68,12 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 context.clickScreenButton("Tracers: OFF");context.clickScreenButton("Select all");
                 context.getInput().resizeWindow(1280,720);
                 context.runOnClient(client -> {client.options.guiScale().set(2);client.resizeGui();});context.waitTicks(3);requireButtonsFit(context);
+                captureOpening(context);
                 context.takeScreenshot("tracker-menu-all");
                 requireKeyboardReachability(context);
                 context.clickScreenButton("Vex line: Purple");
-                context.runOnClient(client -> {
-                    for(int i=0;i<3;i++)client.gui.screen().mouseScrolled(0,0,0,-1);
-                    client.gui.screen().mouseScrolled(0,0,0,1);
-                });
+                for(int i=0;i<3;i++)context.getInput().scroll(-1);
+                context.getInput().scroll(1);
                 context.takeScreenshot("line-color-dropdown");
                 context.clickScreenButton("Green");
                 context.clickScreenButton("Vex glow: Match line");
