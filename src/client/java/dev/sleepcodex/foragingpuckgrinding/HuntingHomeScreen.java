@@ -37,7 +37,7 @@ final class HuntingHomeScreen extends Screen {
     private final TracerConfig config;
     private final LongSupplier clock;
     private final long opened;
-    private Button all, done;
+    private Button all, journal, done;
     private int x, y, w, h, safariY;
     private boolean compact;
 
@@ -84,6 +84,8 @@ final class HuntingHomeScreen extends Screen {
                     listY + (i / 2) * (rowH + rowGap), col, rowH, false, () -> openSafari(section));
         }
         all = button("All Safari settings", x + inset, footer, 116, compact ? 20 : 25, () -> openSafari(null));
+        journal = button("Field journal", x + inset + 121, footer, 83, compact ? 20 : 25,
+                () -> Minecraft.getInstance().gui.setScreen(new FieldJournalScreen(this)));
         done = button("Done", x + w - inset - 66, footer, 66, compact ? 20 : 25, this::onClose);
     }
 
@@ -122,6 +124,7 @@ final class HuntingHomeScreen extends Screen {
             MenuFont.text(g,"Critter Safari",x+(compact?12:17),safariY,.84,MenuTheme.ACCENT);
             for (Tile tile:tiles) drawTile(g,c,tile,mx,my);
             footer(g,c,all,mx,my,false);
+            footer(g,c,journal,mx,my,false);
             footer(g,c,done,mx,my,true);
         } finally {
             MenuFont.opacity(1);

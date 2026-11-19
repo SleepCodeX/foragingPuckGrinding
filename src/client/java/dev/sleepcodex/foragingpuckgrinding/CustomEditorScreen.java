@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 
 final class CustomEditorScreen extends TrackerPage {
+    private final TracerConfig config;
     private record Swatch(Button button, OverlayColor color, boolean glow) { }
     private final List<Swatch> swatches = new ArrayList<>();
     private final CustomTracker original;
@@ -28,7 +29,8 @@ final class CustomEditorScreen extends TrackerPage {
     private int fieldY, paletteY;
 
     CustomEditorScreen(CustomLibraryScreen parent, TracerConfig config, CustomTracker original) {
-        super(original == null ? "Add tracker" : "Edit tracker", parent, config);
+        super(original == null ? "Add tracker" : "Edit tracker", parent);
+        this.config = config;
         this.original = original;
         id = original == null ? UUID.randomUUID() : original.id();
         mode = original == null ? CustomTracker.Mode.NAMETAG : original.mode();

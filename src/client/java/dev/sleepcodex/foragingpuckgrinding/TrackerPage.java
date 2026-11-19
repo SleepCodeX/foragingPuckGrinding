@@ -13,16 +13,14 @@ abstract class TrackerPage extends Screen {
     enum Tone { NORMAL, PRIMARY, DANGER }
     private record Action(Button button, Tone tone) { }
     private final List<Action> actions = new ArrayList<>();
-    final TracerConfig config;
     final Screen parent;
     int left, top, w, h, footer;
     String status = "";
     private long entered;
 
-    TrackerPage(String title, Screen parent, TracerConfig config) {
+    TrackerPage(String title, Screen parent) {
         super(Component.literal(title));
         this.parent = parent;
-        this.config = config;
     }
 
     @Override protected final void init() {

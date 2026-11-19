@@ -138,3 +138,7 @@ Reference implementations consulted for the distinction between named and typed 
 The Gradle build resolves the official Sparkling Mutuals 4.3.7 release for 26.2 and Fabric Language Kotlin 1.14.1+kotlin.2.4.20, checks their published SHA-256 values, and nests both unchanged with Fabric Loader's jar-in-jar metadata. The upstream sync, chat and API behavior comes with the original release. Core tracking requires no account or backend beyond the loaded Minecraft world.
 
 The native packaged-client test opens Safari settings through Hunting Helper and returns to the original menu. It runs with only the distributed Hunting Helper JAR, Fabric API and the game-test harness. Live party synchronization and external services require an eligible session and peers. See [Sparkling Mutuals source](https://github.com/johnceoskyblock/sparkling-mutuals/tree/2b361320476d7e6e6a42390d4b1c3b7ab5e20731) and [NOTICE](../NOTICE).
+
+## Safari field journal
+
+The Minecraft 26.2 journal is compiled directly into the client source set. The packaged test launches with Fabric API, opens its screens, exercises filtered chat, records a trade and removes it on completion. It reads the bundled Safari quote snapshot for both order-book prices. Each release now publishes native screenshots from the same production test as the distributed JAR. [Journal controls and upstream attribution](FIELD-JOURNAL.md)

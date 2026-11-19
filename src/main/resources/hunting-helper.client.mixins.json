@@ -8,7 +8,11 @@
     "EntityRenderStateMixin",
     "GlowingEntityMixin",
     "LivingEntityRendererMixin",
-    "OutlineVisibilityMixin"
+    "OutlineVisibilityMixin",
+    "MarketCacheAccess",
+    "NestSurveyAccess",
+    "HypixelSessionAccess",
+    "SafariPartyConnectionMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }

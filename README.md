@@ -1,12 +1,12 @@
 # Hunting Helper
 
-One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, customize through-wall highlights, or use the complete Sparkling Mutuals suite.
+One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, customize through-wall highlights, review Hunter offers and per-player field reports, or open the complete Sparkling Mutuals suite.
 
 **Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+ · Fabric API 0.161.0+26.2**
 
-[Download Hunting Helper 1.5.0](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.5.0/hunting-helper-1.5.0%2Bmc26.2.jar) · [In-game visual guide](docs/media/1.5.0)
+[Download Hunting Helper 1.6.0](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.0/hunting-helper-1.6.0%2Bmc26.2.jar) · [In-game visual guide](docs/FIELD-JOURNAL.md)
 
-![The HD Frost Hivethief opening into the matte charcoal dashboard](docs/media/1.5.0/menu-opening.gif)
+![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.0/menu-opening.gif)
 
 ## Custom trackers
 
@@ -22,7 +22,7 @@ Open **Custom trackers → Add tracker**, or go straight to the library with **`
 
 Nametag matching ignores capitalization and Minecraft formatting. The tracker reads armor stands, text displays and custom names on mobs. If several rules match one body, a matching nametag takes priority over a mob type. The first saved custom rule wins within the same mode.
 
-![Custom library in Minecraft](docs/media/1.5.0/library.png)
+![Custom library in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.0/library.png)
 
 ## Hunting presets and controls
 
@@ -39,12 +39,20 @@ Nametag matching ignores capitalization and Minecraft formatting. The tracker re
 
 Install the Hunting Helper JAR and Fabric API. Hunting Helper includes the matching Sparkling Mutuals and Fabric Language Kotlin JARs. The custom trackers and settings run locally. Party synchronization, live Bazaar/profile data and other online features use their respective services when active.
 
-![Bundled Safari settings](docs/media/1.5.0/safari.png)
+![Bundled Safari settings](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.0/safari.png)
 
 [Upstream feature guide](https://github.com/johnceoskyblock/sparkling-mutuals/tree/v4.3.7) · [Upstream release](https://github.com/johnceoskyblock/sparkling-mutuals/releases/tag/v4.3.7)
+
+## Safari field journal
+
+Open **/hh → Field journal** or **/hh journal**. The nearest Hunter offers appear in a movable panel. Taken trades clear automatically, including compatible offers and completions received through party chat. **World markers** adds recatch pins, eight Hideonwall perches, and the three Icy Troodon walls. **Open field report** shows who caught each species, capsule attempts, and the spread between selling the run's shards now and listing them.
+
+![Field journal settings in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.0/field-journal.png)
+
+[Field journal controls and in-game screenshots](docs/FIELD-JOURNAL.md)
 
 ## Install
 
 Put the Hunting Helper JAR and matching Fabric API in `mods`. Replace the previous Hunting Helper JAR when updating. Your saved trackers and colors carry over.
 
-[In-game screenshots](docs/media/1.5.0) · [Build and behavior](docs/DEVELOPMENT.md) · [Release downloads](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest)
+[In-game screenshots](docs/FIELD-JOURNAL.md) · [Build and behavior](docs/DEVELOPMENT.md) · [Release downloads](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest)

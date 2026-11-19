@@ -8,10 +8,12 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 
 final class CustomLibraryScreen extends TrackerPage {
+    private final TracerConfig config;
     private int page, perPage, pages;
     private UUID pendingRemoval;
 
-    CustomLibraryScreen(Screen parent, TracerConfig config) { super("Custom trackers", parent, config); }
+    CustomLibraryScreen(Screen parent, TracerConfig config) { super("Custom trackers", parent);
+        this.config = config; }
     @Override int preferredWidth() { return 620; }
     @Override int preferredHeight() { return Math.clamp(148 + config.custom().all.size() * 40, 230, 380); }
     @Override String subtitle() { return status.isEmpty() ? "Your nametag and mob type rules" : status; }

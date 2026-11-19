@@ -1,3 +1,16 @@
+# Hunting Helper 1.6.0
+
+The **Field journal** brings Critter Safari Tracker tools into Hunting Helper. Open **/hh → Field journal**, or type **/hh journal**.
+
+![Field journal captured in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.0/field-journal.png)
+
+- Track nearby Hunter offers, share them with a party, and retire a trade when someone takes it.
+- Mark Hideonwall perches, Troodon walls and the return position of a critter during a capsule throw.
+- See who caught each species, how many capsules you tried, and how many shards you earned. Compare instant-sell and sell-offer values with the same Bazaar feed used by the Safari suite.
+- Choose staged encounter alerts, per-event chat audiences, Safari darkness suppression, panel positions and marker colors.
+
+Install **Hunting Helper and Fabric API** for Minecraft 26.2 with Java 25 and Fabric Loader 0.19.5+. The journal ships as Hunting Helper code. Sparkling Mutuals and Fabric Language Kotlin remain bundled. [Controls and screenshots](https://github.com/SleepCodeX/foragingPuckGrinding/blob/v1.6.0/docs/FIELD-JOURNAL.md) · [Critter Safari Tracker source](https://github.com/MrCloudy2/critterMod/tree/f26b5ead85ce66e30b7815386497dc9b3442a127)
+
 # Hunting Helper 1.5.0
 
 The HD ivory-and-honey Frost Hivethief opens into a matte charcoal dashboard. Type **`/hh`** for hunting presets, custom trackers and the complete Sparkling Mutuals Safari suite.

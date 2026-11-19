@@ -3,7 +3,7 @@
   "id": "foragingpuckgrinding",
   "version": "${version}",
   "name": "Hunting Helper",
-  "description": "Track Hypixel SkyBlock mobs by nametag or mob type with colored tracers, boxes and model glow. Open /hh for hunting presets, custom rules and the complete Sparkling Mutuals Safari suite.",
+  "description": "Track SkyBlock mobs by name or type. Open /hh for hunting presets, the Safari suite and a field journal with Hunter trades, recatch pins and per-player reports.",
   "icon": "assets/foragingpuckgrinding/textures/gui/hivethief/frost.png",
   "authors": [
     "SleepCodeX"
@@ -16,7 +16,8 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "dev.sleepcodex.foragingpuckgrinding.VexTracerClient"
+      "dev.sleepcodex.foragingpuckgrinding.VexTracerClient",
+      "dev.sleepcodex.foragingpuckgrinding.journal.CritterMod"
     ]
   },
   "mixins": [
@@ -37,5 +38,6 @@
     {
       "file": "META-INF/jars/fabric-language-kotlin.jar"
     }
-  ]
+  ],
+  "accessWidener": "hunting-helper.accesswidener"
 }
