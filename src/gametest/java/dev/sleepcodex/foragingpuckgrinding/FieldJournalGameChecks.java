@@ -90,6 +90,7 @@ final class FieldJournalGameChecks {
         c.waitForScreen(CritterScreen.class);
         c.waitTicks(3);
         c.takeScreenshot("field-report");
+        c.clickScreenButton("History");
         c.clickScreenButton("Stats");
         c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
         c.waitForScreen(FieldJournalScreen.class);

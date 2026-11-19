@@ -91,7 +91,7 @@ public final class CritterScreen extends Screen {
 	private int panelTop;
 	private int panelWidth;
 	private int panelHeight;
-	private int scroll, maxScroll;
+	private int scroll, maxScroll, historyPage;
 
 	public CritterScreen() {
 		this(null);
@@ -162,10 +162,19 @@ public final class CritterScreen extends Screen {
 		int totalWidth = buttonWidth * 3 + spacing * 2;
 		int buttonX = panelLeft + (panelWidth - totalWidth) / 2;
 
-		addRenderableWidget(Button.builder(Component.literal("Copy missing"), b -> copyMissing())
-			.bounds(buttonX, buttonY, buttonWidth, 20).build());
-		addRenderableWidget(Button.builder(Component.literal("Share"), b -> shareMissing())
-			.bounds(buttonX + buttonWidth + spacing, buttonY, buttonWidth, 20).build());
+		if (tab == Tab.HISTORY) {
+			int pages = Math.max(1, Math.ceilDiv(RunHistory.size(), HISTORY_ROWS));
+			historyPage = Math.clamp(historyPage, 0, pages - 1);
+			addRenderableWidget(Button.builder(Component.literal("Newer"), b -> historyPage(-1))
+				.bounds(buttonX, buttonY, buttonWidth, 20).build()).active = historyPage > 0;
+			addRenderableWidget(Button.builder(Component.literal("Older"), b -> historyPage(1))
+				.bounds(buttonX + buttonWidth + spacing, buttonY, buttonWidth, 20).build()).active = historyPage + 1 < pages;
+		} else if (tab == Tab.RUN) {
+			addRenderableWidget(Button.builder(Component.literal("Copy missing"), b -> copyMissing())
+				.bounds(buttonX, buttonY, buttonWidth, 20).build()).active = session != null;
+			addRenderableWidget(Button.builder(Component.literal("Share"), b -> shareMissing())
+				.bounds(buttonX + buttonWidth + spacing, buttonY, buttonWidth, 20).build()).active = session != null;
+		}
 		addRenderableWidget(Button.builder(Component.literal("Close"), b -> onClose())
 			.bounds(buttonX + (buttonWidth + spacing) * 2, buttonY, buttonWidth, 20).build());
 	}
@@ -195,6 +204,12 @@ public final class CritterScreen extends Screen {
 			addRenderableWidget(button);
 			x += tabWidth + spacing;
 		}
+	}
+
+	private void historyPage(int step) {
+		historyPage += step;
+		scroll = 0;
+		rebuildWidgets();
 	}
 
 	private void switchTo(Tab value) {
@@ -416,7 +431,8 @@ public final class CritterScreen extends Screen {
 		List<RunRecord> runs = RunHistory.runs();
 
 		graphics.text(font, Component.literal("Saved runs"), left, y, HEADING);
-		String count = runs.size() + " kept";
+		String count = runs.size() + " kept" + (runs.size() > HISTORY_ROWS ? " · Page " + (historyPage + 1)
+			+ "/" + Math.ceilDiv(runs.size(), HISTORY_ROWS) : "");
 		graphics.text(font, Component.literal(count), right - font.width(count), y, DIM);
 		y += LINE_HEIGHT + 3;
 
@@ -463,7 +479,7 @@ public final class CritterScreen extends Screen {
 		y += LINE_HEIGHT + 2;
 
 		int total = Critters.total();
-		for (int i = runs.size() - 1, shown = 0; i >= 0 && shown < HISTORY_ROWS; i--, shown++) {
+		for (int i = runs.size() - 1 - historyPage * HISTORY_ROWS, shown = 0; i >= 0 && shown < HISTORY_ROWS; i--, shown++) {
 			RunRecord run = runs.get(i);
 			boolean perfect = run.partyUnique() == total;
 			graphics.text(font, Component.literal(formatWhen(run.started)), left, y, WHITE);
