@@ -24,6 +24,7 @@ object HuntingFeatures {
         applyThemeOnce()
         HuntingOutput.warnIfDoubled()
         HuntingChat.register()
+        MissingExtras.install()
         ClientTickEvents.END_CLIENT_TICK.register(::tick)
         ClientPlayConnectionEvents.JOIN.register { _, _, _ -> reset() }
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> reset() }

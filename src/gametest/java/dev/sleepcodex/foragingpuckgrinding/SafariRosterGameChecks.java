@@ -8,7 +8,8 @@ import kotlin.Pair;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.johnceo.sparklingmutuals.hunting.HuntingCompletion;
-import net.johnceo.sparklingmutuals.hunting.HuntingHuds;
+import net.johnceo.sparklingmutuals.safari.structures.WallSummary;
+import net.johnceo.sparklingmutuals.safari.ui.SafariPanels;
 import net.johnceo.sparklingmutuals.safari.*;
 import net.minecraft.network.chat.Component;
 
@@ -53,9 +54,9 @@ final class SafariRosterGameChecks {
         for (var species : SafariRoster.INSTANCE.getAll()) if (caught(run, species.getName()) > 0) total++;
         return total;
     }
-    /** The second HUD row (missing list or "also here") for a species, from the run alone. */
+    /** SM's missing panel row with the extras (owed list or "also here") for a species. */
     private static String hud(SafariRun run, SafariCritter critter) {
-        var panel = HuntingHuds.INSTANCE.missingPanel(critter.getBiome(), HuntingCompletion.INSTANCE.of(run), false, java.util.Map.of(), n -> 0);
+        var panel = SafariPanels.INSTANCE.missing(run, critter.getBiome(), true, 0, 0, new WallSummary(List.of()), SafariSparklingMode.INSTANCE.getState());
         return panel.getRows().stream().filter(row -> row.getLabel().equals(critter.getName()))
                 .map(row -> String.valueOf(row.getValue())).findFirst().orElse("<absent>");
     }
@@ -86,7 +87,7 @@ final class SafariRosterGameChecks {
                 for (int i = 1; i < group.expected(); i++) catchOne(name, i % 2 == 1);
                 if (!Integer.valueOf(1).equals(located(run, species)) || caught(run, name) != group.expected() - 1)
                     throw new AssertionError(name + " should have one located creature left: " + located(run, species));
-                // Second HUD: a quota still owed reads "3/4 · 1 located"; a done species stays under "also here".
+                // Missing panel: a quota still owed reads "3/4 · 1 located"; a done species stays under "also here".
                 String row = hud(run, species);
                 String expectedRow = species.getQuota() > 1 && species.getQuota() > group.expected() - 1
                         ? (group.expected() - 1) + "/" + species.getQuota() + " · 1 located" : "1 located";
@@ -107,6 +108,6 @@ final class SafariRosterGameChecks {
             }
             if (coverage(fresh) != 37) throw new AssertionError("Incomplete personal coverage");
         });
-        System.out.println("PASS: all 37 Safari species in the run ledger and second HUD, visible and hidden captures, 31 bounded populations, six conditional sources and fresh-run isolation");
+        System.out.println("PASS: all 37 Safari species in the run ledger and the missing panel, visible and hidden captures, 31 bounded populations, six conditional sources and fresh-run isolation");
     }
 }

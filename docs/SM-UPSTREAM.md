@@ -49,7 +49,7 @@ Each modification is marked with a `// Hunting Helper:` comment (`#` in the defa
 
 | Path | Contents |
 | --- | --- |
-| `hunting/*.kt` (Kotlin) | CritterMod features built on SM: `HuntingConfig` (`sparkling-mutuals-hunting.properties`), `HuntingSettings` (the **Hunting** settings page), `HuntingCompletion` + `MilestoneTracker` (one done-rule for the second HUD and the run announcements), `HuntingHuds` (second HUD and trades box), `HuntingRuntime` (chat reader, capsule attempts, encounter broadcasts, announcements), `HuntingImport` (CritterMod / journal import), `PlayerChat` (case-insensitive player-line rules), `QuestDropFilter` (floor-drop quest filter), `HuntingOutput` (CritterMod double-install guard, chat queue), `HuntingFeatures` (startup). |
+| `hunting/*.kt` (Kotlin) | CritterMod features built on SM: `HuntingConfig` (`sparkling-mutuals-hunting.properties`), `HuntingSettings` (the **Hunting** settings page), `HuntingCompletion` + `MilestoneTracker` (one done-rule for the missing panel extras and the run announcements), `MissingExtras` (quota rows, located counts and "also here" on SM's missing panel), `HuntingHuds` (trades box), `HuntingRuntime` (chat reader, capsule attempts, encounter broadcasts, announcements), `HuntingImport` (CritterMod / journal import), `PlayerChat` (case-insensitive player-line rules), `QuestDropFilter` (floor-drop quest filter), `HuntingOutput` (CritterMod double-install guard, chat queue), `HuntingFeatures` (startup). |
 | `hunting/*.java` (`src/client/java/net/...`) | Ported CritterMod world logic: `TraderParser`, `TraderWatch`, `HideonwallSpots`, `RecatchSpots`, `TroodonWalls`, `CritterEntities`, `Visibility`, `Markers`, `WaypointRenderer`, `Where` (adapter to SM's location and roster). |
 | `config/SettingsScreens.kt` | Factory that opens the settings workspace. Hunting Helper installs its own screen; upstream `SafariConfigScreen` is the fallback. |
 | `src/test/kotlin/.../hunting/*Test.kt` | Unit tests for the files above. |
@@ -71,8 +71,10 @@ Each modification is marked with a `// Hunting Helper:` comment (`#` in the defa
 | `commands/SparklingCommand.kt`, `contest/ContestGui.kt`, `config/SafariSettings.kt` (runnable 13) | Open settings through `SettingsScreens` | `/sm`, `/sm config`, HUD-editor right-click open Hunting Helper's screen |
 | `config/SafariSettings.kt` | `@Category("Hunting") hunting = HuntingSettings()` appended (page 18); `apply()` calls `hunting.apply()` | Hunting settings in SM's metadata |
 | `config/SafariConfigScreen.kt`, `config/SettingsCatalog.kt` | Page 18 placed under Safari → Hunting | Upstream screen stays usable |
-| `hud/HudLayout.kt` | `SafariHud.HUNTING_MISSING`, `SafariHud.HUNTING_TRADES` | Movable in SM's HUD editor |
-| `config/AppearanceConfig.kt` | `hunting_missing` / `hunting_trades` panel styles; upstream theme defaults migrate to the new theme | Same |
+| `hud/HudLayout.kt` | `SafariHud.HUNTING_TRADES` | Movable in SM's HUD editor |
+| `safari/ui/SafariPanels.kt` | `missingExtras` hook: `missing()` calls the upstream body (`upstreamMissing`), then the hook. Unset in unit tests | Missing panel extras decorate SM's list instead of a second HUD |
+| `config/SafariSettings.kt` (Tracking) | `missingExtras = MissingExtrasSettings()` accordion after "Missing / Unchecked"; `apply()` calls it | Extras settings next to SM's panel |
+| `config/AppearanceConfig.kt` | `hunting_trades` panel style; upstream theme defaults migrate to the new theme | Same |
 | `config/ConfigLayout.kt` | `HudConfigLinks` targets for the two HUDs | Right-click in the HUD editor |
 | `contest/ContestGui.kt` | Adds `HuntingHuds.previews()` | Editor previews |
 | `config/FloorDropToggleSettings.kt` | "Quest items only" / "Hide collected quest items"; `apply()` skips non-drop fields | Floor-drop filter |
@@ -80,9 +82,9 @@ Each modification is marked with a `// Hunting Helper:` comment (`#` in the defa
 | `config/SafariTheme.kt` | Hunting Helper charcoal colours (upstream values in the comment), `UPSTREAM_BORDER/BACKGROUND` | One look across HUDs and chat |
 | `config/SettingsPalette.kt` | Palette 0 is "Hunting Helper" (was "Default"); `HuntingFeatures` selects it once | SM screens use HH colours |
 | `history/ui/HistoryScreen.kt`, `history/ui/HistoryLogScreen.kt` | Charcoal frame, tabs, buttons, scroll thumb | Same |
-| `src/client/resources/defaults/sparkling-mutuals.properties` | Fresh-install styles for the two hunting panels | Match SM's fresh panel look |
+| `src/client/resources/defaults/sparkling-mutuals.properties` | Fresh-install style for the Hunter trades panel | Match SM's fresh panel look |
 
-Reverted from phase 1 (back to upstream): `safari/ui/SafariPanels.kt` (full-clear hooks, replaced by the second HUD), `history/BazaarPrices.kt` and `safari/structures/BeeNests.kt` (only the removed field journal used them).
+Reverted from phase 1 (back to upstream): the phase-1 full-clear hooks in `safari/ui/SafariPanels.kt` (replaced by the `missingExtras` hook above), `history/BazaarPrices.kt` and `safari/structures/BeeNests.kt` (only the removed field journal used them).
 
 ### Upstream tests adapted
 
@@ -90,7 +92,7 @@ Reverted from phase 1 (back to upstream): `safari/ui/SafariPanels.kt` (full-clea
 | --- | --- |
 | `config/NativeSettingsTest` | 19 pages (+ Hunting) |
 | `config/SafariCustomizationTest`, `safari/completion/CommunalCompletionTest` | Expected panel background is the new `SafariTheme.BACKGROUND` |
-| `safari/integration/SafariFeatureIntegrationTest` | Opt-in hunting switches (`uniquesOnly`, Hideonwall, recatch, Troodon marks) listed as default-off exceptions |
+| `safari/integration/SafariFeatureIntegrationTest` | Opt-in hunting switches (`tracking.missingExtras.uniquesOnly`, Hideonwall, recatch, Troodon marks) listed as default-off exceptions |
 
 ## Merging a future SM release
 

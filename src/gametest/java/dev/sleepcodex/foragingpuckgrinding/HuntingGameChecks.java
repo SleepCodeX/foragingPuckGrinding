@@ -16,7 +16,6 @@ import net.johnceo.sparklingmutuals.hunting.CritterEntities;
 import net.johnceo.sparklingmutuals.hunting.HideonwallSpots;
 import net.johnceo.sparklingmutuals.hunting.HuntingAnnouncer;
 import net.johnceo.sparklingmutuals.hunting.HuntingConfig;
-import net.johnceo.sparklingmutuals.hunting.HuntingHuds;
 import net.johnceo.sparklingmutuals.hunting.HuntingOutput;
 import net.johnceo.sparklingmutuals.hunting.HuntingRuns;
 import net.johnceo.sparklingmutuals.hunting.RecatchSpots;
@@ -26,6 +25,9 @@ import net.johnceo.sparklingmutuals.safari.SafariBiome;
 import net.johnceo.sparklingmutuals.safari.SafariChatFilter;
 import net.johnceo.sparklingmutuals.safari.SafariRoster;
 import net.johnceo.sparklingmutuals.safari.SafariTracking;
+import net.johnceo.sparklingmutuals.safari.SafariSparklingMode;
+import net.johnceo.sparklingmutuals.safari.structures.WallSummary;
+import net.johnceo.sparklingmutuals.safari.ui.SafariPanels;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
@@ -43,7 +45,9 @@ final class HuntingGameChecks {
         ClientReceiveMessageEvents.GAME.invoker().onReceiveGameMessage(Component.literal(text), false);
     }
     private static HudPanel missing() {
-        return HuntingHuds.INSTANCE.missingPanel(SafariTracking.INSTANCE.getRun(), SafariBiome.HAUNTED);
+        // SM's own missing panel; Hunting Helper's extras decorate it through SafariPanels.missingExtras.
+        return SafariPanels.INSTANCE.missing(SafariTracking.INSTANCE.getRun(), SafariBiome.HAUNTED, true, 0, 0,
+                new WallSummary(List.of()), SafariSparklingMode.INSTANCE.getState());
     }
     private static String value(HudPanel panel, String label) {
         return panel.getRows().stream().filter(row -> row.getLabel().equals(label)).map(HudRow::getValue).findFirst().orElse("<absent>");
@@ -68,12 +72,14 @@ final class HuntingGameChecks {
             require(root.getChild("hh").getChild("run") != null && root.getChild("hh").getChild("safari") != null, "Missing /hh run or /hh safari");
             require(!FabricLoader.getInstance().isModLoaded("crittermod") && !HuntingOutput.getCritterModLoaded(), "Unexpected standalone CritterMod");
             var config = HuntingConfig.INSTANCE;
-            require(config.getMissingHud() && !config.getUniquesOnly() && config.getTradeHud(), "Second HUD defaults");
+            require(config.getMissingExtras() && !config.getUniquesOnly() && config.getMissingLocated() && config.getMissingAlsoHere() && config.getTradeHud(), "Missing panel extras defaults");
+            require(java.util.Arrays.stream(net.johnceo.sparklingmutuals.hud.SafariHud.values()).noneMatch(h -> h.name().equals("HUNTING_MISSING")), "The separate missing HUD must be gone");
+            require(SafariPanels.missingExtras != null, "Missing panel extras not installed");
             require(config.getTradeAudience() == Audience.NOBODY && config.getMilestoneAudience() == Audience.NOBODY
                     && config.getGemzieAudience() == Audience.NOBODY, "Broadcasts must be opt-in");
         });
 
-        // Stand on a Haunted perch so the second HUD has an area to report.
+        // Stand on a Haunted perch so the missing panel has an area to report.
         server.runCommand("fill 12 70 -63 24 70 -51 minecraft:smooth_stone");
         server.runCommand("tp @p 15 71 -57 -90 10");
         c.runOnClient(client -> {
@@ -98,14 +104,14 @@ final class HuntingGameChecks {
             require(panel.getTitle().equals("Haunted Biome — 9 left"), "Unexpected title " + panel.getTitle());
         });
         c.waitTicks(6);
-        c.takeScreenshot("hunting-missing-hud-gazer-2-of-4");
+        c.takeScreenshot("missing-panel-extras-gazer-2-of-4");
         c.runOnClient(client -> {
             HuntingConfig.INSTANCE.setUniquesOnly(true);
             expect(missing(), "Gazer", "<absent>");
             require(missing().getTitle().equals("Haunted Biome — 8 left"), "Uniques only should tick Gazer after one catch");
         });
         c.waitTicks(3);
-        c.takeScreenshot("hunting-missing-hud-uniques-only");
+        c.takeScreenshot("missing-panel-extras-uniques-only");
         c.runOnClient(client -> {
             HuntingConfig.INSTANCE.setUniquesOnly(false);
             visible(GAZER);
@@ -207,7 +213,7 @@ final class HuntingGameChecks {
         });
         c.waitForScreen(HuntingHomeScreen.class);
         settingsScreens(c);
-        System.out.println("PASS: second HUD (quota and uniques), filtered catches, trades, recatch, announcements, report and HH settings");
+        System.out.println("PASS: missing panel extras (quota, uniques only, located), filtered catches, trades, recatch, announcements, report and HH settings");
     }
 
     /** /hh sections open Sparkling Mutuals' settings in Hunting Helper's style, and so does /sm. */

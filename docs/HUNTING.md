@@ -4,22 +4,25 @@ Hunting Helper's Safari tools are Sparkling Mutuals (SM) features now. SM is the
 
 Open **/hh → Hunting & journal**, **/hh safari**, or **/sm → Safari → Hunting**.
 
-## Missing in this area (second HUD)
+## Missing panel extras
 
-On by default inside Safari areas, separate from SM's own progress and missing panels. It lists the current area's species still missing, titled **"Haunted Biome — 3 left"**, with "2 near" for critters in line of sight, "3 tried" for repeated escapes, and **none this run** for species the run can no longer produce (SM's evidence, e.g. every Snooper wall broken without a Snoozle). In Icy it also counts the Troodon walls still standing.
+There is one missing list: Sparkling Mutuals' own missing panel. Its rows, wording, completion states and the objectives panel stay as upstream; Hunting Helper decorates the list (**HUDs → Missing / Unchecked → Missing panel extras**, on by default):
 
 | Setting | Effect |
 | --- | --- |
-| Uniques only **off** (default) | Gemzie, Troodon, Gazer and Scrappy count to their quota. Two Gazers read **Gazer 2/4**; the row clears at 4/4. |
-| Uniques only **on** | Every species clears after one catch. |
+| Uniques only **off** (default) | Gemzie, Troodon, Gazer and Scrappy stay listed until their quota, even where SM's Unique mode already dropped them after one catch. Two Gazers read **Gazer 2/4**; the row clears at 4/4. The "N left" title counts these rows. |
+| Uniques only **on** | Exactly SM's list. |
+| Located counts | "· 1 located" on a row when the run has seen creatures it has not caught. |
+| Also here | Gray rows for species already done that still have located creatures, since each is another shard. |
+| Troodon walls left | In Icy, the breakable walls still standing. |
 
-Counts come from the run ledger (`SafariRun.captureProgress`: your catches, loot shares and SM party-sync captures). Quotas come from SM's roster (`SafariCritter.quota`), which is CritterMod's table (Gemzie 3, Troodon 3, Gazer 4) plus SM's Scrappy 3. Move or resize it in **/sm gui** like any SM panel.
+Counts come from the run ledger (`SafariRun.captureProgress`: your catches, loot shares and SM party-sync captures, including lines hidden by SM's chat helper or canceled by other mods). Quotas come from SM's roster (`SafariCritter.quota`), which is CritterMod's table (Gemzie 3, Troodon 3, Gazer 4) plus SM's Scrappy 3. In Full Clear SM already shows its own counter ("3/4 captured", from the same captures and the same totals), so that text is kept and no second counter is added. Sparkling mode shows SM's panel without extras. Earlier builds drew this as a separate "Missing in this area" HUD; its saved switches carry over and the panel is gone from the HUD editor.
 
 ## Located creatures
 
 **Located** is the number of uncaught creatures the run has evidence for: loaded models seen by SM's scanner (`SafariRun.populationOf`), feeder birds that spawned, and Rockmite mounds. The run keeps sightings across scans, burrows, escapes and biome changes; a Shyworm that burrows or a Chuckwalla that runs off keeps its place. A capture message checks off one animal, even if it gives several shards, and a hidden loot share counts too. With no evidence yet the count is a dash.
 
-The second HUD adds "2 located" to a missing species, and keeps a species that is done for the list under **also here** while located creatures are left, since each is another shard. The run report shows a **Located** column per area.
+The missing panel adds "· 2 located" to a missing species, and lists a species that is already done under **also here** while located creatures are left. The run report shows a **Located** column per area.
 
 | Area | Ordinary or fixed spawns per run | Conditional spawns |
 | --- | --- | --- |
@@ -32,7 +35,7 @@ Ranges describe a full run, including creatures unlocked through encounters. [Sa
 
 ## Run announcements
 
-**Everything except Macaw done!** and **Everything Done!** use the same rule as the second HUD, so they follow Uniques only. Each fires once per run with its own switch. If one catch completes everything, only "Everything Done!" fires (CritterMod's suppression). They appear in SM's banner slot and chat, and can be posted to the party or all chat.
+**Everything except Macaw done!** and **Everything Done!** use the same rule as the missing panel extras, so they follow Uniques only. Each fires once per run with its own switch. If one catch completes everything, only "Everything Done!" fires (CritterMod's suppression). They appear in SM's banner slot and chat, and can be posted to the party or all chat.
 
 ## Hunter trades
 
@@ -71,7 +74,7 @@ On the first start Hunting Helper reads `config/crittermod.json` and `config/hun
 
 ## With the standalone CritterMod installed
 
-Hunting Helper detects the `crittermod` mod and turns off its own trade box, marks and broadcasts so nothing appears twice (a warning is logged). The second HUD and announcements stay on.
+Hunting Helper detects the `crittermod` mod and turns off its own trade box, marks and broadcasts so nothing appears twice (a warning is logged). The missing panel extras and announcements stay on.
 
 ## What moved to SM
 

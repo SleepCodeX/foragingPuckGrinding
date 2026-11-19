@@ -40,7 +40,7 @@ class HuntingImportTest {
         val result = HuntingImport.applySettings(critterMod)
         assertTrue(result.read)
         assertTrue(result.smChanged, "price source is Sparkling Mutuals' history setting")
-        assertTrue(HuntingConfig.uniquesOnly); assertFalse(HuntingConfig.missingHud)
+        assertTrue(HuntingConfig.uniquesOnly); assertFalse(HuntingConfig.missingExtras)
         assertTrue(HuntingConfig.tradeMarks); assertTrue(HuntingConfig.hideonwallMarks); assertTrue(HuntingConfig.recatchMarks)
         assertEquals("0:255:85:255:255", HuntingConfig.tradeColor)
         assertEquals("12:200:170:85:255", HuntingConfig.hideonwallColor)
@@ -113,5 +113,15 @@ class HuntingImportTest {
         Files.writeString(dir.resolve(HuntingImport.CM_SETTINGS), "{{{")
         assertNull(HuntingImport.runOnce(dir))
         assertTrue(HuntingConfig.critterModSettingsImported)
+    }
+
+    @Test fun `the separate missing HUD's saved state migrates to the panel extras`() {
+        HuntingConfig.read(java.util.Properties().apply { setProperty("missingHud", "false"); setProperty("missingNearby", "false"); setProperty("uniquesOnly", "true") })
+        assertFalse(HuntingConfig.missingExtras); assertTrue(HuntingConfig.uniquesOnly)
+        assertFalse(HuntingConfig.missingLocated); assertFalse(HuntingConfig.missingAlsoHere)
+        HuntingConfig.read(java.util.Properties())
+        assertTrue(HuntingConfig.missingExtras && HuntingConfig.missingLocated && HuntingConfig.missingAlsoHere)
+        HuntingConfig.read(HuntingConfig.write().apply { setProperty("missingHud", "false") })
+        assertTrue(HuntingConfig.missingExtras, "the new key wins once saved")
     }
 }

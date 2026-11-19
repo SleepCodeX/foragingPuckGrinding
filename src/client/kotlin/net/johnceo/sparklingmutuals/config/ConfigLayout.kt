@@ -44,7 +44,6 @@ object HudConfigLinks {
             net.johnceo.sparklingmutuals.hud.SafariHud.RUN_COMPLETE -> SettingsTarget(banner,listOf("safari","complete","enabled"))
             net.johnceo.sparklingmutuals.hud.SafariHud.WARP -> SettingsTarget(banner,listOf("safari","warp","enabled"))
             // Hunting Helper: hunting HUDs
-            net.johnceo.sparklingmutuals.hud.SafariHud.HUNTING_MISSING -> SettingsTarget("Hunting",listOf("missingHud","enabled"))
             net.johnceo.sparklingmutuals.hud.SafariHud.HUNTING_TRADES -> SettingsTarget("Hunting",listOf("trades","hud"))
         }
     }

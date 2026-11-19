@@ -1,6 +1,6 @@
 # Hunting Helper
 
-One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, customize through-wall highlights, and run the Critter Safari with the complete Sparkling Mutuals suite, extended with CritterMod's Hunter trades, marks and "Missing in this area" HUD, all in Hunting Helper's matte charcoal style.
+One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, customize through-wall highlights, and run the Critter Safari with the complete Sparkling Mutuals suite, extended with CritterMod's Hunter trades, marks and quota-aware missing list, all in Hunting Helper's matte charcoal style.
 
 **Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+**
 
@@ -43,12 +43,12 @@ Remove any standalone Sparkling Mutuals JAR from `mods` (the loader reports the 
 
 CritterMod's tools that SM did not have now live inside it and read SM's run ledger:
 
-- **Missing in this area**: a second HUD inside Safari areas listing the current area's missing species with "N left". Quota species read **Gazer 2/4** until done; **Uniques only** ticks them after one catch.
+- **Missing panel extras** on SM's own missing panel: quota species stay listed as **Gazer 2/4** until done (or tick after one catch with **Uniques only**), each row shows located creatures, and done species with creatures left appear under "also here".
 - **Everything except Macaw done!** and **Everything Done!** announcements, each with a switch.
 - **Hunter trades**: offers in a movable box and as waypoints, shared with party in CritterMod's format, retired when taken. Party prefixes are read in any capitalisation.
 - **World marks**: Hideonwall perches, recatch pins, Troodon walls.
 - **Floor-drop filter**: quest items only, hide quest items already collected, while items a Hunter trade wants stay highlighted.
-- **Located creatures** for all 37 species: the run remembers every creature it has seen (loaded models, feeder birds, Rockmite mounds) through burrows, escapes and biome changes, and checks one off per catch. The second HUD shows "1 located", the run report has a Located column.
+- **Located creatures** for all 37 species: the run remembers every creature it has seen (loaded models, feeder birds, Rockmite mounds) through burrows, escapes and biome changes, and checks one off per catch. The missing panel shows "· 1 located", the run report has a Located column.
 - **This run** (**/hh run**): who caught each species, capsules tried and escaped, shards and their value at both Bazaar prices.
 - Per-event party/all-chat broadcasts, and a one-time import of CritterMod and Hunting Helper 1.6 journal settings and run history.
 

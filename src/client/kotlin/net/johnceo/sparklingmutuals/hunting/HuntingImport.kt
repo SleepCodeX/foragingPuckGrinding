@@ -58,7 +58,7 @@ object HuntingImport {
         fun <T> set(value: T?, write: (T) -> Unit) { if (value != null) { write(value); fields++ } }
         root.obj("display")?.let { d ->
             set(d.bool("uniqueOnly")) { HuntingConfig.uniquesOnly = it }
-            set(d.bool("showMissing")) { HuntingConfig.missingHud = it }
+            set(d.bool("showMissing")) { HuntingConfig.missingExtras = it }
             set(d.bool("showTrades")) { HuntingConfig.tradeHud = it }
             set(d.bool("highlightTrades")) { HuntingConfig.tradeMarks = it }
             set(d.bool("highlightHideonwalls")) { HuntingConfig.hideonwallMarks = it }

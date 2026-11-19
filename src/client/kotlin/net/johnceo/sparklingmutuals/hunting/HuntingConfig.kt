@@ -26,10 +26,11 @@ object HuntingConfig {
     private val logger = LoggerFactory.getLogger("hunting-helper/settings")
     private var file: Path? = null
 
-    // Second HUD
-    var missingHud = true
+    // Missing panel extras (MissingExtras)
+    var missingExtras = true
     var uniquesOnly = false
-    var missingNearby = true
+    var missingLocated = true
+    var missingAlsoHere = true
     // Whole-run announcements
     var allButMacawAlert = true
     var allDoneAlert = true
@@ -84,7 +85,10 @@ object HuntingConfig {
         fun bool(key: String, default: Boolean) = p.getProperty(key)?.toBooleanStrictOrNull() ?: default
         fun audience(key: String) = Audience.entries.firstOrNull { it.name == p.getProperty(key) } ?: Audience.NOBODY
         fun color(key: String, default: String) = SafariEspConfig.validColor(p.getProperty(key), default)
-        missingHud = bool("missingHud", true); uniquesOnly = bool("uniquesOnly", false); missingNearby = bool("missingNearby", true)
+        // The separate "Missing in this area" HUD (missingHud / missingNearby) became extras on SM's missing panel.
+        missingExtras = bool("missingExtras", bool("missingHud", true)); uniquesOnly = bool("uniquesOnly", false)
+        val legacyNotes = bool("missingNearby", true)
+        missingLocated = bool("missingLocated", legacyNotes); missingAlsoHere = bool("missingAlsoHere", legacyNotes)
         allButMacawAlert = bool("allButMacawAlert", true); allDoneAlert = bool("allDoneAlert", true)
         milestoneAudience = audience("milestoneAudience")
         tradeHud = bool("tradeHud", true); tradeMarks = bool("tradeMarks", true); tradeChat = bool("tradeChat", true)
@@ -109,7 +113,8 @@ object HuntingConfig {
 
     internal fun write(): Properties = Properties().apply {
         fun put(key: String, value: Any) = setProperty(key, value.toString())
-        put("missingHud", missingHud); put("uniquesOnly", uniquesOnly); put("missingNearby", missingNearby)
+        put("missingExtras", missingExtras); put("uniquesOnly", uniquesOnly)
+        put("missingLocated", missingLocated); put("missingAlsoHere", missingAlsoHere)
         put("allButMacawAlert", allButMacawAlert); put("allDoneAlert", allDoneAlert); put("milestoneAudience", milestoneAudience.name)
         put("tradeHud", tradeHud); put("tradeMarks", tradeMarks); put("tradeChat", tradeChat)
         put("acceptSharedTrades", acceptSharedTrades); put("tradeAudience", tradeAudience.name); put("tradeColor", tradeColor)

@@ -1,7 +1,10 @@
 package net.johnceo.sparklingmutuals.hunting
 
 import net.johnceo.sparklingmutuals.commands.PartyChat
+import net.johnceo.sparklingmutuals.hud.HudPanel
+import net.johnceo.sparklingmutuals.hud.HudRow
 import net.johnceo.sparklingmutuals.safari.SafariBiome
+import net.johnceo.sparklingmutuals.safari.SafariMode
 import net.johnceo.sparklingmutuals.safari.SafariMessages
 import net.johnceo.sparklingmutuals.safari.SafariRoster
 import org.junit.jupiter.api.Assertions.*
@@ -69,17 +72,28 @@ class HuntingCompletionTest {
 
     @Test fun `missing panel reads Gazer 2 of 4, then drops it at 4 of 4`() {
         val run = FakeRun(mutableMapOf("Gazer" to 2, "Areita" to 1))
-        val off = HuntingHuds.missingPanel(SafariBiome.HAUNTED, run, uniquesOnly = false)
+        // SM's Unique list already dropped Gazer after one catch; the extras keep it until its quota.
+        val sm = smUniquePanel(SafariBiome.HAUNTED, run)
+        assertEquals("Haunted Biome — 8 left", sm.title)
+        val off = extras(sm, SafariBiome.HAUNTED, run, uniquesOnly = false)
         assertEquals("Haunted Biome — 9 left", off.title)
         assertEquals("2/4", off.rows.first { it.label == "Gazer" }.value)
         assertTrue(off.rows.none { it.label == "Areita" })
-        val on = HuntingHuds.missingPanel(SafariBiome.HAUNTED, run, uniquesOnly = true)
-        assertEquals("Haunted Biome — 8 left", on.title)
-        assertTrue(on.rows.none { it.label == "Gazer" })
+        val on = extras(sm, SafariBiome.HAUNTED, run, uniquesOnly = true)
+        assertSame(sm, on, "Uniques only is exactly SM's list")
         run.caught["Gazer"] = 4
-        val full = HuntingHuds.missingPanel(SafariBiome.HAUNTED, run, uniquesOnly = false)
+        val full = extras(smUniquePanel(SafariBiome.HAUNTED, run), SafariBiome.HAUNTED, run, uniquesOnly = false)
         assertEquals("Haunted Biome — 8 left", full.title)
         assertTrue(full.rows.none { it.label == "Gazer" })
+    }
+
+    @Test fun `SM's own counter is kept and Sparkling mode is untouched`() {
+        val run = FakeRun(mutableMapOf("Gazer" to 3))
+        val fullClear = HudPanel("Haunted Biome — 1 left", 0, listOf(HudRow("Gazer", "3/4 captured", icon = null)))
+        assertEquals("3/4 captured", MissingExtras.decorate(fullClear, SafariBiome.HAUNTED, run,
+            MissingExtras.Options(false, true, true), SafariMode.FULL_CLEAR).rows.single { it.label == "Gazer" }.value)
+        val sparkling = smUniquePanel(SafariBiome.HAUNTED, run)
+        assertSame(sparkling, MissingExtras.decorate(sparkling, SafariBiome.HAUNTED, run, MissingExtras.Options(false, true, true), SafariMode.SPARKLING))
     }
 
     @Test fun `none this run counts as done and is listed apart`() {
@@ -87,20 +101,26 @@ class HuntingCompletionTest {
         val area = HuntingCompletion.area(SafariBiome.CAVERN, run, uniquesOnly = false)
         assertEquals(listOf("Snoozle"), area.unavailable.map { it.name })
         assertTrue(area.missing.none { it.critter.name == "Snoozle" })
-        val panel = HuntingHuds.missingPanel(SafariBiome.CAVERN, run, uniquesOnly = false)
-        assertEquals("none this run", panel.rows.first { it.label == "Snoozle" }.value)
         // A catch overrides the unavailability evidence.
         run.caught["Snoozle"] = 1
         assertTrue(HuntingCompletion.area(SafariBiome.CAVERN, run, false).unavailable.isEmpty())
     }
 
-    @Test fun `an area with everything caught says so`() {
+    @Test fun `an area with everything caught keeps SM's completion row`() {
         val run = FakeRun().all()
-        val panel = HuntingHuds.missingPanel(SafariBiome.FOREST, run, uniquesOnly = false)
-        assertEquals("Forest Biome", panel.title)
-        assertEquals("all 9 caught", panel.rows.single().label)
+        val sm = smUniquePanel(SafariBiome.FOREST, run)
+        assertSame(sm, extras(sm, SafariBiome.FOREST, run, uniquesOnly = false))
+        assertEquals("All caught!", sm.rows.single().label)
     }
 }
+
+/** What SM's Unique-mode missing panel lists for a run: species with no capture that can still spawn. */
+private fun smUniquePanel(biome: SafariBiome, run: HuntingCompletion.Source): HudPanel {
+    val rows = biome.critters.filter { run.caught(it.name) == 0 && !run.unavailable(it.name) }.map { HudRow(it.name, null, it.color, HudRow.GRAY, icon = null) }
+    return HudPanel("${biome.label} Biome — ${rows.size} left", biome.color, rows.ifEmpty { listOf(HudRow("All caught!", complete = true)) })
+}
+private fun extras(panel: HudPanel, biome: SafariBiome, run: HuntingCompletion.Source, uniquesOnly: Boolean) =
+    MissingExtras.decorate(panel, biome, run, MissingExtras.Options(uniquesOnly, located = true, alsoHere = true), SafariMode.UNIQUE)
 
 class MilestoneTrackerTest {
     @Test fun `everything except Macaw fires once, then Everything Done when the Macaw lands`() {
@@ -136,15 +156,15 @@ class MilestoneTrackerTest {
 }
 
 class LocatedCreaturesTest {
-    @Test fun `located counts survive catches and show on the second HUD`() {
+    @Test fun `located counts survive catches and show on the missing panel`() {
         val shyworm = SafariRoster.named("Shyworm")!!
         val run = FakeRun(seen = mutableMapOf("Shyworm" to 3, "Gemzie" to 3))
         assertNull(HuntingCompletion.located(SafariRoster.named("Foxtrot")!!, run), "no count yet")
         assertEquals(3, HuntingCompletion.located(shyworm, run))
-        assertEquals("3 located", HuntingHuds.missingPanel(SafariBiome.CAVERN, run, false).rows.first { it.label == "Shyworm" }.value)
+        assertEquals("3 located", extras(smUniquePanel(SafariBiome.CAVERN, run), SafariBiome.CAVERN, run, false).rows.first { it.label == "Shyworm" }.value)
         run.caught["Shyworm"] = 2; run.caught["Gemzie"] = 2
         assertEquals(1, HuntingCompletion.located(shyworm, run))
-        val panel = HuntingHuds.missingPanel(SafariBiome.CAVERN, run, false)
+        val panel = extras(smUniquePanel(SafariBiome.CAVERN, run), SafariBiome.CAVERN, run, false)
         assertEquals("2/3 · 1 located", panel.rows.first { it.label == "Gemzie" }.value)
         assertEquals("1 located", panel.rows.first { it.label == "Shyworm" }.value, "done, but still listed under also here")
         run.caught["Shyworm"] = 5

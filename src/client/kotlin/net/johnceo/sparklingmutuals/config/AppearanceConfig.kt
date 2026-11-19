@@ -28,7 +28,7 @@ object AppearanceConfig {
     var resourcePackFont = true
     fun color(rgb: Int) = "0:255:${rgb shr 16 and 255}:${rgb shr 8 and 255}:${rgb and 255}"
     val panels = listOf("hotspot", "miria", "progress", "profitable", "lake_cleared", "missing", "objectives", "captures", "sparklings", "alert", "gems", "bird_food", "incense", "coins", "warp", "run_complete", "doom_throw", "entry_cooldown", "developer", "shard_guidance", "hunting_box_value",
-        "hunting_missing", "hunting_trades").associateWith { PanelStyle() } // Hunting Helper: hunting_* panels
+        "hunting_trades").associateWith { PanelStyle() } // Hunting Helper: Hunter trades panel
     var runCompleteColor = color(0x55FF55)
     var selectedHex = "#FFD700"
     var nestColor = color(0x55FF55)

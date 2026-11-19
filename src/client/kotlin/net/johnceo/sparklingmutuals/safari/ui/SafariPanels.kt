@@ -77,8 +77,16 @@ object SafariPanels {
             else if (SafariFullClear.mode == SafariMode.UNIQUE) run == null || run.captureProgress(it.name) == 0 && !run.sharedCritterComplete(it.name, SafariMode.UNIQUE) && !run.uniqueUnavailable(it.name)
             else run?.missing(it, ConfigManager.fullClearMode) != false }
     }
+    // Hunting Helper: decorates the missing panel with quota rows, located counts and "also here" rows
+    // (hunting/MissingExtras.kt). Installed at startup; unset in unit tests, which keep checking upstream behavior.
+    @JvmField var missingExtras: ((SafariRun?, SafariBiome, HudPanel) -> HudPanel)? = null
     fun missing(run: SafariRun?, biome: SafariBiome, unique: Boolean, nests: Int, mounds: Int = 0,
         walls: WallSummary = WallSummary(emptyList()), party: PartySparklingState = SafariSparklingMode.state): HudPanel {
+        val panel = upstreamMissing(run, biome, unique, nests, mounds, walls, party)
+        return missingExtras?.invoke(run, biome, panel) ?: panel // Hunting Helper: see missingExtras
+    }
+    private fun upstreamMissing(run: SafariRun?, biome: SafariBiome, unique: Boolean, nests: Int, mounds: Int, // Hunting Helper: upstream body
+        walls: WallSummary, party: PartySparklingState): HudPanel {
         val sparkling = SafariFullClear.mode == SafariMode.SPARKLING
         if(run?.biomeComplete(SafariFullClear.mode,biome,party)==true && !ScannableCritterChecks.pending(biome,run,party))
             return HudPanel("${biome.label} ${if(sparkling) "Unchecked" else "Biome"} — 0 left",biome.color,listOf(completedRow(missingCompleteText(sparkling))))

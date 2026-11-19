@@ -444,6 +444,9 @@ class SafariSettings {
         @JvmField @ConfigOption(name="Hotspot GUI",desc="Follows /hotspot. Party hotspots, assigned biomes and hotspot wins.") @Accordion val hotspotHud=HotspotHudOptions()
         @JvmField @ConfigOption(name="Progress HUD",desc="") @Accordion val progressHud=ProgressHudOptions()
         @JvmField @ConfigOption(name="Missing / Unchecked",desc="") @Accordion val missingHud=HudOptions(ConfigManager.missingPanel,"missing")
+        // Hunting Helper: quota rows, located counts and "also here" on the missing panel (hunting/MissingExtras.kt).
+        @JvmField @ConfigOption(name="Missing panel extras",desc="Unique and Full Clear only; Sparkling mode keeps the upstream panel.") @Accordion
+        val missingExtras=net.johnceo.sparklingmutuals.hunting.MissingExtrasSettings()
         @JvmField @ConfigOption(name="Profitable shards checklist",desc="Unique and Sparkle modes. Current biome's /profit top ten and captures remaining.") @Accordion val profitableHud=HudOptions(ConfigManager.profitableChecklist,"profitable")
         @JvmField @ConfigOption(name="Lake Cleared alert",desc="Once per run after you catch Tepid, Nozzlenose and Mantis Shrimp. Resize in /sm gui.") @Accordion val lakeClearedHud=HudOptions(ConfigManager.lakeClearAlert,"lake_cleared")
         @JvmField @ConfigOption(name="Biome Objectives",desc="") @Accordion val objectivesHud=HudOptions(ConfigManager.biomeObjectives,"objectives")
@@ -547,7 +550,7 @@ class SafariSettings {
     private var lastAppliedMode = net.johnceo.sparklingmutuals.safari.completion.SafariFullClear.mode
     fun apply(notifyMode: Boolean = false) {
         saveDelay()
-        hunting.apply() // Hunting Helper
+        hunting.apply(); tracking.missingExtras.apply() // Hunting Helper
         val currentMode = net.johnceo.sparklingmutuals.safari.completion.SafariFullClear.mode
         if (currentMode != lastAppliedMode) {
             tracking.captures = ConfigManager.catchCountPanel

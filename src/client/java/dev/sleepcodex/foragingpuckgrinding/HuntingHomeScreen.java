@@ -14,7 +14,7 @@ import net.minecraft.network.chat.Component;
 final class HuntingHomeScreen extends Screen {
     enum Section {
         MODES("Safari modes", "Unique, Sparkling and Full Clear", "Modes", "unique"),
-        HUNTING("Hunting & journal", "Missing HUD, trades, marks, run report", "Hunting", "missingHud"),
+        HUNTING("Hunting & journal", "Trades, marks, announcements, run report", "Hunting", "trades"),
         ESP("Visuals & ESP", "Glow, boxes and floor drops", "ESP General", "glow"),
         HUD("HUD layout", "Progress panels and appearance", "HUDs", "progressHud"),
         ALERTS("Alerts", "Banners, sounds and encounters", "Banner", "enabled"),
