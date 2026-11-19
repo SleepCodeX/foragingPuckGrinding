@@ -37,12 +37,12 @@ class TracerConfigTest {
         assertFalse(config.enabled());
     }
 
-    @Test void allEightIndependentSelectionsPersistAndLegacyBothDoesNotAddGhasts() throws Exception {
+    @Test void everyIndependentSelectionPersistsAndLegacyBothDoesNotAddNewTargets() throws Exception {
         Path file = directory.resolve("tracers.properties");
         Files.writeString(file, "enabled=true\ntarget=BOTH\n");
         TracerConfig config = new TracerConfig(file); config.load();
         assertEquals(java.util.EnumSet.of(TracerTarget.VEX, TracerTarget.BLUE_JAY), config.selectedTargets());
-        for (int mask=0;mask<8;mask++) {
+        for (int mask=0;mask<(1<<TracerTarget.values().length);mask++) {
             var selection=java.util.EnumSet.noneOf(TracerTarget.class);
             for (var target:TracerTarget.values()) if((mask&(1<<target.ordinal()))!=0)selection.add(target);
             config.setTargets(selection);
@@ -54,5 +54,15 @@ class TracerConfigTest {
         assertEquals(java.util.EnumSet.of(TracerTarget.VEX),config.selectedTargets());
         Files.writeString(file,"enabled=true\n");config.load();
         assertEquals(java.util.EnumSet.of(TracerTarget.VEX),config.selectedTargets());
+    }
+
+    @Test void allKeywordSelectsParchedAndPollendartToo() throws Exception {
+        Path file = directory.resolve("tracers.properties");
+        Files.writeString(file, "enabled=true\ntargets=ALL\n");
+        TracerConfig config = new TracerConfig(file); config.load();
+        assertEquals(java.util.EnumSet.allOf(TracerTarget.class), config.selectedTargets());
+        Files.writeString(file, "enabled=true\ntargets=PARCHED,pollendart\n");
+        config.load();
+        assertEquals(java.util.EnumSet.of(TracerTarget.PARCHED, TracerTarget.POLLENDART), config.selectedTargets());
     }
 }

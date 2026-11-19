@@ -3,7 +3,7 @@
   "id": "foragingpuckgrinding",
   "version": "${version}",
   "name": "Hunting Helper",
-  "description": "OneClient-inspired hunting tracker with custom-colored tracers, mob boxes and through-wall model glow for Vex, Blue Jay and Hivethief.",
+  "description": "OneClient-inspired hunting tracker with custom-colored tracers, mob boxes and through-wall model glow for Vex, Blue Jay, Hivethief, Parched and Pollendart.",
   "icon": "assets/foragingpuckgrinding/icon.png",
   "authors": ["SleepCodeX"],
   "contact": {"sources": "https://github.com/SleepCodeX/foragingPuckGrinding"},

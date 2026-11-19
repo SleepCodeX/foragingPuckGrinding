@@ -37,6 +37,20 @@ class OverlayColorsTest {
         assertEquals(0, restored.glowColor(TracerTarget.HIVE_THIEF));
         assertEquals(OverlayColor.GOLD.argb(), restored.lineColor(TracerTarget.HIVE_THIEF));
         assertEquals(OverlayColor.CYAN.argb(), restored.glowColor(TracerTarget.BLUE_JAY));
+        assertEquals(OverlayColor.RED.argb(), restored.glowColor(TracerTarget.PARCHED));
+        assertEquals(OverlayColor.GREEN.argb(), restored.glowColor(TracerTarget.POLLENDART));
+    }
+
+    @Test void newTargetsKeepTheirOwnColorsAndGlowOff() throws Exception {
+        Path file = dir.resolve("settings.properties");
+        var config = new TracerConfig(file);
+        config.setColor(TracerTarget.PARCHED, false, OverlayColor.GOLD);
+        config.setColor(TracerTarget.POLLENDART, true, OverlayColor.OFF);
+        var restored = new TracerConfig(file); restored.load();
+        assertEquals(OverlayColor.GOLD.argb(), restored.lineColor(TracerTarget.PARCHED));
+        assertEquals(OverlayColor.GOLD.argb(), restored.glowColor(TracerTarget.PARCHED));
+        assertEquals(0, restored.glowColor(TracerTarget.POLLENDART));
+        assertEquals(OverlayColor.GREEN.argb(), restored.lineColor(TracerTarget.POLLENDART));
     }
 
     @Test void matchLineFollowsChangesAndInvalidStoredColorsFallBack() throws Exception {

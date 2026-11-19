@@ -36,6 +36,8 @@ public final class VexTracerClient implements ClientModInitializer {
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "tracers"));
         KeyMapping toggle = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.foragingpuckgrinding.toggle_vex_tracers", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, category));
+        // Register the tint pipeline at startup instead of mid-frame when the first glow appears.
+        java.util.Objects.requireNonNull(Highlight.FILL);
         VexTracerRenderer renderer = new VexTracerRenderer(config);
         TrackedOutlines.install(renderer);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -55,10 +57,21 @@ public final class VexTracerClient implements ClientModInitializer {
                         .then(literal("on").executes(context -> setEnabled(Minecraft.getInstance(), true)))
                         .then(literal("off").executes(context -> setEnabled(Minecraft.getInstance(), false)))
                         .then(literal("menu").executes(context -> requestMenu())));
-            dispatcher.register(literal("huntinghelper").executes(context -> requestMenu()));
+            for (String name : new String[] {"huntinghelper", "hh"}) {
+                dispatcher.register(literal(name).executes(context -> requestMenu())
+                        .then(literal("debug").executes(context -> toggleDebug())));
+            }
         });
         LevelExtractionEvents.END_EXTRACTION.register(renderer::extract);
         LevelRenderEvents.COLLECT_SUBMITS.register(renderer::submit);
+    }
+
+    private int toggleDebug() {
+        boolean on = HuntingDebug.toggle();
+        var player = Minecraft.getInstance().player;
+        if (player != null) player.sendSystemMessage(Component.literal("Hunting Helper debug: " + (on
+                ? "ON - writes a summary to latest.log every 5 seconds (search for [Hunting Helper])" : "OFF")));
+        return 1;
     }
 
     private int requestMenu() {

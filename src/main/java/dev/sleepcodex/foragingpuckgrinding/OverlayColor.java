@@ -16,7 +16,8 @@ public enum OverlayColor {
     public int argb() { return argb; }
     public boolean isSolid() { return this != MATCH && this != OFF; }
     public static OverlayColor defaultFor(TracerTarget target) {
-        return switch (target) { case VEX -> PURPLE; case BLUE_JAY -> CYAN; case HIVE_THIEF -> GOLD; };
+        return switch (target) { case VEX -> PURPLE; case BLUE_JAY -> CYAN; case HIVE_THIEF -> GOLD;
+            case PARCHED -> RED; case POLLENDART -> GREEN; };
     }
     static OverlayColor parse(String value, OverlayColor fallback) {
         try { return valueOf(value.strip().toUpperCase(Locale.ROOT)); }

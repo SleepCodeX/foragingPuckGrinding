@@ -41,6 +41,27 @@ final class MobSymbols {
                     canvas.round(-1, 4, 3, 9, 1, 0xFFFFE2A1);
                     canvas.round(4, 4, 3, 6, 1, 0xFFF1C87A);
                 }
+                case PARCHED -> {
+                    canvas.round(-8, -9, 16, 14, 5, 0xFFEADFC4);
+                    canvas.round(-9, -11, 18, 4, 2, 0xFFFF6868);
+                    canvas.round(-5, -4, 4, 4, 1, 0xFF4A362B);
+                    canvas.round(1, -4, 4, 4, 1, 0xFF4A362B);
+                    canvas.round(-1, 1, 2, 2, 1, 0xFF8A7058);
+                    canvas.round(-5, 4, 10, 6, 2, 0xFFD3C19C);
+                    canvas.round(-3, 6, 1, 3, 0, 0xFF8A7058);
+                    canvas.round(0, 6, 1, 3, 0, 0xFF8A7058);
+                    canvas.round(3, 6, 1, 3, 0, 0xFF8A7058);
+                }
+                case POLLENDART -> {
+                    canvas.round(-8, -11, 7, 7, 3, 0xFFDDF4FF);
+                    canvas.round(1, -11, 7, 7, 3, 0xFFDDF4FF);
+                    canvas.round(-10, -5, 20, 13, 6, 0xFFFFD34D);
+                    canvas.round(-4, -5, 3, 13, 1, 0xFF3B2E25);
+                    canvas.round(2, -5, 3, 13, 1, 0xFF3B2E25);
+                    canvas.round(6, -1, 2, 2, 1, 0xFF1E1A17);
+                    canvas.round(-13, 1, 4, 2, 1, 0xFF3B2E25);
+                    canvas.round(8, 5, 4, 4, 2, 0xFF76E5A0);
+                }
             }
         } finally {
             graphics.pose().popMatrix();

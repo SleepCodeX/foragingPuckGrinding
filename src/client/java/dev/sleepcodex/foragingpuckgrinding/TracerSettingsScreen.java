@@ -24,6 +24,7 @@ public final class TracerSettingsScreen extends Screen {
     private static final OverlayColor[] GLOW_COLORS = OverlayColor.values();
     private static final OverlayColor[] LINE_COLORS = Arrays.stream(GLOW_COLORS).filter(OverlayColor::isSolid).toArray(OverlayColor[]::new);
     private static final int POPUP_ROWS = 5, POPUP_ROW_HEIGHT = 22;
+    private static final int COLUMNS = 3, CARD_ROWS = (TYPES.length + COLUMNS - 1) / COLUMNS;
     private final TracerConfig config;
     private final KeyMapping toggleKey;
     private final Consumer<Boolean> enable;
@@ -38,6 +39,7 @@ public final class TracerSettingsScreen extends Screen {
     private final IdentityHashMap<Button, Integer> baseY = new IdentityHashMap<>();
     private Button enabledButton, allButton, noneButton, doneButton, popupAnchor;
     private int left, top, panelWidth, panelHeight, bodyTop, bodyBottom, contentHeight, scroll, shownChunks = -1;
+    private int cardHeight;
     private int popupX, popupY, popupWidth, popupScroll, popupIndex;
     private boolean cards, displayedEnabled, popupGlow, draggingScrollbar;
     private TracerTarget popupTarget;
@@ -68,18 +70,20 @@ public final class TracerSettingsScreen extends Screen {
 
     @Override protected void init() {
         bodyButtons.clear(); navigation.clear(); baseY.clear(); popupTarget = null; draggingScrollbar = false;
-        panelWidth = Math.min(570, width - 24);
-        panelHeight = Math.min(328, height - 16);
+        panelWidth = Math.min(600, width - 24);
+        // Fit all five cards at the usual 640 x 360 GUI size. Smaller windows retain
+        // the same controls in a scrollable single column, including keyboard reveal.
+        cards = panelWidth >= 430 && height >= 320;
+        panelHeight = Math.min(cards ? 68 + CARD_ROWS * 152 + (CARD_ROWS - 1) * 14 + 12 + 46 : 328, height - 20);
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
-        cards = panelWidth >= 430 && panelHeight >= 280;
         int footer = top + panelHeight - 34;
-        bodyTop = top + (cards ? 76 : 64);
+        bodyTop = top + (cards ? 68 : 64);
         bodyBottom = footer - 12;
-        int gap = cards ? 22 : 16;
-        int cardWidth = cards ? (panelWidth - 40 - gap * 2) / 3 : panelWidth - 40;
-        int cardHeight = cards ? 178 : 112;
-        contentHeight = cards ? cardHeight + 12 : TYPES.length * (cardHeight + gap) - gap + 12;
+        int gap = cards ? 14 : 12;
+        int cardWidth = cards ? (panelWidth - 40 - gap * (COLUMNS - 1)) / COLUMNS : panelWidth - 40;
+        cardHeight = cards ? Math.clamp((bodyBottom - bodyTop - 12 - gap * (CARD_ROWS - 1)) / CARD_ROWS, 96, 152) : 104;
+        contentHeight = (cards ? CARD_ROWS : TYPES.length) * (cardHeight + gap) - gap + 12;
         titleScale = Math.min(1.45, (panelWidth - 180) / MenuFont.width("Hunting Helper"));
         shortcut = MenuFont.ellipsis(toggleKey.getTranslatedKeyMessage().getString() + " toggles selected", panelWidth - 185);
         enabledButton = addRenderableWidget(Button.builder(masterLabel(), b -> {
@@ -87,16 +91,19 @@ public final class TracerSettingsScreen extends Screen {
         }).bounds(left + panelWidth - 112, top + 15, 96, 27).build());
         navigation.add(enabledButton);
         for (TracerTarget target : TYPES) {
-            int index = target.ordinal(), x = left + 20 + (cards ? index * (cardWidth + gap) : 0);
-            int y = bodyTop + 6 + (cards ? 0 : index * (cardHeight + gap));
-            mobButtons[index] = bodyButton(mobLabel(target), x + 10, y + 8, cardWidth - 20, cards ? 80 : 34, b -> {
+            int index = target.ordinal(), row = cards ? index / COLUMNS : index, column = cards ? index % COLUMNS : 0;
+            // A shorter last row of cards is centered under the full rows.
+            int inRow = cards ? Math.min(COLUMNS, TYPES.length - row * COLUMNS) : 1;
+            int x = left + 20 + (cards ? (COLUMNS - inRow) * (cardWidth + gap) / 2 + column * (cardWidth + gap) : 0);
+            int y = bodyTop + 6 + row * (cardHeight + gap);
+            mobButtons[index] = bodyButton(mobLabel(target), x + 10, y + 8, cardWidth - 20, cards ? cardHeight - 58 : 34, b -> {
                 var selected = config.selectedTargets();
                 if (!selected.remove(target)) selected.add(target);
                 select.accept(selected); refreshLabels();
             });
-            lineButtons[index] = bodyButton(Component.empty(), x + 10, y + (cards ? 108 : 53), cardWidth - 20, 23,
+            lineButtons[index] = bodyButton(Component.empty(), x + 10, y + (cards ? cardHeight - 48 : 51), cardWidth - 20, 19,
                     b -> openPopup(target, false, b));
-            glowButtons[index] = bodyButton(Component.empty(), x + 10, y + (cards ? 143 : 82), cardWidth - 20, 23,
+            glowButtons[index] = bodyButton(Component.empty(), x + 10, y + (cards ? cardHeight - 24 : 78), cardWidth - 20, 19,
                     b -> openPopup(target, true, b));
         }
         allButton = addRenderableWidget(Button.builder(Component.literal("Select all"), b -> {
@@ -161,28 +168,29 @@ public final class TracerSettingsScreen extends Screen {
         if (displayedEnabled != config.enabled()) refreshLabels();
         long elapsed = clock.getAsLong() - openedAt;
         double opacity = MenuOpening.panel(elapsed);
-        graphics.fill(0, 0, width, height, ((int) (MenuOpening.backdrop(elapsed) * 140) << 24) | 0x080D15);
+        graphics.fill(0, 0, width, height, ((int) (MenuOpening.backdrop(elapsed) * 155) << 24) | 0x08090B);
         var canvas = new MenuCanvas(graphics, opacity);
         canvas.round(left, top + 5, panelWidth, panelHeight, 14, 0x70000000);
-        canvas.round(left, top, panelWidth, panelHeight, 14, 0xFF3C4659);
-        canvas.round(left + 1, top + 1, panelWidth - 2, panelHeight - 2, 13, 0xFF111923);
+        canvas.round(left, top, panelWidth, panelHeight, 14, MenuTheme.BORDER);
+        canvas.round(left + 1, top + 1, panelWidth - 2, panelHeight - 2, 13, MenuTheme.PANEL);
+        canvas.round(left + 16, top + 1, panelWidth - 32, 1, 0, 0x357E8794);
         MenuFont.opacity(opacity);
         try {
             MobSymbols.draw(graphics, canvas, TracerTarget.HIVE_THIEF, left + 31, top + 27, 29);
-            MenuFont.text(graphics, "Hunting Helper", left + 55, top + 16, titleScale, 0xFFF3EBDD);
-            MenuFont.text(graphics, shortcut, left + 56, top + 36, .7, 0xFF9FAEC3);
-            canvas.round(left + 16, top + (cards ? 63 : 54), panelWidth - 32, 1, 0, 0xFF2D394B);
+            MenuFont.text(graphics, "Hunting Helper", left + 55, top + 16, titleScale, MenuTheme.TEXT);
+            MenuFont.text(graphics, shortcut, left + 56, top + 36, .7, MenuTheme.MUTED);
+            canvas.round(left + 16, top + (cards ? 57 : 54), panelWidth - 32, 1, 0, MenuTheme.BORDER);
             smallButton(graphics, canvas, enabledButton, "Tracers", mouseX, mouseY);
-            toggle(canvas, enabledButton.getRight() - 37, enabledButton.getY() + 6, config.enabled(), 0xFFA38BE7);
-            center(graphics, selectionLabel, enabledButton.getX() + 48, top + 46, .66, 0xFF9FAEC3);
+            toggle(canvas, enabledButton.getRight() - 37, enabledButton.getY() + 6, config.enabled(), MenuTheme.ACCENT);
+            center(graphics, selectionLabel, enabledButton.getX() + 48, top + 46, .66, MenuTheme.MUTED);
             graphics.enableScissor(left + 12, bodyTop, left + panelWidth - 12, bodyBottom);
             try { for (TracerTarget target : TYPES) drawTarget(graphics, canvas, target, mouseX, mouseY); }
             finally { graphics.disableScissor(); }
             if (maximumScroll() > 0) {
                 int track = bodyBottom - bodyTop;
                 int thumb = Math.max(18, track * track / contentHeight);
-                canvas.round(left + panelWidth - 11, bodyTop, 3, track, 1, 0xFF273348);
-                canvas.round(left + panelWidth - 11, bodyTop + (track - thumb) * scroll / maximumScroll(), 3, thumb, 1, 0xFFA38BE7);
+                canvas.round(left + panelWidth - 11, bodyTop, 3, track, 1, MenuTheme.TRACK);
+                canvas.round(left + panelWidth - 11, bodyTop + (track - thumb) * scroll / maximumScroll(), 3, thumb, 1, MenuTheme.ACCENT);
             }
             smallButton(graphics, canvas, allButton, "Select all", mouseX, mouseY);
             smallButton(graphics, canvas, noneButton, "Clear all", mouseX, mouseY);
@@ -190,7 +198,7 @@ public final class TracerSettingsScreen extends Screen {
             if (cards) {
                 int chunks = Minecraft.getInstance().options.getEffectiveRenderDistance();
                 if (shownChunks != chunks) { shownChunks = chunks; rangeLabel = "Full " + chunks + "-chunk range"; }
-                center(graphics, rangeLabel, left + panelWidth / 2, allButton.getY() + 8, .7, 0xFF9FAEC3);
+                center(graphics, rangeLabel, left + panelWidth / 2, allButton.getY() + 8, .7, MenuTheme.MUTED);
             }
             if (popupTarget != null) drawPopup(graphics, canvas, mouseX, mouseY);
         } finally { MenuFont.opacity(1); }
@@ -209,22 +217,23 @@ public final class TracerSettingsScreen extends Screen {
 
     private void drawTarget(GuiGraphicsExtractor graphics, MenuCanvas canvas, TracerTarget target, int mouseX, int mouseY) {
         int i = target.ordinal(); Button button = mobButtons[i];
-        int x = button.getX() - 10, y = button.getY() - 8, w = button.getWidth() + 20, h = cards ? 178 : 112;
+        int x = button.getX() - 10, y = button.getY() - 8, w = button.getWidth() + 20, h = cardHeight;
         if (y >= bodyBottom || y + h <= bodyTop) return;
         boolean selected = config.isSelected(target), hover = button.visible && (hovered(button, mouseX, mouseY) || button.isFocused());
         int accent = config.lineColor(target);
         canvas.round(x, y + 2, w, h, 10, 0x40000000);
-        canvas.round(x, y, w, h, 10, hover ? 0xFF8E9AB3 : selected ? accent : 0xFF344255);
-        canvas.round(x + 1, y + 1, w - 2, h - 2, 9, hover ? 0xFF253244 : 0xFF1A2533);
+        canvas.round(x, y, w, h, 10, hover ? 0xFF747C87 : selected ? accent : MenuTheme.BORDER);
+        canvas.round(x + 1, y + 1, w - 2, h - 2, 9, hover ? MenuTheme.HOVER : MenuTheme.CARD);
         if (cards) {
-            canvas.round(x + 12, y + 12, 19, 2, 1, accent);
+            canvas.round(x + 12, y + 12, 14, 2, 1, selected ? accent : MenuTheme.MUTED);
             toggle(canvas, x + w - 41, y + 10, selected, accent);
-            MobSymbols.draw(graphics, canvas, target, x + w / 2, y + 40, 32);
-            center(graphics, target.label(), x + w / 2, y + 65, 1.05, 0xFFF3EBDD);
-            canvas.round(x + 12, y + 94, w - 24, 1, 0, 0xFF303C4F);
+            int selector = cardHeight - 58;
+            MobSymbols.draw(graphics, canvas, target, x + w / 2, y + Math.max(18, selector / 2 - 5), Math.min(26, Math.max(20, selector / 3)));
+            center(graphics, target.label(), x + w / 2, y + selector - 8, .93, MenuTheme.TEXT);
+            canvas.round(x + 12, y + cardHeight - 54, w - 24, 1, 0, MenuTheme.BORDER);
         } else {
-            MobSymbols.draw(graphics, canvas, target, x + 25, y + 28, 24);
-            MenuFont.text(graphics, target.label(), x + 46, y + 23, 1, 0xFFF3EBDD);
+            MobSymbols.draw(graphics, canvas, target, x + 25, y + 27, 21);
+            MenuFont.text(graphics, target.label(), x + 46, y + 23, 1, MenuTheme.TEXT);
             toggle(canvas, x + w - 41, y + 19, selected, accent);
         }
         colorButton(graphics, canvas, lineButtons[i], lineLabels[i], accent, mouseX, mouseY);
@@ -234,10 +243,10 @@ public final class TracerSettingsScreen extends Screen {
     private void colorButton(GuiGraphicsExtractor graphics, MenuCanvas canvas, Button button, String text,
             int swatch, int mouseX, int mouseY) {
         boolean hover = button.visible && (hovered(button, mouseX, mouseY) || button.isFocused());
-        canvas.round(button.getX(), button.getY(), button.getWidth(), button.getHeight(), 5, hover ? 0xFF3C4862 : 0xFF293549);
-        canvas.round(button.getX() + 7, button.getY() + 8, 7, 7, 2, swatch == 0 ? 0xFF667286 : swatch);
-        MenuFont.text(graphics, text, button.getX() + 19, button.getY() + 8, .73, 0xFFE4E8F3);
-        MenuFont.text(graphics, "v", button.getRight() - 13, button.getY() + 7, .75, 0xFFAAB7CC);
+        canvas.round(button.getX(), button.getY(), button.getWidth(), button.getHeight(), 5, hover ? MenuTheme.CONTROL_HOVER : MenuTheme.CONTROL);
+        canvas.round(button.getX() + 7, button.getY() + 6, 7, 7, 2, swatch == 0 ? MenuTheme.MUTED : swatch);
+        MenuFont.text(graphics, text, button.getX() + 19, button.getY() + 6, .73, MenuTheme.TEXT);
+        MenuFont.text(graphics, "v", button.getRight() - 13, button.getY() + 5, .75, MenuTheme.MUTED);
     }
 
     private OverlayColor[] popupColors() { return popupGlow ? GLOW_COLORS : LINE_COLORS; }
@@ -278,20 +287,20 @@ public final class TracerSettingsScreen extends Screen {
     private void drawPopup(GuiGraphicsExtractor graphics, MenuCanvas canvas, int mouseX, int mouseY) {
         int h = POPUP_ROWS * POPUP_ROW_HEIGHT + 12;
         canvas.round(popupX - 2, popupY + 3, popupWidth + 4, h + 2, 8, 0xB0000000);
-        canvas.round(popupX, popupY, popupWidth, h, 7, 0xFF77859E);
-        canvas.round(popupX + 1, popupY + 1, popupWidth - 2, h - 2, 6, 0xFF182231);
+        canvas.round(popupX, popupY, popupWidth, h, 7, 0xFF737B87);
+        canvas.round(popupX + 1, popupY + 1, popupWidth - 2, h - 2, 6, 0xFA1C1E23);
         OverlayColor current = popupGlow ? config.glowChoice(popupTarget) : config.lineChoice(popupTarget);
         for (int row = 0; row < POPUP_ROWS; row++) {
             Button b = popupButtons[row]; OverlayColor color = popupColors()[popupScroll + row];
             if (hovered(b, mouseX, mouseY) || b.isFocused() || color == current)
-                canvas.round(b.getX(), b.getY(), b.getWidth(), b.getHeight(), 4, color == current ? 0xFF514471 : 0xFF303D52);
+                canvas.round(b.getX(), b.getY(), b.getWidth(), b.getHeight(), 4, color == current ? 0xFF3A424D : MenuTheme.CONTROL_HOVER);
             int swatch = color == OverlayColor.MATCH ? config.lineColor(popupTarget) : color.argb();
-            canvas.round(b.getX() + 6, b.getY() + 7, 8, 8, 2, swatch == 0 ? 0xFF667286 : swatch);
-            MenuFont.text(graphics, color.label(), b.getX() + 21, b.getY() + 7, .83, 0xFFF3EBDD);
+            canvas.round(b.getX() + 6, b.getY() + 7, 8, 8, 2, swatch == 0 ? MenuTheme.MUTED : swatch);
+            MenuFont.text(graphics, color.label(), b.getX() + 21, b.getY() + 7, .83, MenuTheme.TEXT);
         }
         int track = POPUP_ROWS * POPUP_ROW_HEIGHT, thumb = track * POPUP_ROWS / popupColors().length;
-        canvas.round(popupX + popupWidth - 6, popupY + 6, 2, track, 1, 0xFF344255);
-        canvas.round(popupX + popupWidth - 6, popupY + 6 + (track - thumb) * popupScroll / (popupColors().length - POPUP_ROWS), 2, thumb, 1, 0xFFA38BE7);
+        canvas.round(popupX + popupWidth - 6, popupY + 6, 2, track, 1, MenuTheme.BORDER);
+        canvas.round(popupX + popupWidth - 6, popupY + 6 + (track - thumb) * popupScroll / (popupColors().length - POPUP_ROWS), 2, thumb, 1, MenuTheme.ACCENT);
     }
 
     @Override public boolean mouseScrolled(double x, double y, double horizontal, double vertical) {
@@ -360,13 +369,13 @@ public final class TracerSettingsScreen extends Screen {
 
     private static void smallButton(GuiGraphicsExtractor graphics, MenuCanvas canvas, Button button, String label, int mouseX, int mouseY) {
         boolean hover = hovered(button, mouseX, mouseY) || button.isFocused();
-        canvas.round(button.getX(), button.getY(), button.getWidth(), button.getHeight(), 6, hover ? 0xFF7864AB : 0xFF303C53);
-        if (label.equals("Tracers")) MenuFont.text(graphics, label, button.getX() + 8, button.getY() + 9, .76, 0xFFF2E8FF);
-        else center(graphics, label, button.getX() + button.getWidth() / 2, button.getY() + 8, .85, 0xFFF2E8FF);
+        canvas.round(button.getX(), button.getY(), button.getWidth(), button.getHeight(), 6, hover ? MenuTheme.CONTROL_HOVER : MenuTheme.CONTROL);
+        if (label.equals("Tracers")) MenuFont.text(graphics, label, button.getX() + 8, button.getY() + 9, .76, MenuTheme.TEXT);
+        else center(graphics, label, button.getX() + button.getWidth() / 2, button.getY() + 8, .85, MenuTheme.TEXT);
     }
     private static void toggle(MenuCanvas canvas, int x, int y, boolean on, int color) {
-        canvas.round(x, y, 29, 15, 7, on ? color : 0xFF4A5668);
-        canvas.round(x + (on ? 16 : 2), y + 2, 11, 11, 5, on ? 0xFFF8F6FF : 0xFFA5AEBD);
+        canvas.round(x, y, 29, 15, 7, on ? color : 0xFF4D5159);
+        canvas.round(x + (on ? 16 : 2), y + 2, 11, 11, 5, on ? MenuTheme.TEXT : MenuTheme.MUTED);
     }
     private static void center(GuiGraphicsExtractor graphics, String text, int x, double y, double scale, int color) {
         MenuFont.text(graphics, text, x - MenuFont.width(text) * scale / 2, y, scale, color);
