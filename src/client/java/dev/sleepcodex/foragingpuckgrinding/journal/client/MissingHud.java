@@ -21,6 +21,7 @@ import java.util.List;
  */
 public final class MissingHud implements HudElement {
 
+	private static final int DONE = 0xFF73BB8C;
 	private static final int DIM = 0xFF888888;
 	private static final int WALL = 0xFFFFAA00;
 

@@ -18,6 +18,9 @@ final class FieldJournalGameChecks {
                     || ConfigManager.get().party.trades() != CritterConfig.Broadcast.NONE)
                 throw new AssertionError("Fresh setup must keep existing panels and announcements single");
             ConfigManager.get().profit.enabled = false;
+            if (dev.sleepcodex.foragingpuckgrinding.mixin.HypixelSessionAccess.huntingHelper$isOnHypixel())
+                throw new AssertionError("Unexpected online session in the packaged client");
+            net.johnceo.sparklingmutuals.party.PartyManager.INSTANCE.requestPartyInfo();
             BazaarPrices.ageMillis(); // Resolve the bundled market adapter without contacting any service.
         });
         c.clickScreenButton("Field journal");
