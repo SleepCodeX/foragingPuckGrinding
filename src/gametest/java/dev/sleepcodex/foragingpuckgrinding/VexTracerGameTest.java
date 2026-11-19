@@ -59,18 +59,16 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 requireColors(context.takeScreenshot("keybind-off"),false,false,false);
                 openMenu(context);
                 captureOpening(context);
-                context.runOnClient(client -> client.options.guiScale().set(3));
                 context.getInput().resizeWindow(960,720);
-                context.runOnClient(Minecraft::resizeGui);context.waitTicks(3);
+                context.runOnClient(client -> {client.options.guiScale().set(3);client.resizeGui();});context.waitTicks(3);
                 context.runOnClient(client -> {
-                    if(client.getWindow().getGuiScaledWidth()!=320)throw new AssertionError("Compact check must actually use a 320-pixel GUI");
+                    if(client.getWindow().getGuiScaledWidth()!=320)throw new AssertionError("Compact GUI width="+client.getWindow().getGuiScaledWidth()+", option="+client.options.guiScale().get());
                 });
                 requireButtonsFit(context);requireKeyboardReachability(context);
                 context.getInput().pressKey(GLFW.GLFW_KEY_HOME);context.takeScreenshot("tracker-menu-compact");
                 context.clickScreenButton("Tracers: OFF");context.clickScreenButton("Select all");
-                context.runOnClient(client -> client.options.guiScale().set(2));
                 context.getInput().resizeWindow(1280,720);
-                context.runOnClient(Minecraft::resizeGui);context.waitTicks(3);requireButtonsFit(context);
+                context.runOnClient(client -> {client.options.guiScale().set(2);client.resizeGui();});context.waitTicks(3);requireButtonsFit(context);
                 context.takeScreenshot("tracker-menu-all");
                 requireKeyboardReachability(context);
                 context.clickScreenButton("Vex line: Purple");

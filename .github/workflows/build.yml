@@ -28,7 +28,12 @@ jobs:
           chmod +x ./gradlew
           ./gradlew --no-daemon build
       - name: Install virtual display
-        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
+        run: |
+          if ! command -v xvfb-run >/dev/null || ! command -v xauth >/dev/null ||
+             test "$(dpkg-query -W -f='${db:Status-Status}' libgl1-mesa-dri 2>/dev/null)" != installed; then
+            sudo apt-get update
+            sudo apt-get install -y xvfb xauth libgl1-mesa-dri
+          fi
       - name: Exercise packaged client trackers and controls
         run: xvfb-run -a ./gradlew --no-daemon runProductionClientGameTest
       - name: Upload validation captures
