@@ -143,6 +143,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 world.getServer().runCommand("scoreboard objectives setdisplay sidebar hh_test");context.waitTicks(14);
                 requireColors(context.takeScreenshot("hivethief-in-torrhus"),false,false,true);
                 openMenu(context);context.clickScreenButton("Clear presets");context.clickScreenButton("Done");context.waitTicks(3);
+                requireOutlines(context, 0, 0);
                 requireColors(context.takeScreenshot("no-selected-mobs"),false,false,false);
                 openMenu(context);context.clickScreenButton("All presets");context.clickScreenButton("Tracers: ON");context.clickScreenButton("Done");context.waitTicks(3);
                 requireColors(context.takeScreenshot("master-hides-all-three"),false,false,false);
@@ -359,7 +360,11 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     private static void requireColors(Path screenshot,boolean vex,boolean blueJay,boolean hiveThief) {
         try {
             BufferedImage image=ImageIO.read(screenshot.toFile());int[] count=new int[3];
-            for(int y=0;y<image.getHeight()*2/3;y++)for(int x=0;x<image.getWidth();x++){
+            // Sample the wall in front of the test mobs. Chat, the sidebar and other mods' HUD text
+            // may legitimately contain the same RGB values around the edge of the screen.
+            int left = image.getWidth() / 8, right = image.getWidth() - left;
+            int top = image.getHeight() / 6, bottom = image.getHeight() * 2 / 3;
+            for (int y = top; y < bottom; y++) for (int x = left; x < right; x++) {
                 int p=image.getRGB(x,y),r=p>>16&255,g=p>>8&255,b=p&255;
                 if(r>140&&b>170&&g<150&&r>g*1.3&&b>g*1.5)count[0]++;
                 if(r<100&&g>190&&b>220)count[1]++;

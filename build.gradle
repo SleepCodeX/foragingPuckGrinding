@@ -48,6 +48,7 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     productionRuntimeMods "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    clientCompileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.4.20'
     gametestCompileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.4.20'
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'

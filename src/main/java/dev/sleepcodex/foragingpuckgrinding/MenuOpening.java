@@ -6,6 +6,7 @@ public final class MenuOpening {
     private MenuOpening() { }
     public static double backdrop(long elapsed) { return smooth(elapsed / 200_000_000.0); }
     public static double panel(long elapsed) { return smooth((elapsed - 55_000_000L) / 345_000_000.0); }
+    public static double content(long elapsed) { return smooth((elapsed - 135_000_000L) / 245_000_000.0); }
     public static double icon(long elapsed) {
         return smooth(elapsed / 140_000_000.0) * (1 - smooth((elapsed - 145_000_000L) / 255_000_000.0));
     }

@@ -96,17 +96,23 @@ final class HuntingHomeScreen extends Screen {
 
     @Override public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float delta) {
         long elapsed = clock.getAsLong() - opened;
-        double opacity = MenuOpening.panel(elapsed);
-        g.fill(0,0,width,height,((int)(MenuOpening.backdrop(elapsed) * 151) << 24) | 0x090B10);
-        var c = new MenuCanvas(g,opacity);
-        c.round(x,y+5,w,h,13,0x69000000);
-        c.round(x,y,w,h,13,MenuTheme.BORDER);
-        c.round(x+1,y+1,w-2,h-2,12,MenuTheme.PANEL);
-        c.round(x+16,y+1,w-32,1,0,0x5B91A1B1);
+        double backdrop = MenuOpening.backdrop(elapsed);
+        double travel = MenuOpening.travel(elapsed);
+        double opacity = MenuOpening.content(elapsed);
+        int hx = x + 27, hy = y + (compact ? 19 : 26);
+        int badgeSize = compact ? 48 : 60;
+        int sw = blend(badgeSize, w, travel), sh = blend(badgeSize, h, travel);
+        int sx = (width - sw) / 2, sy = (height - sh) / 2;
+        g.fill(0, 0, width, height, ((int) (backdrop * 151) << 24) | 0x090B10);
+        var surface = new MenuCanvas(g, backdrop);
+        surface.round(sx, sy + 4, sw, sh, 13, 0x69000000);
+        surface.round(sx, sy, sw, sh, 13, MenuTheme.BORDER);
+        surface.round(sx + 1, sy + 1, sw - 2, sh - 2, 12, MenuTheme.PANEL);
+        surface.round(sx + 16, sy + 1, sw - 32, 1, 0, 0x5B91A1B1);
+        var c = new MenuCanvas(g, opacity);
+        g.enableScissor(sx + 2, sy + 2, sx + sw - 2, sy + sh - 2);
         MenuFont.opacity(opacity);
-        int hx=x+27, hy=y+(compact?19:26);
         try {
-            MobSymbols.draw(g,c,TracerTarget.HIVE_THIEF,hx,hy,compact?23:30);
             MenuFont.text(g,"Hunting Helper",x+49,y+(compact?8:12),compact?1.15:1.45,MenuTheme.TEXT);
             MenuFont.text(g,"Settings",x+50,y+(compact?23:32),.74,MenuTheme.MUTED);
             String status=config.enabled()?"Tracers on":"Tracers off";
@@ -117,16 +123,18 @@ final class HuntingHomeScreen extends Screen {
             for (Tile tile:tiles) drawTile(g,c,tile,mx,my);
             footer(g,c,all,mx,my,false);
             footer(g,c,done,mx,my,true);
-        } finally { MenuFont.opacity(1); }
-        double fade=MenuOpening.icon(elapsed);
-        if (fade>0) {
-            double travel=MenuOpening.travel(elapsed);
-            int cx=(int)Math.round(width/2.0+(hx-width/2.0)*travel);
-            int cy=(int)Math.round(height/2.0+(hy-height/2.0)*travel);
-            var intro=new MenuCanvas(g,fade);
-            int size=(int)Math.round(58-(compact?35:28)*travel);
-            MobSymbols.draw(g,intro,TracerTarget.HIVE_THIEF,cx,cy,size);
+        } finally {
+            MenuFont.opacity(1);
+            g.disableScissor();
         }
+        // The same icon is drawn exactly once, including the final, stationary header frame.
+        int cx = blend(width / 2, hx, travel), cy = blend(height / 2, hy, travel);
+        MobSymbols.draw(g, new MenuCanvas(g, backdrop), TracerTarget.HIVE_THIEF, cx, cy,
+                blend(badgeSize - 15, compact ? 23 : 30, travel));
+    }
+
+    private static int blend(int from, int to, double progress) {
+        return (int) Math.round(from + (to - from) * progress);
     }
 
     private void drawTile(GuiGraphicsExtractor g, MenuCanvas c, Tile tile, int mx, int my) {
