@@ -100,7 +100,7 @@ final class HuntingHomeScreen extends Screen {
         double travel = MenuOpening.travel(elapsed);
         double opacity = MenuOpening.content(elapsed);
         int hx = x + 27, hy = y + (compact ? 19 : 26);
-        int badgeSize = compact ? 48 : 60;
+        int badgeSize = compact ? 72 : 88;
         int sw = blend(badgeSize, w, travel), sh = blend(badgeSize, h, travel);
         int sx = (width - sw) / 2, sy = (height - sh) / 2;
         g.fill(0, 0, width, height, ((int) (backdrop * 151) << 24) | 0x090B10);

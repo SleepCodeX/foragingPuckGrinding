@@ -143,6 +143,7 @@ jobs:
               "custom-tracked-mobs": "custom-targets",
               "bundled-safari-settings": "safari",
               "home-dashboard": "home",
+              "home-opening-03": "hivethief",
               "compact-dashboard": "home-compact",
           }.items():
               copyfile(shot(name), out / (file + ".png"))

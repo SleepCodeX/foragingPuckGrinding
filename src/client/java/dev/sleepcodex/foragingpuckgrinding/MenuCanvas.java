@@ -9,6 +9,7 @@ import net.minecraft.resources.Identifier;
 final class MenuCanvas {
     private static final Identifier CIRCLE = Identifier.fromNamespaceAndPath(VexTracerClient.MOD_ID, "textures/gui/circle.png");
     private static final Identifier AXE = Identifier.fromNamespaceAndPath(VexTracerClient.MOD_ID, "icon.png");
+    private static final int HIVETHIEF_PIXELS = 1254;
     private static final Identifier HIVETHIEF = Identifier.fromNamespaceAndPath(VexTracerClient.MOD_ID, "textures/gui/hivethief/frost.png");
     private final GuiGraphicsExtractor graphics;
     private final double opacity;
@@ -42,7 +43,7 @@ final class MenuCanvas {
 
     void hivethief(int centerX, int centerY, int size) {
         graphics.blit(RenderPipelines.GUI_TEXTURED, HIVETHIEF, centerX - size / 2, centerY - size / 2, 0, 0,
-                size, size, 96, 96, 96, 96, tint(0xFFFFFFFF));
+                size, size, HIVETHIEF_PIXELS, HIVETHIEF_PIXELS, HIVETHIEF_PIXELS, HIVETHIEF_PIXELS, tint(0xFFFFFFFF));
     }
 
     void axe(int x, int y, int size) {

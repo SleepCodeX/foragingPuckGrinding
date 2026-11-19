@@ -2,6 +2,8 @@
 
 ![Settings opening](menu-opening.gif)
 
+![Frost Hivethief during the opening](hivethief.png)
+
 | Dashboard | Compact dashboard |
 | --- | --- |
 | ![Settings home](home.png) | ![Compact dashboard](home-compact.png) |
