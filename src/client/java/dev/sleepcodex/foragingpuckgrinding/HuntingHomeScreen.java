@@ -116,9 +116,9 @@ final class HuntingHomeScreen extends Screen {
             MenuFont.text(g,"Hunting Helper",x+49,y+(compact?8:12),compact?1.15:1.45,MenuTheme.TEXT);
             MenuFont.text(g,"Settings",x+50,y+(compact?23:32),.74,MenuTheme.MUTED);
             String status=config.enabled()?"Tracers on":"Tracers off";
-            int sx=x+w-21-(int)MenuFont.width(status);
-            c.round(sx-10,hy-1,4,4,2,config.enabled()?OverlayColor.GREEN.argb():MenuTheme.MUTED);
-            MenuFont.text(g,status,sx,hy-3,.81,MenuTheme.MUTED);
+            int statusX = x + w - 21 - (int) MenuFont.width(status);
+            c.round(statusX-10,hy-1,4,4,2,config.enabled()?OverlayColor.GREEN.argb():MenuTheme.MUTED);
+            MenuFont.text(g,status,statusX,hy-3,.81,MenuTheme.MUTED);
             MenuFont.text(g,"Critter Safari",x+(compact?12:17),safariY,.84,MenuTheme.ACCENT);
             for (Tile tile:tiles) drawTile(g,c,tile,mx,my);
             footer(g,c,all,mx,my,false);
