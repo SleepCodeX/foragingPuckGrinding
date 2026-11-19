@@ -1,6 +1,5 @@
 package dev.sleepcodex.foragingpuckgrinding.journal.client;
 
-import dev.sleepcodex.foragingpuckgrinding.mixin.NestSurveyAccess;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -47,7 +46,7 @@ public final class HoneybugRelease {
         for (var sight : CritterEntities.all()) {
             if (sight.critter().name().equals("Honeybug") && !present.contains(sight.label().getUUID())
                     && sight.body().position().distanceToSqr(Vec3.atCenterOf(armed)) <= 36) {
-                ((NestSurveyAccess)(Object)BeeNests.INSTANCE).huntingHelper$confirmNest(level, armed);
+                BeeNests.INSTANCE.clicked(level, armed);
                 reset();
                 return;
             }

@@ -8,14 +8,7 @@
     "EntityRenderStateMixin",
     "GlowingEntityMixin",
     "LivingEntityRendererMixin",
-    "OutlineVisibilityMixin",
-    "MarketCacheAccess",
-    "NestSurveyAccess",
-    "HypixelSessionAccess",
-    "SafariPartyConnectionMixin",
-    "SafariCatchReceiver",
-    "SafariLootShareMixin",
-    "FullClearPanelsMixin"
+    "OutlineVisibilityMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }

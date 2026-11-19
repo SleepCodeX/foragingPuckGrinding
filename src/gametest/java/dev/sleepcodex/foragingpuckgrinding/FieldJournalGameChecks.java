@@ -12,13 +12,14 @@ import org.lwjgl.glfw.GLFW;
 
 final class FieldJournalGameChecks {
     static void run(ClientGameTestContext c, TestSingleplayerContext world) {
+        SparklingMutualsGameChecks.run(c);
         c.runOnClient(client -> {
             if (FabricLoader.getInstance().isModLoaded("crittermod")) throw new AssertionError("Unexpected external critterMod");
             if (ConfigManager.get().display.showCoverage || ConfigManager.get().display.showMissing
                     || ConfigManager.get().party.trades() != CritterConfig.Broadcast.NONE)
                 throw new AssertionError("Fresh setup must keep existing panels and announcements single");
             ConfigManager.get().profit.enabled = false;
-            if (dev.sleepcodex.foragingpuckgrinding.mixin.HypixelSessionAccess.huntingHelper$isOnHypixel())
+            if (net.azureaaron.hmapi.utils.Utils.isOnHypixel())
                 throw new AssertionError("Unexpected online session in the packaged client");
             net.johnceo.sparklingmutuals.party.PartyManager.INSTANCE.requestPartyInfo();
             BazaarPrices.ageMillis(); // Resolve the bundled market adapter without contacting any service.

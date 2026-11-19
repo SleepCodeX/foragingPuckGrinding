@@ -1,0 +1,89 @@
+package net.johnceo.sparklingmutuals.config
+
+import java.nio.file.Path
+import net.johnceo.sparklingmutuals.safari.SafariAreaMap
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+
+class SafariSettingsTest {
+    @TempDir lateinit var dir: Path
+    @Test fun `HUD contest visibility saves independently from contest tracking`() {
+        ConfigManager.init(dir);ContestConfig.init(dir)
+        val settings=SafariSettings()
+        settings.tracking.contestTimer=false
+        settings.apply()
+        ContestConfig.init(dir)
+        assertFalse(ContestConfig.showContestTimer)
+        assertTrue(ContestConfig.trackContest)
+        assertEquals("HUDs",SettingsCatalog(SafariSettings()).pages[7].name)
+        val next=SafariSettings();next.tracking.contestTimer=true;next.apply()
+        ContestConfig.init(dir);assertTrue(ContestConfig.showContestTimer)
+    }
+    @Test fun `Native view applies and persists toggles and independent warnings`() {
+        ConfigManager.init(dir)
+        ContestConfig.init(dir)
+        assertEquals(0, ContestConfig.ticketMode)
+        val settings = SafariSettings()
+        assertFalse(settings.party.startingItems)
+        settings.party.startingItems = true
+        settings.safari.teammates.color = "0:255:100:80:200"
+        ConfigManager.hotspotAnnouncer = true
+        settings.miria.ticketMode = 1
+        settings.miria.three = false
+        settings.safari.paintings = false
+        settings.safari.shiny = false
+        settings.party.enabled = false
+        settings.warp.enabled = true
+        settings.warp.whitelist = "Leader, Friend; leader"
+        settings.apply()
+        assertFalse(net.johnceo.sparklingmutuals.alerts.SparkleWarping.preparingParty,
+            "Enabling must not prepare or disband the party; /start does that")
+        ConfigManager.init(dir)
+        ContestConfig.init(dir)
+        assertTrue(ContestConfig.firstClassTicket)
+        assertTrue(ConfigManager.announceStartingItems)
+        assertEquals("0:255:100:80:200", SafariEspConfig.teammateColor)
+        assertEquals(0xFF6450C8.toInt(), net.johnceo.sparklingmutuals.safari.esp.TeammateEsp.COLOR)
+        assertTrue(ConfigManager.hotspotAnnouncer)
+        assertFalse(ConfigManager.hideHauntedPaintings)
+        assertFalse(ConfigManager.shinyDetection)
+        assertFalse(ConfigManager.partyCommandsEnabled)
+        assertTrue(ConfigManager.warpAlertsEnabled)
+        assertEquals("Leader Friend",ConfigManager.leechWhitelist)
+        assertEquals(listOf(1), ContestConfig.warningMinutes())
+        settings.miria.five = false
+        settings.miria.ticketMode = 0
+        settings.miria.one = false
+        settings.apply()
+        ContestConfig.init(dir)
+        assertFalse(ContestConfig.firstClassTicket)
+        assertTrue(ContestConfig.warningMinutes().isEmpty())
+        val autoParty = ConfigManager.autoParty
+        settings.warp.leech = true
+        settings.apply()
+        assertTrue(ConfigManager.leechMode)
+        assertFalse(ConfigManager.warpAlertsEnabled)
+        settings.warp.enabled = true
+        settings.apply()
+        assertTrue(ConfigManager.warpAlertsEnabled)
+        assertFalse(ConfigManager.leechMode)
+        assertEquals(autoParty, ConfigManager.autoParty)
+        settings.warp.enabled = false
+        settings.apply()
+        assertFalse(net.johnceo.sparklingmutuals.alerts.SparkleWarping.preparingParty,
+            "Disabling must cancel a pending party preparation")
+        net.johnceo.sparklingmutuals.alerts.AlertManager.startCycle()
+        assertTrue(ConfigManager.warpAlertsEnabled)
+        assertTrue(net.johnceo.sparklingmutuals.alerts.SparkleWarping.preparingParty)
+        net.johnceo.sparklingmutuals.alerts.SparkleWarping.cancelSetup()
+        net.johnceo.sparklingmutuals.alerts.AlertManager.startCycle()
+        assertTrue(net.johnceo.sparklingmutuals.alerts.SparkleWarping.preparingParty,
+            "/start must prepare the party even if warping is already enabled")
+        net.johnceo.sparklingmutuals.alerts.SparkleWarping.cancelSetup()
+    }
+    @Test fun `bundled 0_9 area table identifies Haunted and rejects outside coordinates`() {
+        assertEquals(4, SafariAreaMap.biomeAt(-4.0, 71.0, -79.0))
+        assertNull(SafariAreaMap.biomeAt(10000.0, 71.0, 10000.0))
+    }
+}

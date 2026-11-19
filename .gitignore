@@ -38,3 +38,10 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# kotlin
+
+.kotlin/
+
+# log output from the Sparkling Mutuals unit tests
+/logs/

@@ -1,6 +1,5 @@
 package dev.sleepcodex.foragingpuckgrinding.journal.client;
 
-import dev.sleepcodex.foragingpuckgrinding.mixin.MarketCacheAccess;
 import dev.sleepcodex.foragingpuckgrinding.journal.data.Critter;
 import dev.sleepcodex.foragingpuckgrinding.journal.data.Critters;
 import dev.sleepcodex.foragingpuckgrinding.journal.session.RunRecord;
@@ -12,6 +11,8 @@ import java.util.Map;
 public final class BazaarPrices {
     private BazaarPrices() {}
     private static int ticks;
+    private static final net.johnceo.sparklingmutuals.history.BazaarPrices SUITE =
+            net.johnceo.sparklingmutuals.history.BazaarPrices.INSTANCE;
 
     public static void tick() {
         if (++ticks < 200) return;
@@ -19,15 +20,15 @@ public final class BazaarPrices {
         if (SafariLocation.inSafari()) refreshIfStale();
     }
     public static void refreshIfStale() {
-        if (ConfigManager.get().profit.enabled) MarketCacheAccess.cache().ensureFresh(120_000L);
+        if (ConfigManager.get().profit.enabled) SUITE.marketCache().ensureFresh(120_000L);
     }
-    public static boolean known() { return MarketCacheAccess.quotes() != null; }
+    public static boolean known() { return SUITE.guidanceQuotes() != null; }
     public static long ageMillis() {
-        var quote = MarketCacheAccess.quotes();
+        var quote = SUITE.guidanceQuotes();
         return quote == null ? -1 : Math.max(0, System.currentTimeMillis() - quote.getServerAt());
     }
     public static double price(Critter critter, CritterConfig.PriceSource source) {
-        var snapshot = MarketCacheAccess.quotes();
+        var snapshot = SUITE.guidanceQuotes();
         var quote = snapshot == null ? null : snapshot.getQuotes().get(critter.bazaarId());
         if (quote == null) return 0;
         double raw = source == CritterConfig.PriceSource.SELL_OFFER ? quote.getAsk() : quote.getBid();

@@ -1,0 +1,60 @@
+package net.johnceo.sparklingmutuals.safari.integration
+
+import java.nio.file.Path
+import java.util.Properties
+import java.util.UUID
+import net.johnceo.sparklingmutuals.config.ConfigManager
+import net.johnceo.sparklingmutuals.config.ContestConfig
+import net.johnceo.sparklingmutuals.config.SafariEspConfig
+import net.johnceo.sparklingmutuals.config.SafariSettings
+import net.johnceo.sparklingmutuals.safari.PartySparklingState
+import net.johnceo.sparklingmutuals.safari.SafariBiome
+import net.johnceo.sparklingmutuals.safari.SafariCatch
+import net.johnceo.sparklingmutuals.safari.SafariRoster
+import net.johnceo.sparklingmutuals.safari.SafariRun
+import net.johnceo.sparklingmutuals.safari.ui.SafariPanels
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+
+class ForestMidRunAndEspScaleTest {
+    @TempDir lateinit var dir: Path
+    @Test fun `ESP scale defaults larger applies through GUI and persists across restart`() {
+        ConfigManager.init(dir); ContestConfig.init(dir)
+        assertEquals(2f, SafariEspConfig.textScale)
+        assertEquals(.025f * 2f, SafariEspConfig.labelWorldScale)
+        val settings = SafariSettings()
+        settings.esp.textScale = 3.25f
+        settings.apply()
+        ConfigManager.init(dir)
+        assertEquals(3.25f, SafariEspConfig.textScale)
+        assertEquals(.025f * 3.25f, SafariEspConfig.labelWorldScale)
+    }
+    @Test fun `ESP scale rejects non finite input and bounds invalid saved values`() {
+        for ((raw, expected) in mapOf("NaN" to 2f, "Infinity" to 2f, "wrong" to 2f, "99" to 4f, "-1" to .5f)) {
+            SafariEspConfig.load(Properties().apply { setProperty("esp.textScale", raw) })
+            assertEquals(expected, SafariEspConfig.textScale, raw)
+        }
+    }
+    @Test fun `legacy scale migrates then floor types and party names persist independently`() {
+        SafariEspConfig.load(Properties().apply { setProperty("esp.textScale", "3") })
+        val types = net.johnceo.sparklingmutuals.safari.resources.FloorDropType.entries
+        types.forEach { assertEquals(3f, SafariEspConfig.dropTextScale(it)) }
+        assertEquals(3f, SafariEspConfig.teammateTextScale)
+        val settings = net.johnceo.sparklingmutuals.config.SafariSettings()
+        settings.esp.floorTextSizes.coin = 4f
+        settings.esp.floorTextSizes.incense = .5f
+        settings.safari.teammates.textScale = 1.25f
+        settings.esp.textScale = 2f
+        settings.apply()
+        val saved = Properties().also(SafariEspConfig::save)
+        SafariEspConfig.load(Properties())
+        SafariEspConfig.load(saved)
+        assertEquals(4f, SafariEspConfig.dropTextScale(net.johnceo.sparklingmutuals.safari.resources.FloorDropType.COIN))
+        assertEquals(.5f, SafariEspConfig.dropTextScale(net.johnceo.sparklingmutuals.safari.resources.FloorDropType.INCENSE))
+        assertEquals(3f, SafariEspConfig.dropTextScale(net.johnceo.sparklingmutuals.safari.resources.FloorDropType.SEEDS))
+        assertEquals(1.25f, SafariEspConfig.teammateTextScale)
+        assertEquals(2f, SafariEspConfig.textScale)
+    }
+
+}

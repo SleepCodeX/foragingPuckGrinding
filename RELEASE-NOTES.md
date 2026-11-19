@@ -1,3 +1,7 @@
+# Hunting Helper - Unreleased
+
+- **Sparkling Mutuals is now Hunting Helper source.** The 4.3.7 suite is compiled into Hunting Helper instead of being nested as a separate JAR. Features, `/sm` commands and `config/sparkling-mutuals` settings are unchanged. A standalone Sparkling Mutuals JAR in `mods` is now reported as a conflict. [Upstream source and local changes](https://github.com/SleepCodeX/foragingPuckGrinding/blob/main/docs/SM-UPSTREAM.md)
+
 # Hunting Helper 1.6.1
 
 - **One JAR on Fabric Loader.** Hunting Helper includes the matching Fabric API, Sparkling Mutuals, Kotlin runtime and field journal for Minecraft 26.2.

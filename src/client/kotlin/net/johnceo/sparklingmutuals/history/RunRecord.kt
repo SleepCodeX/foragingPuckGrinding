@@ -1,0 +1,76 @@
+package net.johnceo.sparklingmutuals.history
+
+/** One saved Safari run. Mutable with defaults throughout, so Gson can fill it and older files still load. */
+class RunRecord(
+    var number: Int = 0,
+    /** When the run began (arriving in the Safari). */
+    var start: Long = 0,
+    /** Arrival to leaving, in milliseconds. */
+    var length: Long = 0,
+    /** The mode it was played in: UNIQUE, FULL_CLEAR or SPARKLING. */
+    var mode: String = "",
+    /** Different critters the party secured (your captures and loot shares). */
+    var party: Int = 0,
+    /** Different critters you caught yourself. */
+    var you: Int = 0,
+    /** Your captures, repeats included. */
+    var caught: Int = 0,
+    /** Teammates' catches you got a share of. */
+    var lootShares: Int = 0,
+    var partySize: Int = 1,
+    /** Safari tickets used for this run. */
+    var tickets: Int = 0,
+    /** Critter -> shards received (captures and loot shares). */
+    var shards: MutableMap<String, Int> = linkedMapOf(),
+    /** Critter -> your captures of it. */
+    var catches: MutableMap<String, Int> = linkedMapOf(),
+    /** Rainbow Feathers: one per sparkling caught or shared, plus Macaw bonuses. */
+    var feathers: Int = 0,
+    /** Sparklings caught in the run, as "player:critter". */
+    var sparklings: MutableList<String> = mutableListOf(),
+    var ownSparklings: Int = 0,
+    /** Macaws the party secured. */
+    var macaws: Int = 0,
+    /** Biome -> time from the start of the run until the mode had it complete. */
+    var splits: MutableMap<String, Long> = linkedMapOf(),
+    /** Rebuilt from old logs: only observable splits/counts, with estimates explicitly marked. */
+    var imported: Boolean = false,
+    /** Shards, Rainbow Feathers and known summary essence at Bazaar prices; -1 until prices load. */
+    var coins: Long = -1,
+    /** Original ticket timestamp helps match a hotspot-based import to its live-recorded run. */
+    var ticketAt: Long = 0,
+    var coinsEstimated: Boolean = false,
+    var modeEstimated: Boolean = false,
+    /** Actual end-of-run summary amounts; negative means absent from the available evidence. */
+    var safariEssence: Int = -1,
+    var summaryShards: Int = -1,
+    var huntingXp: Long = -1,
+    var hotspot: String = "",
+    /** Essence already included in coins, or negative until a cached essence quote is available. */
+    var essenceCoins: Long = -1,
+    /** Live confirmation that bird spawning was checked; null means older history did not record this proof. */
+    var macawChecked: Boolean? = null,
+    /** Explicit nine-floor-food usage proof. Reports and older unknown rows cannot qualify droughts. */
+    var allBirdFoodUsed: Boolean? = null,
+    /** Includes rendered/spawned Macaws, even when none was captured. */
+    var macawsSeen: Int? = null,
+    /** First time all 37 types were caught or loot-shared, measured from run start. */
+    var allTypesMillis: Long = -1,
+) {
+    fun hasSparkling() = sparklings.isNotEmpty()
+}
+
+/** One caught sparkling: yours or anyone's announced in your chat. */
+class SparklingEntry(
+    var at: Long = 0,
+    var player: String = "",
+    var critter: String = "",
+    var unique: Boolean = false,
+    /** Tickets the party used since the previous sparkling. */
+    var tickets: Int? = null,
+    /** The first occurrence in available logs is an estimate, not a historical API discovery lookup. */
+    var uniqueEstimated: Boolean = false,
+    /** Original log location; optional for older/live entries and revalidated before opening. */
+    var logFile: String = "",
+    var logLine: Int = 0,
+)

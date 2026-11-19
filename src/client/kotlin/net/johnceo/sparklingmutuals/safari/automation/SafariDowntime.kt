@@ -1,0 +1,233 @@
+package net.johnceo.sparklingmutuals.safari.automation
+
+import net.johnceo.sparklingmutuals.hud.SkyblockSidebar
+import net.johnceo.sparklingmutuals.commands.PartyChat
+import net.johnceo.sparklingmutuals.party.PartyManager
+import net.johnceo.sparklingmutuals.config.ConfigManager
+import net.johnceo.sparklingmutuals.safari.SafariRules
+import net.minecraft.client.Minecraft
+
+/**
+ * `!dt [reason]` in party chat: someone wants a break after this run. The request waits until the run ends, then the
+ * leader sends one contest-ticket reminder in Torrhus, and every client holds the
+ * Safari Manager shut until the requester says `r`, earns their contest ticket, or announces Ticket earned!. Asked outside the Safari,
+ * it takes effect straight away. Requests leave with their requester: someone leaving or being removed from the party
+ * drops theirs, and this client leaving, joining another party or the party disbanding drops them all. Turning the
+ * setting off drops everything too.
+ */
+object SafariDowntime {
+    private val request = Regex("""^!dt(?:\s+(.+))?$""", RegexOption.IGNORE_CASE)
+    private val resume = Regex("""^(?:(?:ok|okay|yes|yep|yeah) )?(?:(?:i'm|im|i am|we're|we are|all|everyone is|everyone's) )?(?:all |finally )?(?:r|rdy|ready)(?: now| to go| when you are| whenever you are| whenever| let's go| lets go)?$""")
+    private val readyTypo = Regex("^(?:r+|[etdfg]r+|r+[etdfg])$")
+    fun readyMessage(body: String): Boolean {
+        if ('?' in body) return false
+        val raw = SafariRules.strip(body).lowercase().trim().trim { !it.isLetterOrDigit() }
+        // Only short r-spam and one adjacent keyboard key; never arbitrary words containing r.
+        if (raw.length <= 6 && readyTypo.matches(raw)) return true
+        val words = SafariRules.strip(body).lowercase().replace('’', '\'')
+            .replace(Regex("[.,!]+"), " ").trim().replace(Regex("\\s+"), " ")
+        return resume.matches(words)
+    }
+    private const val NAME = "(?:\\[[^]]+]\\s*)*([A-Za-z0-9_]{1,16})"
+    private val torrhusTravel = Regex("^\u00BB\\s+$NAME is traveling to Torrhus Canyon FOLLOW$")
+    private val partyWarp = Regex("^SkyBlock Party Warp \\([0-9]+ players?\\)$")
+    private val contestTravelAt = mutableMapOf<String, Long>()
+    /** One member gone: their request goes with them. */
+    private val departed = listOf(
+        Regex("^$NAME (?:has left the party|has been removed from the party)[.!]$"),
+        Regex("^$NAME was removed from your party because they disconnected[.!]?$"),
+        Regex("^Kicked $NAME because they were offline[.!]?$"))
+    /** This client is in a different party (or none) now: every request belonged to the old one. */
+    private val partyGone = listOf(
+        Regex("^You (?:left the party|have been kicked from the party(?: by .+)?)[.!]?$"),
+        Regex("^You have joined .+'s party!$"),
+        Regex("^(?:The party was disbanded|$NAME has disbanded the party)(?:[.!]| because .+)$"),
+        Regex("^You are not (?:currently )?in a party[.!]?$"))
+    /** Requester -> reason (may be empty), in the order they asked. */
+    private val requests = linkedMapOf<String, String>()
+    private var active = false
+    private var announcementDue = false
+    /** A hold only stands while the setting is on, so switching it off releases the manager at once. */
+    val holding get() = active && ConfigManager.downtimeCommand
+    private val announcement = DowntimeAnnouncement()
+    /** Torrhus entry checks banked requests before the next run-exit tick. */
+    val entryHold get() = requests.isNotEmpty() && ConfigManager.downtimeCommand
+    fun ticketMessage(body: String) = !body.startsWith(DowntimeAnnouncement.REQUEST_PREFIX) && body.contains("ticket", ignoreCase = true)
+    fun observeAnnouncement(body: String) { announcement.observe(body) }
+
+    /** Handles one chat line; returns a party message this client should send, if any. */
+    fun chat(text: String, inSafari: Boolean, self: String, contestMembers: Collection<String> = emptyList()): String? {
+        if (!ConfigManager.downtimeCommand) { clear(); return null }
+        if (partyChanged(SafariRules.strip(text).trim())) return null
+        val chat = PartyChat.parse(text) ?: return null
+        announcement.observe(chat.body)
+        request.matchEntire(chat.body)?.let { match ->
+            val reason = match.groupValues[1].trim().let { if (it.equals("contest", true)) "contest" else it }
+            // A new contest request starts a new wait; never reuse a previous trip's deadline.
+            if (reason.equals("contest", true)) contestTravelAt.clear()
+            else contestTravelAt.remove(chat.sender.lowercase())
+            if (requests.isEmpty()) announcement.clear()
+            // A leader's contest request asks the whole current party to get ready.
+            if (reason.equals("contest", true)) contestMembers.forEach { member ->
+                if (requests.keys.none { it.equals(member, true) }) requests[member] = "contest"
+            }
+            val existing = requests.keys.firstOrNull { it.equals(chat.sender, true) }
+            requests[existing ?: chat.sender] = reason
+            return if (!inSafari) {
+                if (active) summary() else leftSafari(self)
+            } else null
+        }
+        if (ticketMessage(chat.body)) {
+            ready(chat.sender)
+            return null
+        }
+        if (readyMessage(chat.body)) {
+            val key = requests.keys.firstOrNull { it.equals(chat.sender, true) } ?: return null
+            requests.remove(key)
+            if (requests.isEmpty()) active = false
+        }
+        return null
+    }
+
+    /** Only the server FOLLOW notice starts this timer, never quoted party/public chat. */
+    internal fun travel(text: String, now: Long = System.currentTimeMillis()): Boolean {
+        val player = torrhusTravel.matchEntire(SafariRules.strip(text))?.groupValues?.get(1) ?: return false
+        if (ConfigManager.downtimeCommand && requests.values.any { it.equals("contest", true) })
+            contestTravelAt.putIfAbsent(player.lowercase(), now)
+        return true
+    }
+    /** A confirmed leader warp to this Torrhus instance starts all other contest timers together. */
+    internal fun partyWarpMessage(text: String) = partyWarp.matches(SafariRules.strip(text).trim())
+    internal fun partyWarp(text: String, inCanyon: Boolean, leader: Boolean, self: String,
+        now: Long = System.currentTimeMillis()): Boolean {
+        if (!partyWarpMessage(text)) return false
+        if (ConfigManager.downtimeCommand && inCanyon && leader) {
+            requests.filter { (key, reason) -> reason.equals("contest", true) && !displayName(key).equals(self, true) }
+                .forEach { (key, _) -> contestTravelAt.putIfAbsent(key.lowercase(), now) }
+        }
+        return true
+    }
+    internal fun releaseContestTravel(now: Long) {
+        if (!ConfigManager.downtimeCommand) { contestTravelAt.clear(); return }
+        val released = requests.entries.filter { (key, reason) ->
+            reason.equals("contest", true) && (contestTravelAt[key.lowercase()] ?: contestTravelAt[displayName(key).lowercase()])?.let {
+                now - it >= 20_000
+            } == true
+        }.map { it.key }
+        released.forEach { key ->
+            requests.remove(key)
+            contestTravelAt.remove(key.lowercase())
+            contestTravelAt.remove(displayName(key).lowercase())
+        }
+        if (requests.isEmpty()) active = false
+        if (requests.values.none { it.equals("contest", true) }) contestTravelAt.clear()
+    }
+
+    /** Party readiness is sender-specific for every reason; local scoreboard still calls ticketEarned. */
+    fun ready(player: String): Boolean {
+        val key = requests.keys.firstOrNull { it.equals(player, true) } ?: return false
+        requests.remove(key)
+        if (requests.isEmpty()) active = false
+        return true
+    }
+    /** A connection transfer invalidates run context, not the same party's requests. */
+    fun transfer() {
+        if (!active && requests.isNotEmpty()) { active = true; announcementDue = true }
+    }
+
+    /** A ticket releases only this player's contest request, pending or already blocking entry. */
+    fun ticketEarned(player: String): Boolean {
+        val key = requests.entries.firstOrNull { it.key.equals(player, true) && it.value.equals("contest", true) }?.key
+            ?: return false
+        requests.remove(key)
+        if (requests.isEmpty()) active = false
+        return true
+    }
+
+    fun partyResetSignal(line: String) = partyGone.any { it.matches(SafariRules.strip(line).trim()) }
+
+    /** Party membership notices. Returns whether the line was one, so it isn't read as chat. */
+    private fun partyChanged(line: String): Boolean {
+        if (partyGone.any { it.matches(line) }) {
+            clear()
+            return true
+        }
+        val name = departed.firstNotNullOfOrNull { it.matchEntire(line) }?.groupValues?.get(1) ?: return false
+        val key = requests.keys.firstOrNull { it.equals(name, true) } ?: return true
+        requests.remove(key)
+        if (requests.isEmpty()) active = false
+        return true
+    }
+
+    /** The run is over: banked requests become a hold and a contest reminder can be queued. */
+    @Suppress("UNUSED_PARAMETER")
+    fun leftSafari(self: String): String? {
+        if (!ConfigManager.downtimeCommand) { clear(); return null }
+        if (requests.isEmpty()) return null
+        if (!active) {
+            active = true; announcementDue = true
+        }
+        if (!announcementDue) return null
+        announcementDue = false
+        return summary()
+    }
+
+    fun onClientTick(client: Minecraft) {
+        if (!ConfigManager.downtimeCommand && (active || requests.isNotEmpty())) clear()
+        releaseContestTravel(System.currentTimeMillis())
+        if (client.player == null || client.connection == null || !PartyManager.hasInfo) return
+        val inSafari = SafariManagerGuard.activeRun(client)
+        if (!inSafari) leftSafari(client.player?.name?.string.orEmpty())?.let(::queueAnnouncement)
+        val inCanyon = !inSafari && client.player != null && client.level != null &&
+            (net.johnceo.sparklingmutuals.safari.SafariIsland.currentMode.equals("foraging_3", true) ||
+                SkyblockSidebar.areaName(client).equals("Torrhus Canyon", true))
+        // Transfers may briefly clear Safari detection before the destination is available.
+        announcement.poll(System.currentTimeMillis(), if (holding) summary() else null,
+            leader = PartyManager.isLeader(client.player!!.uuid.toString()), inCanyon = inCanyon)?.let(::send)
+    }
+
+    private fun displayName(key: String) = if (key.matches(Regex("[0-9a-f]{32}")))
+        SafariPartyInput.nameOf(key) ?: "name loading" else key
+    internal fun localNotice() = "[SM] ${if (requests.values.all { it.equals("contest", true) }) "Contest" else "Downtime"}: wait for ${waitingFor()} to say r or report a ticket in party chat." +
+        (if (requests.values.any { it.equals("contest", true) }) " Other players' contest holds also clear 20s after a Torrhus party warp." else "") +
+        " Hold Shift to enter anyway."
+    private fun summary(): String? {
+        val manual = requests.filterValues { !it.equals("contest", true) }.entries.joinToString(" · ") { (name, reason) ->
+            "${DowntimeAnnouncement.REQUEST_PREFIX}${displayName(name)} (Reason: ${reason.ifBlank { "Not specified" }.take(60)})"
+        }
+        return manual.ifEmpty { DowntimeAnnouncement.TICKET_REMINDER.takeIf { requests.isNotEmpty() } }
+    }
+    fun queueAnnouncement(message: String) {
+        // Only the current leader may publish it, once the Canyon location is confirmed.
+        announcement.queue(message, System.currentTimeMillis(), 0)
+    }
+
+    /** Prune only members proven absent from the refreshed party, not the current instance. */
+    fun pruneVerified(ids: Map<String, String>, members: Set<String>) {
+        // UUID placeholders keep unknown names blocking until the roster lookup resolves them.
+        requests.keys.toList().forEach { key ->
+            val name = ids.entries.firstOrNull { it.value == key }?.key
+            if (name != null) {
+                val reason = requests.remove(key) ?: return@forEach
+                val resolved = SafariPartyInput.nameOf(key) ?: name
+                if (requests.keys.none { it.equals(name, true) }) requests[resolved] = reason
+                contestTravelAt.remove(key.lowercase())?.let { contestTravelAt.putIfAbsent(resolved.lowercase(), it) }
+            }
+        }
+        requests.keys.removeAll { name ->
+            val id = ids[name.lowercase()] ?: name.takeIf { it.matches(Regex("[0-9a-f]{32}")) }
+            id != null && id !in members
+        }
+        if (requests.isEmpty()) active = false
+    }
+
+    fun holders() = requests.keys.joinToString(", ", transform = ::displayName)
+    fun waitingFor() = requests.entries.joinToString(", ") { (key, reason) ->
+        "${displayName(key)} (${reason.ifBlank { "downtime" }.take(60)})"
+    }
+    /** Explicit disable or confirmed party change drops requests. */
+    fun clear() { active = false; announcementDue = false; requests.clear(); announcement.clear(); contestTravelAt.clear() }
+    fun reset() { clear() }
+
+    private fun send(message: String) { PartyManager.sendPartyChat(Minecraft.getInstance(), "$message") }
+}

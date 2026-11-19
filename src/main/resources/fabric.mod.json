@@ -15,32 +15,41 @@
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
+    "main": [
+      {
+        "value": "net.johnceo.sparklingmutuals.SparklingMutuals",
+        "adapter": "kotlin"
+      }
+    ],
     "client": [
       "dev.sleepcodex.foragingpuckgrinding.VexTracerClient",
       "dev.sleepcodex.foragingpuckgrinding.journal.CritterMod"
     ]
   },
   "mixins": [
-    "hunting-helper.client.mixins.json"
+    "hunting-helper.client.mixins.json",
+    "sparkling-mutuals.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": "~26.2",
     "java": ">=25",
     "fabric-api": ">=0.161.0+26.2",
-    "sparkling-mutuals": ">=4.3.7",
     "fabric-language-kotlin": ">=1.14.1"
+  },
+  "breaks": {
+    "sparkling-mutuals": "*"
   },
   "jars": [
     {
       "file": "META-INF/jars/fabric-api.jar"
     },
     {
-      "file": "META-INF/jars/sparkling-mutuals.jar"
-    },
-    {
       "file": "META-INF/jars/fabric-language-kotlin.jar"
     }
   ],
-  "accessWidener": "hunting-helper.accesswidener"
+  "accessWidener": "hunting-helper.accesswidener",
+  "custom": {
+    "sparkling-mutuals:developer": "false"
+  }
 }

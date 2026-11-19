@@ -1,7 +1,6 @@
 package dev.sleepcodex.foragingpuckgrinding;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import dev.sleepcodex.foragingpuckgrinding.mixin.SafariCatchReceiver;
 import java.io.IOException;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -14,6 +13,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.johnceo.sparklingmutuals.safari.SafariCatch;
 import net.johnceo.sparklingmutuals.safari.SafariMessages;
 import net.johnceo.sparklingmutuals.safari.SafariTracking;
+import net.johnceo.sparklingmutuals.safari.ui.SafariPanels;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -39,15 +39,17 @@ public final class VexTracerClient implements ClientModInitializer {
         } catch (IOException | IllegalArgumentException exception) {
             LOGGER.warn("Could not read Vex tracer settings; using OFF", exception);
         }
+        // Full-clear mode swaps in Hunting Helper's coverage and remaining panels.
+        SafariPanels.fullClearProgress = FullClearProgress::progress;
+        SafariPanels.fullClearMissing = FullClearProgress::missing;
         // GAME and GAME_CANCELED are mutually exclusive. Visible and display-filtered lines already
         // reach SafariTracking through GAME. Forward only valid captures from the canceled path.
         ClientReceiveMessageEvents.GAME_CANCELED.register((message, overlay) -> {
             if (overlay) return;
             Minecraft.getInstance().execute(() -> {
-                var receiver = (SafariCatchReceiver) (Object) SafariTracking.INSTANCE;
                 for (String line : SafariMessages.INSTANCE.lines(message.getString(), null, null)) {
                     if (SafariCatch.Companion.parse(line) != null)
-                        receiver.huntingHelper$receive(line);
+                        SafariTracking.INSTANCE.receive(line);
                 }
             });
         });

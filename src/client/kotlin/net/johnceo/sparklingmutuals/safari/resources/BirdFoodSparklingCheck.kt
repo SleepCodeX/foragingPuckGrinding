@@ -1,0 +1,68 @@
+package net.johnceo.sparklingmutuals.safari.resources
+
+import net.johnceo.sparklingmutuals.safari.SafariRules
+
+/** Local food/marker evidence only. Spawn messages confirm food use, never fabricate catches. */
+class BirdFoodSparklingCheck {
+    private var held: Int? = null
+    private var floor: Int? = null
+    private var consumed = false
+    private var population = 0
+    private var verifiedPopulation = 0
+    private var feedingTarget = 9
+    private var lostFood = 0
+    private var confirmedSpawns = 0
+    private val earlySpawns = ArrayDeque<Long>()
+    var pendingSpawns = 0
+        private set
+    val floorDropsRemaining get() = floor
+    val leftToUse: Int? get() = held?.let { h -> floor?.let { it+h } }
+    val complete get() = floor == 0 && held == 0 &&
+        (pendingSpawns == 0 && (consumed || population >= (9-lostFood).coerceAtLeast(0)) || verifiedPopulation >= feedingTarget)
+    fun lostOnDeath(amount: Int) {
+        if(amount<=0) return
+        lostFood+=amount
+        feedingTarget=(feedingTarget-amount).coerceAtLeast(0)
+        pendingSpawns=(pendingSpawns-amount).coerceAtLeast(0)
+        consumed=confirmedSpawns>0
+    }
+    fun floor(remaining: Int) {
+        if (remaining > (floor ?: 0)) clearPopulationProof()
+        floor = if(remaining >= 0) remaining else floor?.takeIf { it > 0 }
+    }
+    /** Qualified captures + current birds can prove a missed announcement, but only with all food resolved. */
+    fun population(accountedFeedings: Int, target: Int = 9) {
+        feedingTarget = if(lostFood>0) target.coerceAtLeast(0) else target.coerceAtLeast(9)
+        population=maxOf(population,accountedFeedings)
+        if (floor == 0 && held == 0) verifiedPopulation=maxOf(verifiedPopulation,accountedFeedings)
+    }
+    private fun clearPopulationProof() { verifiedPopulation=0 }
+    fun inventory(stacks: List<Pair<String,Int>>, now: Long) {
+        val amount=stacks.filter { SafariRules.strip(it.first).trim() in foods }.sumOf { it.second.coerceAtLeast(0) }
+        val previous=held
+        if (previous != null && amount != previous) clearPopulationProof()
+        if(previous != null && amount < previous) {
+            consumed=true
+            // The latest use batch supersedes older missed confirmations.
+            pendingSpawns = previous-amount
+            // The server can send the spawn line before the inventory packet reaches the client.
+            val since=now-2000
+            while(earlySpawns.isNotEmpty() && earlySpawns.first() < since) earlySpawns.removeFirst()
+            while(pendingSpawns > 0 && earlySpawns.isNotEmpty()) { earlySpawns.removeFirst();pendingSpawns-- }
+        }
+        held=amount
+        while(earlySpawns.isNotEmpty() && now-earlySpawns.first() > 2000) earlySpawns.removeFirst()
+    }
+    fun spawn(raw: String, now: Long): Boolean {
+        if(SafariRules.strip(raw) !in spawns) return false
+        confirmedSpawns++
+        if(pendingSpawns > 0) pendingSpawns-- else earlySpawns.addLast(now)
+        return true
+    }
+    fun debug() = "pendingSpawns=$pendingSpawns consumed=$consumed verifiedFeedings=$verifiedPopulation feedingTarget=$feedingTarget complete=$complete"
+    companion object {
+        private val foods=setOf("Bag of Seeds","Wriggleworm","Yogi Berry")
+        private val spawns=setOf("A Bluebird was attracted to the Birdfeeder!",
+            "A Parakeet was attracted to the Birdfeeder!","Two Macaws were attracted to the Birdfeeder!")
+    }
+}

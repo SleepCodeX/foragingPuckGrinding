@@ -37,7 +37,7 @@ Nametag matching ignores capitalization and Minecraft formatting. The tracker re
 
 **/hh → All Safari settings** opens the full Sparkling Mutuals 4.3.7 interface. Closing it takes you back to Hunting Helper. The dashboard also takes you directly to modes, critter highlights, HUDs, capture tools, party settings, contests, history, and SkyBlock helpers. Party sync, auto-entry, warping, history, achievements and Hunting Box valuation use the original implementation. The upstream **/sm** commands and saved settings are available.
 
-Install the Hunting Helper JAR on Fabric Loader. It includes Fabric API, Sparkling Mutuals, Fabric Language Kotlin and the native field journal. The custom trackers and settings run locally. Party synchronization, live Bazaar/profile data and other online features use their respective services when active.
+Install the Hunting Helper JAR on Fabric Loader. It includes Fabric API, Fabric Language Kotlin, the native field journal and the Sparkling Mutuals source. Sparkling Mutuals is compiled into Hunting Helper, so remove any standalone Sparkling Mutuals JAR from `mods` (the loader reports the conflict). Its `config/sparkling-mutuals` settings carry over. [Upstream source and local changes](docs/SM-UPSTREAM.md) The custom trackers and settings run locally. Party synchronization, live Bazaar/profile data and other online features use their respective services when active.
 
 ![Bundled Safari settings](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/safari.png)
 
