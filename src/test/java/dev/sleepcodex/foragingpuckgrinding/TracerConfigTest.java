@@ -9,6 +9,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class TracerConfigTest {
     @TempDir Path directory;
 
+    @Test void puffOptionsSurviveOtherEditsAndMigrateIndependently() throws Exception {
+        var path = directory.resolve("tracers.properties");
+        Files.writeString(path, "enabled=true\ntarget=BOTH\n");
+        var config = new TracerConfig(path);
+        config.load();
+        assertFalse(config.puffTimer());
+        assertTrue(config.puffReminder());
+        config.setPuffOptions(true, false);
+        config.setEnabled(false);
+        var reopened = new TracerConfig(path);
+        reopened.load();
+        assertTrue(reopened.puffTimer());
+        assertFalse(reopened.puffReminder());
+        assertTrue(reopened.isSelected(TracerTarget.BLUE_JAY));
+    }
+
     @Test void defaultsToOffAndPersistsBothDirections() throws Exception {
         Path file = directory.resolve("config/tracers.properties");
         TracerConfig config = new TracerConfig(file);

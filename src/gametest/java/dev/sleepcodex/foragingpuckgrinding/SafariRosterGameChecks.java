@@ -7,6 +7,9 @@ import java.util.UUID;
 import kotlin.Pair;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.johnceo.sparklingmutuals.hunting.HuntingCompletion;
+import net.johnceo.sparklingmutuals.safari.structures.WallSummary;
+import net.johnceo.sparklingmutuals.safari.ui.SafariPanels;
 import net.johnceo.sparklingmutuals.safari.*;
 import net.minecraft.network.chat.Component;
 
@@ -42,9 +45,20 @@ final class SafariRosterGameChecks {
         message(text, shared);
     }
 
-    private static FullClearProgress.Remaining row(SafariRun run, SafariCritter critter) {
-        return FullClearProgress.remaining(run, critter.getBiome()).stream()
-                .filter(item -> item.species().equals(critter)).findFirst().orElse(null);
+    static Integer located(SafariRun run, SafariCritter critter) {
+        return HuntingCompletion.INSTANCE.located(critter, HuntingCompletion.INSTANCE.of(run));
+    }
+    static int caught(SafariRun run, String name) { return HuntingCompletion.INSTANCE.of(run).caught(name); }
+    private static int coverage(SafariRun run) {
+        int total = 0;
+        for (var species : SafariRoster.INSTANCE.getAll()) if (caught(run, species.getName()) > 0) total++;
+        return total;
+    }
+    /** SM's missing panel row with the extras (owed list or "also here") for a species. */
+    private static String hud(SafariRun run, SafariCritter critter) {
+        var panel = SafariPanels.INSTANCE.missing(run, critter.getBiome(), true, 0, 0, new WallSummary(List.of()), SafariSparklingMode.INSTANCE.getState());
+        return panel.getRows().stream().filter(row -> row.getLabel().equals(critter.getName()))
+                .map(row -> String.valueOf(row.getValue())).findFirst().orElse("<absent>");
     }
 
     static void run(ClientGameTestContext context) {
@@ -68,35 +82,32 @@ final class SafariRosterGameChecks {
             run.observePopulation(List.of());
             for (var group : POPULATIONS) for (String name : group.names().split(",")) {
                 var species = SafariRoster.INSTANCE.named(name);
-                var item = row(run, species);
-                if (item == null || !Integer.valueOf(group.expected()).equals(item.located()) || item.caught() != 0)
-                    throw new AssertionError(name + " lost its located population after unloading: " + item);
+                if (!Integer.valueOf(group.expected()).equals(located(run, species)) || caught(run, name) != 0)
+                    throw new AssertionError(name + " lost its located population after unloading: " + located(run, species));
                 for (int i = 1; i < group.expected(); i++) catchOne(name, i % 2 == 1);
-                item = row(run, species);
-                if (item == null || !Integer.valueOf(1).equals(item.located()) || item.caught() != group.expected() - 1
-                        || !item.amount().equals(group.sourceDependent() ? "1+ remaining" : "1 remaining"))
-                    throw new AssertionError(name + " should have one located creature left: " + item);
+                if (!Integer.valueOf(1).equals(located(run, species)) || caught(run, name) != group.expected() - 1)
+                    throw new AssertionError(name + " should have one located creature left: " + located(run, species));
+                // Missing panel: a quota still owed reads "3/4 · 1 located"; a done species stays under "also here".
+                String row = hud(run, species);
+                String expectedRow = species.getQuota() > 1 && species.getQuota() > group.expected() - 1
+                        ? (group.expected() - 1) + "/" + species.getQuota() + " · 1 located" : "1 located";
+                if (!row.equals(expectedRow)) throw new AssertionError(name + " HUD expected " + expectedRow + " but displayed " + row);
                 catchOne(name, true);
-                item = row(run, species);
-                if (FullClearProgress.caught(run, name) != group.expected())
+                if (caught(run, name) != group.expected())
                     throw new AssertionError(name + " counted the reward stack more than once");
-                if (!group.sourceDependent() && item != null)
-                    throw new AssertionError(name + " should have cleared: " + item);
-                if (group.sourceDependent() && (item == null || !Integer.valueOf(0).equals(item.located())
-                        || !item.amount().startsWith("Check ")))
-                    throw new AssertionError(name + " lost its unresolved spawn source: " + item);
+                if (!Integer.valueOf(0).equals(located(run, species)) || !hud(run, species).equals("<absent>"))
+                    throw new AssertionError(name + " should have cleared: " + located(run, species) + " / " + hud(run, species));
             }
-            if (FullClearProgress.coverage(run, roster) != 37) throw new AssertionError("Incomplete shared coverage");
+            if (coverage(run) != 37) throw new AssertionError("Incomplete shared coverage");
             ledger.enter(System.currentTimeMillis());
             var fresh = ledger.getCurrent();
             for (var species : roster) {
-                var item = row(fresh, species);
-                if (item == null || item.located() != null || item.caught() != 0)
+                if (located(fresh, species) != null || caught(fresh, species.getName()) != 0)
                     throw new AssertionError("Stale population for " + species.getName());
                 catchOne(species.getName(), false);
             }
-            if (FullClearProgress.coverage(fresh, roster) != 37) throw new AssertionError("Incomplete personal coverage");
+            if (coverage(fresh) != 37) throw new AssertionError("Incomplete personal coverage");
         });
-        System.out.println("PASS: all 37 Safari species, visible and hidden captures, 31 bounded populations, six conditional sources and fresh-run isolation");
+        System.out.println("PASS: all 37 Safari species in the run ledger and the missing panel, visible and hidden captures, 31 bounded populations, six conditional sources and fresh-run isolation");
     }
 }

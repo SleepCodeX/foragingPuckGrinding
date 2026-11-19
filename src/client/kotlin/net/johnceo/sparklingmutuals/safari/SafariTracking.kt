@@ -1,0 +1,210 @@
+package net.johnceo.sparklingmutuals.safari
+
+import net.johnceo.sparklingmutuals.compat.*
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
+import net.johnceo.sparklingmutuals.LocalChat
+import net.johnceo.sparklingmutuals.party.PartyManager
+import net.johnceo.sparklingmutuals.config.ConfigManager
+import net.johnceo.sparklingmutuals.contest.ContestGui
+import net.johnceo.sparklingmutuals.history.TicketCounter
+import net.johnceo.sparklingmutuals.hud.SafariHud
+import net.johnceo.sparklingmutuals.safari.completion.SafariFullClear
+import net.johnceo.sparklingmutuals.safari.esp.SafariEsp
+import net.johnceo.sparklingmutuals.safari.esp.SafariEspRules
+import net.johnceo.sparklingmutuals.safari.resources.FloorDropType
+import net.johnceo.sparklingmutuals.safari.resources.SafariFloorDrops
+import net.johnceo.sparklingmutuals.safari.resources.SafariInventoryAlerts
+import net.johnceo.sparklingmutuals.safari.structures.BeeNests
+import net.johnceo.sparklingmutuals.safari.structures.SafariMounds
+import net.johnceo.sparklingmutuals.safari.structures.SafariStructures
+import net.johnceo.sparklingmutuals.safari.ui.SafariPanels
+import net.johnceo.sparklingmutuals.safari.ui.SafariVisibility
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+
+/** Tracking is independent of display toggles. Last-run data lives until the next arrival. */
+object SafariTracking {
+    private var pendingTicket: Pair<SafariTicketType, Long>? = null
+    private var pendingAdmission: Pair<String, Long>? = null
+    fun ticketSelected(name: String) {
+        SafariTicketType.fromItem(name)?.let { pendingTicket = it to System.currentTimeMillis() }
+    }
+    private fun entryEvidence(run: SafariRun, now: Long) {
+        net.johnceo.sparklingmutuals.safari.sparkling.SparklingEncounters.reset()
+        pendingTicket?.takeIf { now - it.second in 0..120000 }?.let { run.entry.ticket = it.first }
+        pendingAdmission?.takeIf { now - it.second in 0..120000 }?.let { run.entry.admission = it.first }
+        pendingTicket = null; pendingAdmission = null
+    }
+    val ledger = SafariLedger()
+    private var level: Any? = null
+    val run get() = ledger.displayed
+    val displayBiome get() = SafariAssist.biome ?: run?.lastBiome
+    val visible get() = SafariVisibility.visible(ConfigManager.showWhere, SafariAssist.inSafari, SafariAssist.atEntrance)
+    fun register() {
+        net.johnceo.sparklingmutuals.sync.SafariPartySync.register()
+        ClientReceiveMessageEvents.GAME.register { message, overlay ->
+            if (!overlay) Minecraft.getInstance().execute {
+                SafariMessages.forRun(message.string, ledger.current, SafariAssist.inSafari).forEach(::receive)
+            }
+        }
+    }
+    private fun syncWorld(client: Minecraft) {
+        if (client.level !== level) { ledger.worldChanged(System.currentTimeMillis()); resetEncounters(); level = client.level }
+    }
+    private fun resetEncounters() {
+        BeeNests.reset()
+        SafariStructures.reset()
+        SafariEsp.clearCaptured()
+        SafariEsp.resetDrops()
+        SafariInventoryAlerts.reset()
+        SafariFloorDrops.state.reset()
+    }
+    // Hunting Helper: public (was private) so chat hidden from the HUD by other mods still reaches the run tracker.
+    fun receive(raw: String) {
+        val client = Minecraft.getInstance()
+        if (client.level == null || client.player == null) return
+        syncWorld(client)
+        net.johnceo.sparklingmutuals.history.HistoryServerPolicy.allows(client)
+        val text = SafariRules.strip(raw)
+        val now = System.currentTimeMillis()
+        if (TicketCounter.isTicket(text)) {
+            val current = ledger.current
+            if (SafariIsland.onIsland && current != null) current.entry.admission = text
+            else pendingAdmission = text to now
+        }
+        if (SafariAssist.inSafari) {
+            SafariEspRules.thrownSpecies(text)?.let(SafariEsp::threw)
+            SafariEspRules.escapedSpecies(text)?.let(SafariEsp::escaped)
+            SafariEsp.shywormMessage(text, now)
+        }
+        if (SafariMessages.enteredBy(text, client.player!!.name.string)) {
+            val previous = ledger.current
+            ledger.confirmEntry(now); SafariAssist.markEntered()
+            if (previous !== ledger.current) { resetEncounters(); ledger.current?.let { entryEvidence(it, now) } }
+        }
+        if (SafariMounds.outcome(text) != null) {
+            if (SafariAssist.inSafari) { ensureRun(client); ledger.current?.recordMound(text) }
+            return
+        }
+        if (SafariAssist.inSafari) {
+            ensureRun(client)
+            net.johnceo.sparklingmutuals.hud.SafariBanners.chat(text)
+            ledger.current?.birdFoodCheck?.spawn(text,now)
+            if(SafariRules.isHideyhoDialogue(text) && SafariAssist.biome==SafariBiome.HAUNTED)
+                ledger.current?.completion?.hideyhoDialogue(now)
+            ledger.current?.birds?.spawn(text,now)
+            ledger.current?.recordWumpaSpawn(text)
+            ledger.current?.sparklingBroadcast(text, now)
+            ledger.current?.entry?.chat(text)
+            ledger.current?.gems?.chat(text)
+            ledger.current?.startingAnnouncement?.observeHotspot(text, now)
+            if(text.startsWith("HOTSPOT!")) ledger.current?.let { announceStarting(client,it,now) }
+            if (text.startsWith("HEAD START!")) ledger.current?.startingGrantWindow(now)
+            ledger.current?.resources?.headStart(text)
+            if (text.startsWith("HEAD START!")) ledger.current?.entry?.headStart?.let { type ->
+                SafariFloorDrops.state.startingGrant(type)
+                ledger.current?.birds?.startingGrant(type.label)
+                if (ConfigManager.announceStartingItems)
+                    ledger.current?.sparklingChecks?.startingCoins(ledger.current?.resources?.startingCount(FloorDropType.COIN) ?: 0)
+            }
+            ledger.current?.sparklingChecks?.chat(text, manualAllowed = SafariFullClear.mode == SafariMode.SPARKLING)
+            if (text == "A Gimmiegold appeared out of nowhere and gobbled up your Shining Coin!") ledger.current?.resources?.spawn(SafariBiome.HAUNTED)
+        }
+        if (text.startsWith("FLOOR DROP!") && SafariAssist.inSafari) {
+            ensureRun(client)
+            val onBoat = client.player?.let { SafariAreaMap.areaAt(it.x, it.y, it.z) == 0 } == true
+            ledger.current?.recordBirdFood(text, if (onBoat) null else SafariAssist.biome, now)
+            ledger.current?.resources?.pickup(text, startingPickup = onBoat && ledger.current?.inStartingInventoryWindow(now) == true)
+            SafariEsp.floorPickup(text)
+            SafariFloorDrops.state.record(text, SafariAssist.biome)
+            return
+        }
+        val catch = SafariCatch.parse(text) ?: return
+        SafariAssist.markEntered()
+        ensureRun(client)
+        ledger.current!!.record(catch, now, client.player!!.name.string)
+        if (ConfigManager.lakeClearAlert && ledger.current!!.lakeCatchMilestone.consume(ledger.current!!::personalCount))
+            LakeClearAlert.show(ledger.current!!)
+        net.johnceo.sparklingmutuals.hud.SafariBanners.caught(catch.critter.name)
+        checkPartyUnique(client, catch.critter.biome, now)
+        SafariEsp.caught(catch.critter.name, catch.personal)
+        ConfigManager.personalBests.captureFeedback(text, ledger.current!!, now, client.player!!.name.string)?.let { feedback ->
+            if (feedback.changed) ConfigManager.save()
+            client.player?.sendSystemMessage(LocalChat.component(feedback.notice))
+        }
+    }
+    fun onClientTick(client: Minecraft) {
+        ensureRun(client)
+        val run = ledger.current ?: return
+        val player = client.player ?: return
+        val connection = client.connection ?: return
+        if (SafariAssist.location != SafariLocation.INSIDE) return
+        val now = System.currentTimeMillis()
+        run.localPlayer(player.name.string)
+        // Sample on the boat too, before anyone can use starting supplies or collect floor drops.
+        run.inventoryEvidence(net.johnceo.sparklingmutuals.safari.resources.BirdfeederInventory.snapshot(client), now)
+        announceStarting(client,run,now)
+    }
+    private fun announceStarting(client: Minecraft,run: SafariRun,now: Long) {
+        val player=client.player ?: return
+        val connection=client.connection ?: return
+        if (PartyManager.hasInfo && PartyManager.getMembers().size > 1) {
+            val sync=net.johnceo.sparklingmutuals.sync.SafariPartySync
+            val hotspotEnabled = net.johnceo.sparklingmutuals.hud.HotspotAssignmentAlert.enabled()
+            run.startingAnnouncement.dispatchReliable(now, SafariSparklingMode.state, hotspotEnabled, ConfigManager.announceStartingItems,
+                net.johnceo.sparklingmutuals.hud.HotspotAssignmentAlert::announcement) { message ->
+                if (!PartyManager.sendPartyChat(client, message)) return@dispatchReliable false
+                // Apply our own contribution now; the server's party echo is deduplicated.
+                run.resources.partyNotice("Party > ${player.name.string}: $message")
+                true
+            }
+        }
+    }
+    fun ensureRun(client: Minecraft) {
+        syncWorld(client)
+        val previous = ledger.current
+        val now = System.currentTimeMillis()
+        net.johnceo.sparklingmutuals.history.HistoryServerPolicy.allows(client)
+        ledger.update(SafariAssist.location, SafariAssist.biome, now)
+        net.johnceo.sparklingmutuals.history.HistoryServerPolicy.allows(client)
+        if (previous !== ledger.current) {
+            resetEncounters()
+            ledger.current?.let { entryEvidence(it, now) }
+        }
+    }
+    fun finish() { ledger.leave(System.currentTimeMillis()); resetEncounters() }
+    fun render(graphics: GuiGraphicsExtractor) {
+        val client = Minecraft.getInstance()
+        if (client.player == null || client.smScreen is ContestGui || !visible) return
+        LakeClearAlert.render(graphics)
+        val run = run
+        val unique = ConfigManager.countUniqueOnly
+        if (ConfigManager.progressHud) SafariPanels.progress(run, unique, System.currentTimeMillis()).draw(graphics, SafariHud.PROGRESS)
+        if (!SafariVisibility.biomePanels(ConfigManager.showWhere, SafariAssist.inSafari, ledger.current != null, SafariAssist.biome)) return
+        val biome = SafariAssist.biome ?: return
+        if (ConfigManager.missingPanel) {
+            val missing=SafariPanels.missing(run,biome,unique,BeeNests.unpunchedCount,SafariStructures.nearbyMounds,SafariStructures.walls)
+            if(missing.rows.isNotEmpty()) missing.draw(graphics,SafariHud.MISSING)
+        }
+        if (ConfigManager.profitableChecklist && SafariFullClear.mode != SafariMode.FULL_CLEAR) net.johnceo.sparklingmutuals.safari.ui.ProfitableChecklist.panel(run, biome)
+            .draw(graphics, SafariHud.PROFITABLE)
+        if (ConfigManager.biomeObjectives) {
+            val objectives = SafariPanels.objectives(run, biome, unique, BeeNests.unpunchedCount,
+                run?.moundSurvey?.remaining ?: 0, SafariStructures.walls)
+            if (objectives.rows.isNotEmpty()) objectives.draw(graphics, SafariHud.OBJECTIVES)
+        }
+        if (ConfigManager.catchCountPanel) SafariPanels.captures(run, biome).draw(graphics, SafariHud.CAPTURES)
+    }
+    /** Party Unique PBs are checked after catches and after scans (absence evidence), see recordPartyUnique. */
+    fun checkPartyUnique(client: Minecraft, biome: SafariBiome, now: Long = System.currentTimeMillis()) {
+        val run = ledger.current ?: return
+        ConfigManager.personalBests.recordUnique(biome, run, now)?.let { notice ->
+            ConfigManager.save(); client.player?.sendSystemMessage(LocalChat.component(notice))
+        }
+        if (ConfigManager.personalBests.recordObservedUnique(biome, run, now)) ConfigManager.save()
+        if (SafariFullClear.mode != SafariMode.UNIQUE) return
+        ConfigManager.personalBests.recordPartyUnique(biome, run, now)?.let { notice ->
+            ConfigManager.save(); client.player?.sendSystemMessage(LocalChat.component(notice))
+        }
+    }
+}

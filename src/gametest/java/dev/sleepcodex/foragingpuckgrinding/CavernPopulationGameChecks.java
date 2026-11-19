@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.johnceo.sparklingmutuals.safari.SafariAssist;
 import net.johnceo.sparklingmutuals.safari.SafariBiome;
+import net.johnceo.sparklingmutuals.safari.SafariRoster;
 import net.johnceo.sparklingmutuals.safari.SafariTracking;
 
 /** Real Cavern models under the production recognizer. The run owns the counts across despawns. */
@@ -37,10 +38,11 @@ final class CavernPopulationGameChecks {
 
     private static void check(String species, int caught, int located) {
         var run = SafariTracking.INSTANCE.getRun();
-        var item = FullClearProgress.remaining(run, SafariBiome.CAVERN).stream()
-                .filter(row -> row.species().getName().equals(species)).findFirst().orElseThrow();
-        if (item.caught() != caught || !Integer.valueOf(located).equals(item.located()))
-            throw new AssertionError(species + " expected " + caught + " caught, " + located + " located, got " + item);
+        var critter = SafariRoster.INSTANCE.named(species);
+        int actualCaught = SafariRosterGameChecks.caught(run, species);
+        Integer actualLocated = SafariRosterGameChecks.located(run, critter);
+        if (actualCaught != caught || !Integer.valueOf(located).equals(actualLocated))
+            throw new AssertionError(species + " expected " + caught + " caught, " + located + " located, got " + actualCaught + "/" + actualLocated);
     }
 
     static void run(ClientGameTestContext c, TestSingleplayerContext world) {
@@ -84,7 +86,7 @@ final class CavernPopulationGameChecks {
                 for (int i = 1; i < model.count(); i++) SafariRosterGameChecks.catchOne(model.species(), true);
                 check(model.species(), model.count() - 1, 1);
             }
-            client.gui.setScreen(new FullClearScreen(parent));
+            client.gui.setScreen(new RunReportScreen(parent));
         });
         c.clickScreenButton("Cavern");
         c.waitTicks(3);

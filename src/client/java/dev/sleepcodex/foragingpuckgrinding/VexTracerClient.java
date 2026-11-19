@@ -1,19 +1,19 @@
 package dev.sleepcodex.foragingpuckgrinding;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import dev.sleepcodex.foragingpuckgrinding.mixin.SafariCatchReceiver;
 import java.io.IOException;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.johnceo.sparklingmutuals.safari.SafariCatch;
-import net.johnceo.sparklingmutuals.safari.SafariMessages;
-import net.johnceo.sparklingmutuals.safari.SafariTracking;
+import net.johnceo.sparklingmutuals.config.SettingsScreens;
+import net.johnceo.sparklingmutuals.hunting.HuntingFeatures;
+import net.johnceo.sparklingmutuals.hunting.HuntingScreens;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -29,7 +29,8 @@ public final class VexTracerClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private final TracerConfig config = new TracerConfig(
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".properties"));
-    private enum Page { HOME, CUSTOM, JOURNAL, REMAINING }
+    final PuffCruxTracker puffs = new PuffCruxTracker(config);
+    private enum Page { HOME, CUSTOM, SAFARI, JOURNAL, REMAINING, PUFF }
     private Page requestedPage;
 
     @Override
@@ -39,18 +40,11 @@ public final class VexTracerClient implements ClientModInitializer {
         } catch (IOException | IllegalArgumentException exception) {
             LOGGER.warn("Could not read Vex tracer settings; using OFF", exception);
         }
-        // GAME and GAME_CANCELED are mutually exclusive. Visible and display-filtered lines already
-        // reach SafariTracking through GAME. Forward only valid captures from the canceled path.
-        ClientReceiveMessageEvents.GAME_CANCELED.register((message, overlay) -> {
-            if (overlay) return;
-            Minecraft.getInstance().execute(() -> {
-                var receiver = (SafariCatchReceiver) (Object) SafariTracking.INSTANCE;
-                for (String line : SafariMessages.INSTANCE.lines(message.getString(), null, null)) {
-                    if (SafariCatch.Companion.parse(line) != null)
-                        receiver.huntingHelper$receive(line);
-                }
-            });
-        });
+        // Sparkling Mutuals is the Safari backend; its settings, /sm and HUD-editor links open Hunting Helper's screens.
+        SettingsScreens.factory = (parent, target) -> new SafariSettingsScreen(parent, target);
+        HuntingScreens.report = RunReportScreen::new;
+        // CritterMod features ported into Sparkling Mutuals; also forwards canceled catches to its run ledger.
+        HuntingFeatures.register();
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "tracers"));
         KeyMapping toggle = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.foragingpuckgrinding.toggle_vex_tracers", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, category));
@@ -59,6 +53,8 @@ public final class VexTracerClient implements ClientModInitializer {
         // Register the tint pipeline at startup instead of mid-frame when the first glow appears.
         java.util.Objects.requireNonNull(Highlight.FILL);
         VexTracerRenderer renderer = new VexTracerRenderer(config);
+        HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,
+                Identifier.fromNamespaceAndPath(MOD_ID, "puff_crux"), (graphics, delta) -> puffs.draw(graphics));
         TrackedOutlines.install(renderer);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggle.consumeClick()) setEnabled(client, !config.enabled());
@@ -66,7 +62,7 @@ public final class VexTracerClient implements ClientModInitializer {
             Page page = requestedPage;
             requestedPage = null;
             if (page == Page.REMAINING) {
-                client.gui.setScreen(new FullClearScreen(null));
+                client.gui.setScreen(new RunReportScreen(null));
             } else if (page != null) {
                 var screen = new TracerSettingsScreen(config, toggle,
                         enabled -> setEnabled(client, enabled), targets -> setTargets(client, targets),
@@ -74,10 +70,13 @@ public final class VexTracerClient implements ClientModInitializer {
                 var home = new HuntingHomeScreen(screen, config);
                 screen.home = home;
                 if (page == Page.CUSTOM) home.openCustom();
-                else if (page == Page.JOURNAL) client.gui.setScreen(new FieldJournalScreen(home));
+                else if (page == Page.PUFF) home.openPuffCrux();
+                else if (page == Page.SAFARI) home.openSafari(null);
+                else if (page == Page.JOURNAL) home.openSafari(HuntingHomeScreen.Section.HUNTING);
                 else client.gui.setScreen(home);
             }
             renderer.tick(client);
+            puffs.tick(client);
         });
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(
@@ -89,7 +88,10 @@ public final class VexTracerClient implements ClientModInitializer {
             for (String name : new String[] {"huntinghelper", "hh"}) {
                 dispatcher.register(literal(name).executes(context -> requestMenu(Page.HOME))
                         .then(literal("remaining").executes(context -> requestMenu(Page.REMAINING)))
+                        .then(literal("puff").executes(context -> requestMenu(Page.PUFF)))
+                        .then(literal("safari").executes(context -> requestMenu(Page.SAFARI)))
                         .then(literal("journal").executes(context -> requestMenu(Page.JOURNAL)))
+                        .then(literal("run").executes(context -> requestMenu(Page.REMAINING)))
                         .then(literal("custom").executes(context -> requestMenu(Page.CUSTOM)))
                         .then(literal("debug").executes(context -> toggleDebug())));
             }

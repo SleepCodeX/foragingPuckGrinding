@@ -3,8 +3,6 @@ package dev.sleepcodex.foragingpuckgrinding;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.LongSupplier;
-import net.johnceo.sparklingmutuals.config.SafariConfigScreen;
-import net.johnceo.sparklingmutuals.config.SafariSettings;
 import net.johnceo.sparklingmutuals.config.SettingsTarget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,12 +10,14 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-/** The shared front door. Safari screens edit the upstream settings model directly. */
+/** The shared front door. Safari sections open Sparkling Mutuals' settings in Hunting Helper's style. */
 final class HuntingHomeScreen extends Screen {
     enum Section {
         MODES("Safari modes", "Unique, Sparkling and Full Clear", "Modes", "unique"),
-        ESP("Critter highlights", "Glow, boxes and floor drops", "ESP General", "glow"),
-        HUD("HUDs & alerts", "Progress panels and appearance", "HUDs", "progressHud"),
+        HUNTING("Hunting & journal", "Trades, marks, announcements, run report", "Hunting", "trades"),
+        ESP("Visuals & ESP", "Glow, boxes and floor drops", "ESP General", "glow"),
+        HUD("HUD layout", "Progress panels and appearance", "HUDs", "progressHud"),
+        ALERTS("Alerts", "Banners, sounds and encounters", "Banner", "enabled"),
         CAPTURE("Capture tools", "Capsule paths and catch helpers", "Safari helpers", "capture"),
         PARTY("Party & sync", "Shared runs and party interactions", "Party Interactions", "biomeReports"),
         CONTEST("Miria contests", "Tickets, alerts and Honeyhives", "Miria contest", "ticketMode"),
@@ -52,9 +52,10 @@ final class HuntingHomeScreen extends Screen {
 
     void openCustom() { Minecraft.getInstance().gui.setScreen(new CustomLibraryScreen(this, config)); }
 
-    private void openSafari(Section section) {
-        Minecraft.getInstance().gui.setScreen(new SafariConfigScreen(new SafariSettings(),
-                section == null ? null : section.target(), this));
+    void openPuffCrux() { Minecraft.getInstance().gui.setScreen(new PuffCruxScreen(this, config)); }
+
+    void openSafari(Section section) {
+        Minecraft.getInstance().gui.setScreen(new SafariSettingsScreen(this, section == null ? null : section.target()));
     }
 
     @Override protected void init() {
@@ -67,25 +68,29 @@ final class HuntingHomeScreen extends Screen {
         int col = (w - inset * 2 - gutter) / 2;
         int top = y + (compact ? 39 : 55);
         int featureHeight = compact ? 29 : 53;
-        tile("Hunting presets", "Vex, Blue Jay and Torrhus mobs", x + inset, top, col, featureHeight, true, () -> {
+        int featureWidth = (w - inset * 2 - gutter * 2) / 3;
+        tile("Hunting presets", "Vex, Blue Jay and Torrhus mobs", x + inset, top, featureWidth, featureHeight, true, () -> {
             presets.settle();
             Minecraft.getInstance().gui.setScreen(presets);
         });
         String detail = config.custom().all.isEmpty() ? "Build a nametag or mob type rule" : config.custom().all.size() + " saved";
-        tile("Custom trackers", detail, x + inset + col + gutter, top, col, featureHeight, true, this::openCustom);
+        tile("Custom trackers", detail, x + inset + featureWidth + gutter, top, featureWidth, featureHeight, true, this::openCustom);
+        int puffX = x + inset + (featureWidth + gutter) * 2;
+        tile("Puff Crux", "Rift despawn timer", puffX, top, x + w - inset - puffX, featureHeight, true, this::openPuffCrux);
         safariY = top + featureHeight + (compact ? 6 : 10);
         int listY = safariY + (compact ? 12 : 16);
         int footer = y + h - (compact ? 29 : 37);
         int rowGap = compact ? 3 : 5;
-        int rowH = (footer - 7 - listY - rowGap * 3) / 4;
+        int rows = (Section.values().length + 1) / 2;
+        int rowH = (footer - 7 - listY - rowGap * (rows - 1)) / rows;
         for (Section section : Section.values()) {
             int i = section.ordinal();
             tile(section.label, section.detail, x + inset + (i % 2) * (col + gutter),
                     listY + (i / 2) * (rowH + rowGap), col, rowH, false, () -> openSafari(section));
         }
         all = button("All Safari settings", x + inset, footer, 116, compact ? 20 : 25, () -> openSafari(null));
-        journal = button("Field journal", x + inset + 121, footer, 83, compact ? 20 : 25,
-                () -> Minecraft.getInstance().gui.setScreen(new FieldJournalScreen(this)));
+        journal = button("This run", x + inset + 121, footer, 83, compact ? 20 : 25,
+                () -> Minecraft.getInstance().gui.setScreen(new RunReportScreen(this)));
         done = button("Done", x + w - inset - 66, footer, 66, compact ? 20 : 25, this::onClose);
     }
 
@@ -147,11 +152,14 @@ final class HuntingHomeScreen extends Screen {
         c.round(bx,by,bw,bh,7,over?MenuTheme.ACCENT:MenuTheme.BORDER);
         c.round(bx+1,by+1,bw-2,bh-2,6,over?MenuTheme.HOVER:tile.featured()?0xFF292E35:MenuTheme.CARD);
         int start=bx+(compact?8:12);
-        if (tile.featured() && !compact) {
+        if (tile.featured() && !compact && bw >= 146) {
             int cy=by+bh/2;
             c.round(start,cy-13,26,26,6,0xFF1E2228);
             if (b==tiles.getFirst().button()) MobSymbols.draw(g,c,TracerTarget.VEX,start+13,cy,18);
-            else {
+            else if (b == tiles.get(2).button()) {
+                c.round(start+5,cy-3,16,9,4,0xFFDDE7ED);
+                c.round(start+9,cy-7,9,9,4,0xFFDDE7ED);
+            } else {
                 c.round(start+6,cy-6,13,9,2,MenuTheme.MUTED);
                 c.round(start+8,cy-3,13,9,2,MenuTheme.ACCENT);
                 c.round(start+11,cy,6,1,0,MenuTheme.CONTROL);

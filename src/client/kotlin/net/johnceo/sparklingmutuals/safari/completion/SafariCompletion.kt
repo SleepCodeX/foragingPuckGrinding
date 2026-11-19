@@ -1,0 +1,73 @@
+package net.johnceo.sparklingmutuals.safari.completion
+
+import net.johnceo.sparklingmutuals.compat.*
+import net.johnceo.sparklingmutuals.config.ConfigManager
+import net.johnceo.sparklingmutuals.config.SafariTheme
+import net.johnceo.sparklingmutuals.hud.SafariHud
+import net.johnceo.sparklingmutuals.hud.SmallAlerts
+import net.johnceo.sparklingmutuals.party.PartyManager
+import net.johnceo.sparklingmutuals.safari.SafariBiome
+import net.johnceo.sparklingmutuals.safari.SafariMode
+import net.johnceo.sparklingmutuals.safari.SafariRun
+import net.johnceo.sparklingmutuals.safari.SafariSparklingMode
+import net.minecraft.client.Minecraft
+import net.minecraft.client.resources.sounds.SimpleSoundInstance
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
+
+object SafariCompletion {
+    private var owner: SafariRun? = null
+    private val queue = ArrayDeque<Pair<SafariBiome, String>>()
+    private var sentAt = 0L
+    fun tick(client: Minecraft, run: SafariRun, biome: SafariBiome) {
+        if (owner !== run) { owner = run; queue.clear(); sentAt = 0 }
+        val mode = SafariFullClear.mode
+        val party = SafariSparklingMode.state
+        val now = System.currentTimeMillis()
+        // Sample held food before deciding whether any Forest report may be queued or sent.
+        if (client.player != null) {
+            run.inventoryEvidence(net.johnceo.sparklingmutuals.safari.resources.BirdfeederInventory.snapshot(client), now)
+        }
+        SafariBiome.entries.forEach { area ->
+            run.completion.announcement(run, area, mode, party)?.let { queue.addLast(area to it) }
+        }
+        // Revalidate queued completions after contradictory local evidence or a mode change.
+        queue.removeAll { (area, _) -> !run.canReportBiome(area, party, mode) || !run.completion.locallyComplete(run, area, mode, party) }
+        run.completion.armSharedClearReminder(run, biome, mode, party, now)
+        if (run.completion.locallyComplete(run, biome, mode, party)) run.resourceReminders.afterBiomeClear(now)
+        run.resourceReminders.dispatch(now, client.player?.name?.string ?: "Player", biome, party, enabled=ConfigManager.announceStartingItems) { _, reminder ->
+            net.johnceo.sparklingmutuals.hud.SafariAlertSequence.queue.submit(this, 3_500,
+                valid = { net.johnceo.sparklingmutuals.safari.SafariTracking.ledger.current === run &&
+                    ConfigManager.announceStartingItems }, minimumTicks = 70) {
+                client.gui.smSetTimes(5, 50, 15)
+                client.gui.smSetTitle(net.minecraft.network.chat.Component.literal(reminder.title)
+                    .withStyle { it.withColor(SafariTheme.ACCENT).withBold(true) })
+                client.gui.smSetSubtitle(net.minecraft.network.chat.Component.literal(reminder.detail))
+            }
+        }
+        if (ConfigManager.announceStartingItems && client.connection != null && PartyManager.hasInfo && PartyManager.getMembers().size > 1 &&
+            now - sentAt >= 1500 && run.partyResourceReminders.dispatch(now, party,
+                { message -> PartyManager.sendPartyChat(client, "$message") })) sentAt = now
+        if (client.connection != null && queue.isNotEmpty() && now - sentAt >= 3000) {
+            val (area, word) = queue.first()
+            val chat = ConfigManager.autoBiomeReports && !run.manualReportReceived(area) && run.completion.chatReportAllowed(area, mode)
+            val queuedForSync = net.johnceo.sparklingmutuals.sync.SafariPartySync.completion(word, chat)
+            if (queuedForSync || !chat || PartyManager.hasInfo) {
+                if (!queuedForSync && chat) PartyManager.sendPartyChat(client, word)
+                queue.removeFirst()
+                run.completion.sent(area, mode); sentAt = now
+                run.resourceReminders.afterBiomeClear(now)
+                run.partyResourceReminders.afterBiomeReport(now)
+            } else PartyManager.requestPartyInfo()
+        }
+        if (run.completion.alert(run, mode, party, true)) {
+            SmallAlerts.show(SafariHud.RUN_COMPLETE)
+        }
+    }
+    fun playSound(client: Minecraft) {
+        if (ConfigManager.runCompleteVolume <= 0) return
+        val id = Identifier.tryParse(ConfigManager.runCompleteSound) ?: return
+        val sound = BuiltInRegistries.SOUND_EVENT.getOptional(id).orElse(null) ?: return
+        client.soundManager.play(SimpleSoundInstance.forUI(sound, 1f, ConfigManager.runCompleteVolume.coerceIn(0, 100) / 100f))
+    }
+}

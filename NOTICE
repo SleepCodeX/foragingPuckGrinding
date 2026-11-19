@@ -15,8 +15,8 @@ https://github.com/SkyblockerMod/Skyblocker/blob/74fc9ae67c8eddf3dbf46f3eb2a884c
 Visual reference: SkyHanni's Fast Fairy Souls Pathfinder and camera-anchored
 line rendering were inspected to understand the requested appearance.
 SkyHanni is distributed under LGPL-2.1. Hunting Helper's own tracer renderer was
-implemented independently. The nested Sparkling Mutuals JAR carries its separate
-SkyHanni notices for adapted Safari features.
+implemented independently. The included Sparkling Mutuals source keeps its separate
+SkyHanni LGPL-2.1 notices for adapted Safari features; see licenses/sparkling-mutuals/.
 https://github.com/SkyHanniStudios/SkyHanni
 
 Project setup is based on FabricMC's CC0 fabric-example-mod (26.2 branch).
@@ -27,16 +27,25 @@ See gradle/LICENSE for the license and the copyright notices in those files.
 
 Bundled, unmodified Fabric mods for Minecraft 26.2:
 - Fabric API 0.161.0+26.2 by FabricMC, licensed under Apache-2.0. The original nested JAR retains its license and modules. Source: https://github.com/FabricMC/fabric-api/tree/0.161.0%2B26.2
-- Sparkling Mutuals 4.3.7 by JohnCEO and JohnKuudra. The upstream JAR retains its CC0 dedication,
-  dependency notices, licenses and Hypixel Mod API. Corresponding source and build scripts:
-  https://github.com/johnceoskyblock/sparkling-mutuals/tree/2b361320476d7e6e6a42390d4b1c3b7ab5e20731
 - Fabric Language Kotlin 1.14.1+kotlin.2.4.20 by FabricMC. Its original JAR retains its
   license and the bundled Kotlin libraries. Source and license:
   https://github.com/FabricMC/fabric-language-kotlin/tree/1.14.1%2Bkotlin.2.4.20
+- HM API (hm-api) 1.0.4+26.2 by AzureAaron, licensed under Apache-2.0. Required by Sparkling
+  Mutuals and nested unmodified, as the Sparkling Mutuals 4.3.7 JAR did; the original JAR
+  retains its license. Source: https://github.com/AzureAaron/hm-api
+
+Sparkling Mutuals 4.3.7 by JohnCEO and JohnKuudra is included as modified source code
+(packages net.johnceo.sparklingmutuals.*, assets/sparkling-mutuals) under its CC0-1.0
+dedication, licenses/sparkling-mutuals/LICENSE-CC0-1.0.txt. Its third-party notices
+(SkyHanni LGPL-2.1, SafariUtils, CritterMod, ShinyHunter, Nebulune, NotEnoughUpdates-REPO,
+SkyOcean) apply to the parts it adapted and are kept in licenses/sparkling-mutuals/.
+Upstream source: https://github.com/johnceoskyblock/sparkling-mutuals/tree/2b361320476d7e6e6a42390d4b1c3b7ab5e20731
+(tag v4.3.7). Hunting Helper's changes are marked "// Hunting Helper:" and listed in
+docs/SM-UPSTREAM.md.
 
 Hunting Helper uses Fabric Loader's native nested-mod support. Upstream components
 retain their licenses. Hunting Helper's MIT license applies to its own code.
 
 The Frost Hivethief menu artwork was generated for Hunting Helper.
 
-Safari field journal code and area data are adapted from Critter Safari Tracker 0.10.1 for Minecraft 26.2, copyright 2026 MrCloudy2, under the MIT License. See licenses/CritterMod-LICENSE.txt. Source: https://github.com/MrCloudy2/critterMod/tree/f26b5ead85ce66e30b7815386497dc9b3442a127
+The Safari hunting features (net.johnceo.sparklingmutuals.hunting: Hunter trades, marks, missing list, imports) are adapted from Critter Safari Tracker 0.10.1 for Minecraft 26.2, copyright 2026 MrCloudy2, under the MIT License. See licenses/CritterMod-LICENSE.txt. Source: https://github.com/MrCloudy2/critterMod/tree/f26b5ead85ce66e30b7815386497dc9b3442a127

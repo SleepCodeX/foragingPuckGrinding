@@ -31,12 +31,13 @@ names = {
     "home-dashboard": "home",
     "home-opening-03": "hivethief",
     "compact-dashboard": "home-compact",
-    "field-journal": "field-journal",
-    "field-report": "field-report",
-    "field-markers": "field-markers",
+    "hh-safari-settings-hunting": "hunting-settings",
+    "hunting-run-report": "run-report",
+    "hunting-recatch-and-perch-marks": "world-marks",
     "cavern-roster-checklist": "cavern-checklist",
-    "full-clear-hud": "full-clear-hud",
-    "full-clear-remaining": "full-clear-remaining"
+    "missing-panel-extras-gazer-2-of-4": "missing-panel",
+    "puff-crux-settings": "puff-crux",
+    "puff-crux-countdown": "puff-hud"
 }
 for original, published in names.items():
     copyfile(capture(original), output / f"{published}.png")

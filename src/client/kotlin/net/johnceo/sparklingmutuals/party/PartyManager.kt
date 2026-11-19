@@ -1,0 +1,108 @@
+package net.johnceo.sparklingmutuals.party
+
+import net.azureaaron.hmapi.data.party.PartyRole
+import net.azureaaron.hmapi.events.HypixelPacketEvents
+import net.azureaaron.hmapi.network.HypixelNetworking
+import net.azureaaron.hmapi.network.packet.s2c.HelloS2CPacket
+import net.azureaaron.hmapi.network.packet.s2c.HypixelS2CPacket
+import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
+import net.johnceo.sparklingmutuals.LocalChat
+import net.johnceo.sparklingmutuals.config.ConfigManager
+import net.minecraft.client.Minecraft
+
+object PartyManager {
+    private val roster = PartyRosterState()
+    var revision = 0L
+        private set
+    val hasInfo get() = roster.known
+    val continuity get() = roster.continuity
+    private val callbacks = mutableListOf<() -> Unit>()
+    private var requestedAt = 0L
+    private var refreshAgain = false
+
+    fun init() {
+        HypixelPacketEvents.HELLO.register(::handlePacket)
+        HypixelPacketEvents.PARTY_INFO.register(::handlePacket)
+        ClientReceiveMessageEvents.GAME.register { message, _ ->
+            if (PartyRosterSignals.changed(message.string)) Minecraft.getInstance().execute {
+                roster.invalidate(); revision++
+                // A notification can arrive while a packet for the old party is in flight.
+                if (requestedAt != 0L) refreshAgain = true else requestPartyInfo()
+            }
+        }
+    }
+
+    private fun handlePacket(packet: HypixelS2CPacket) {
+        Minecraft.getInstance().execute {
+            when (packet) {
+                is HelloS2CPacket -> requestPartyInfo()
+                is PartyInfoS2CPacket -> {
+                    requestedAt = 0
+                    if (refreshAgain) {
+                        refreshAgain = false
+                        requestPartyInfo()
+                        return@execute
+                    }
+                    roster.update(
+                        if (packet.inParty) packet.members?.keys?.map { it.toString() }.orEmpty() else emptyList(),
+                        if (packet.inParty) packet.members?.entries?.firstOrNull { it.value == PartyRole.LEADER }?.key?.toString() else null)
+                    revision++
+                    val ready = callbacks.toList()
+                    callbacks.clear()
+                    ready.forEach { it() }
+                }
+            }
+        }
+    }
+
+    fun requestPartyInfo() {
+        // Hunting Helper: Safari-shaped chat can be replayed in any world; only a Hypixel connection can answer.
+        if (!net.azureaaron.hmapi.utils.Utils.isOnHypixel()) return
+        if (requestedAt != 0L) return
+        requestedAt = System.currentTimeMillis()
+        HypixelNetworking.sendPartyInfoC2SPacket(2)
+    }
+
+    fun refreshPartyInfo(onUpdated: () -> Unit) {
+        if (!net.azureaaron.hmapi.utils.Utils.isOnHypixel()) return // Hunting Helper: see requestPartyInfo
+        callbacks.add(onUpdated)
+        requestPartyInfo()
+    }
+    fun withPartyInfo(onReady: () -> Unit) { if (hasInfo) onReady() else refreshPartyInfo(onReady) }
+
+    fun onClientTick(client: Minecraft) {
+        if (client.connection == null) { reset(); return }
+        if (client.player == null) return
+        if (hasInfo) {
+            val members = getMembers().toSet()
+            val names = client.connection!!.onlinePlayers.filter { it.profile.id.toString() in members }.map { it.profile.name }
+            if (ConfigManager.personalBests.rememberParty(names))
+                ConfigManager.save()
+        }
+        if (requestedAt != 0L && System.currentTimeMillis() - requestedAt > 5000) {
+            requestedAt = 0
+            refreshAgain = false
+            if (callbacks.isNotEmpty()) client.player?.sendSystemMessage(
+                LocalChat.component("[SM] Party lookup timed out. Try again."))
+            callbacks.clear()
+        }
+    }
+
+    fun reset() { roster.reset(); revision++; callbacks.clear(); requestedAt = 0; refreshAgain = false }
+    fun hasTeammates(client: Minecraft): Boolean {
+        val self = client.player?.uuid?.toString() ?: return false
+        return (withLocal(self)?.size ?: 0) > 1
+    }
+
+    fun sendPartyChat(client: Minecraft, message: String): Boolean {
+        val connection = client.connection ?: return false
+        if (!hasTeammates(client)) return false
+        net.johnceo.sparklingmutuals.alerts.AutomatedCommands.send(connection,"pc $message")
+        return true
+    }
+
+    fun isLeader(uuid: String) = roster.isLeader(uuid)
+    fun getMembers(): List<String> = roster.members
+    fun withLocal(local: String) = roster.withLocal(local)
+}

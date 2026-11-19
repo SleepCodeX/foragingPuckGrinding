@@ -6,3 +6,6 @@
 
 # These are Windows script files and should use crlf
 *.bat           text eol=crlf
+
+# Sparkling Mutuals sources keep upstream LF endings for clean merges
+*.kt            text eol=lf

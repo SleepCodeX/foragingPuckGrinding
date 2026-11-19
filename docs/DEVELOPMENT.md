@@ -30,8 +30,8 @@ Build from this checkout with **JDK 25**:
 
 Windows: `gradlew.bat build`. Output:
 
-- `build/libs/hunting-helper-1.6.2+mc26.2.jar` — installable mod.
-- `build/libs/hunting-helper-1.6.2+mc26.2-sources.jar` — Java source archive.
+- `build/libs/hunting-helper-1.7.0+mc26.2.jar` — installable mod.
+- `build/libs/hunting-helper-1.7.0+mc26.2-sources.jar` — Java and Kotlin source archive.
 
 [GitHub Actions](https://github.com/SleepCodeX/foragingPuckGrinding/actions/workflows/build.yml)
 builds the mod and source JARs from the visible commit and uploads both, alongside
@@ -134,12 +134,12 @@ Reference implementations consulted for the distinction between named and typed 
 
 ## Bundled Safari suite
 
-The Gradle build resolves the official Sparkling Mutuals 4.3.7 release for 26.2 alongside Fabric API 0.161.0+26.2 and Fabric Language Kotlin 1.14.1+kotlin.2.4.20, checks their published SHA-256 values, and nests all three unchanged with Fabric Loader's jar-in-jar metadata. The upstream sync, chat and API behavior comes with the original release. Core tracking requires no account or backend beyond the loaded Minecraft world.
+Sparkling Mutuals 4.3.7 is compiled from source in `src/client/kotlin` and `src/client/java/net` (26.2 variant, packages and asset namespace unchanged). Its unit tests run in `:test`. The Gradle build checks the published SHA-256 values of Fabric API 0.161.0+26.2 and Fabric Language Kotlin 1.14.1+kotlin.2.4.20 and nests both unchanged with Fabric Loader's jar-in-jar metadata, together with HM API 1.0.4+26.2. The upstream sync, chat and API behavior is unchanged. Local changes are marked `// Hunting Helper:`; see [SM-UPSTREAM.md](SM-UPSTREAM.md). Core tracking requires no account or backend beyond the loaded Minecraft world.
 
 The native packaged-client test opens Safari settings through Hunting Helper and returns to the original menu. It runs with only the distributed Hunting Helper JAR and the game-test harness. Live party synchronization and external services require an eligible session and peers. See [Sparkling Mutuals source](https://github.com/johnceoskyblock/sparkling-mutuals/tree/2b361320476d7e6e6a42390d4b1c3b7ab5e20731) and [NOTICE](../NOTICE).
 
-## Safari field journal
+## Safari hunting features
 
-The Minecraft 26.2 journal is compiled directly into the client source set. The packaged test loads Fabric API from Hunting Helper, opens its screens, exercises filtered chat, records a trade and removes it on completion. It reads the bundled Safari quote snapshot for both order-book prices. Each release now publishes native screenshots from the same production test as the distributed JAR. [Journal controls and upstream attribution](FIELD-JOURNAL.md)
+The CritterMod tools are Sparkling Mutuals code in `net.johnceo.sparklingmutuals.hunting` (Kotlin in `src/client/kotlin`, ported Java world logic in `src/client/java/net`). They read SM's run ledger and add no second catch parser. `SafariSettingsScreen` renders SM's `SettingsCatalog` with Hunting Helper's widgets and is installed through `SettingsScreens.factory`. `HuntingGameChecks` drives SM's missing panel with the extras (Gazer 2/4, uniques only, located), canceled chat, trades with a lower-case party prefix, recatch pins, the run announcements, the floor-drop trade exception, the run report, the HUD editor, `/hh` sections and `/sm`, and captures screenshots. [Features](HUNTING.md) · [SM changes](SM-UPSTREAM.md)
 
-The packaged client verifies all 37 Safari species through the capture handlers. It exercises the bounded and source-dependent species, run resets, repeated scans and a Cavern scene with textured Shyworm and Driftling armor stands, Chuckwalla item displays and Scrappy armadillos.
+The client tests also verify all 37 Safari species through the capture handlers (`SafariRosterGameChecks`): bounded and source-dependent populations, repeated scans, catches counted once per stack, the missing panel rows and fresh-run isolation. `CavernPopulationGameChecks` builds a Cavern scene with textured Shyworm and Driftling armor stands, Chuckwalla item displays and Scrappy armadillos and checks the located counts through burrows, hidden tags and despawns.

@@ -1,3 +1,17 @@
+# Hunting Helper 1.7.0
+
+- **Rift Puff Crux timer.** Open **/hh → Puff Crux** or **/hh puff** to enable the estimated despawn countdown and optional pop reminder. The timer runs locally and works with hunting tracers switched off.
+
+- **Sparkling Mutuals is now Hunting Helper source.** The 4.3.7 suite is compiled into Hunting Helper instead of being nested as a separate JAR. `/sm` commands and `config/sparkling-mutuals` settings are unchanged. A standalone Sparkling Mutuals JAR in `mods` is now reported as a conflict. [Upstream source and local changes](https://github.com/SleepCodeX/foragingPuckGrinding/blob/main/docs/SM-UPSTREAM.md)
+- **One Safari mod.** The field journal's CritterMod tools now use the Sparkling Mutuals run ledger for Hunter trades, world marks, capsule attempts, catches, shard values and encounter broadcasts. Open the integrated hunting settings with **/hh journal** and the run report with **/hh run**. The standalone CritterMod commands have retired.
+- **One missing panel.** SM's missing panel gains "Missing panel extras" (HUDs → Missing / Unchecked): quota species stay listed as "Gazer 2/4" until their quota, the "N left" title counts them, rows show "· N located", and done species with creatures left appear under "also here". **Uniques only** (off by default) keeps exactly SM's list. Sparkling mode is unchanged. **Everything except Macaw done!** and **Everything Done!** follow the same count. (The separate "Missing in this area" HUD from earlier builds is gone; its settings carry over.)
+- **Floor-drop filter.** "Quest items only" and "Hide collected quest items" (both off) under ESP → Floor drops. Items an active Hunter trade wants stay highlighted.
+- **Hunting Helper look everywhere.** `/hh`, `/sm` and the HUD editor open SM's settings in Hunting Helper's matte charcoal screen, built from SM's settings metadata. SM's HUDs, history, banners and chat accents use the same palette. The update check follows Hunting Helper releases.
+- **Party prefixes in any case.** "party >" and "PARTY >" lines are read like "Party >" for shared trades and SM's party commands.
+- **Imports.** Settings and run history from standalone CritterMod (`config/crittermod*.json`) and from the 1.6 field journal are merged once into the new settings and SM's history. With CritterMod also installed, Hunting Helper's trade box, marks and broadcasts stay off.
+- The full-clear "remaining" override of SM's panels was removed; SM's own panels show again with the extras above.
+- **Located creatures** (from 1.6.2) now come straight from Sparkling Mutuals' run: the missing panel shows "· N located" and the run report (**/hh run**, **/hh remaining**) has a Located column.
+
 # Hunting Helper 1.6.2
 
 - **All 37 Safari species** have a located-creature count in **/hh remaining**. When the total is uncertain, **/fc** can show how many have been located alongside the expected remainder. The row keeps its progress through burrows, escapes and biome changes.
