@@ -45,6 +45,15 @@ jobs:
             build/run/productionClientGameTest/screenshots/
             build/run/productionClientGameTest/logs/
             build/reports/tests/
+      - name: Prepare in-game release gallery
+        run: |
+          python3 -c 'from PIL import Image' || python3 -m pip install --quiet 'Pillow==11.3.0'
+          python3 tools/package-gallery.py
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-gallery
+          path: build/release-media
+          if-no-files-found: error
       - name: Record source commit and artifact checksums
         run: |
           printf 'Repository: %s\nSource commit: %s\nJava: 25\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > build/libs/BUILD-INFO.txt
@@ -76,6 +85,10 @@ jobs:
         with:
           name: hunting-helper-mc26.2
           path: release-assets
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-gallery
+          path: release-media
       - name: Publish the tested version and visual guide
         run: |
           set -euo pipefail
@@ -84,7 +97,7 @@ jobs:
           title="Hunting Helper ${version%%+*}"
           jar="hunting-helper-$version.jar"
           source="hunting-helper-$version-sources.jar"
-          media="docs/media/${version%%+*}"
+          media="release-media"
           test "$(sed -n 's/^Source commit: //p' release-assets/BUILD-INFO.txt)" = "$GITHUB_SHA"
           (cd release-assets && sha256sum -c SHA256SUMS)
           awk '/^# Hunting Helper / { sections++; if (sections > 1) exit } { print }' RELEASE-NOTES.md > /tmp/hunting-release-notes

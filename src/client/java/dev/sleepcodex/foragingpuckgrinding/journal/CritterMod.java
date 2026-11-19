@@ -10,6 +10,7 @@ import dev.sleepcodex.foragingpuckgrinding.journal.client.CritterSpotter;
 import dev.sleepcodex.foragingpuckgrinding.journal.client.DarknessFilter;
 import dev.sleepcodex.foragingpuckgrinding.journal.client.HideonwallSpots;
 import dev.sleepcodex.foragingpuckgrinding.journal.client.HotspotWatch;
+import dev.sleepcodex.foragingpuckgrinding.journal.client.HoneybugRelease;
 import dev.sleepcodex.foragingpuckgrinding.journal.client.BirdfeederWatch;
 import dev.sleepcodex.foragingpuckgrinding.journal.client.MissingHud;
 import dev.sleepcodex.foragingpuckgrinding.journal.client.MoundTracker;
@@ -56,6 +57,11 @@ public class CritterMod implements ClientModInitializer {
 		ClientReceiveMessageEvents.GAME.register(CritterMod::receive);
 		ClientReceiveMessageEvents.GAME_CANCELED.register(CritterMod::receive);
 
+		net.fabricmc.fabric.api.event.player.AttackBlockCallback.EVENT.register((player, level, hand, pos, side) -> {
+			if (level == net.minecraft.client.Minecraft.getInstance().level) HoneybugRelease.attack(pos);
+			return net.minecraft.world.InteractionResult.PASS;
+		});
+
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (nextScreen != null) {
 				var factory = nextScreen;
@@ -66,6 +72,7 @@ public class CritterMod implements ClientModInitializer {
 			SafariLocation.tick();
 			// One sweep of the world's critters, for everything below that wants them.
 			CritterEntities.tick();
+			HoneybugRelease.tick();
 			SessionManager.tick();
 			CritterSpotter.tick();
 			// Every tick, not on an interval: a capsule crosses a perch inside one.
@@ -88,6 +95,7 @@ public class CritterMod implements ClientModInitializer {
 		// this is the one moment the chat-driven flag is known to be stale.
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 			ChatQueue.clear();
+			HoneybugRelease.reset();
 			RecatchSpots.reset();
 			TraderWatch.reset();
 			HideonwallSpots.reset();
@@ -96,6 +104,7 @@ public class CritterMod implements ClientModInitializer {
 		});
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			ChatQueue.clear();
+			HoneybugRelease.reset();
 			RecatchSpots.reset();
 			TraderWatch.reset();
 			HideonwallSpots.reset();

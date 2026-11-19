@@ -62,6 +62,7 @@ public final class TraderParser {
 		if (!npcLine.matches()) return null;
 
 		String npc = npcLine.group(1).trim();
+		if (!npc.startsWith("Hunter ") && !npc.startsWith("Huntress ")) return null;
 		String text = npcLine.group(2);
 
 		Matcher price = PRICE.matcher(text);

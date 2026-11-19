@@ -87,6 +87,7 @@ public final class SafariLocation {
 
 	/** Set by the entry message; only consulted while the server has stated no area. */
 	private static boolean chatEntered;
+	private static int probeDelay;
 
 	private SafariLocation() {
 	}
@@ -126,6 +127,9 @@ public final class SafariLocation {
 
 	/** Recomputes the location. Called once per client tick, before anything reads it. */
 	public static void tick() {
+		if (Minecraft.getInstance().level == null) { onWorldChange(); return; }
+		if (probeDelay-- > 0) return;
+		probeDelay = 9;
 		String stated = statedArea();
 		if (stated != null) {
 			area = stated;
@@ -175,6 +179,7 @@ public final class SafariLocation {
 	 * the play connection, so this is the one moment the chat flag can be known stale.
 	 */
 	public static void onWorldChange() {
+		probeDelay = 0;
 		chatEntered = false;
 		where = Where.ELSEWHERE;
 		area = null;

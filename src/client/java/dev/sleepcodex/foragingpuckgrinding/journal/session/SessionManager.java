@@ -139,6 +139,7 @@ public final class SessionManager {
 		// The "entered Critter Safari!" banner usually beats the sidebar update, so
 		// treat it as an explicit run start rather than waiting for the area change.
 		if (event.type() == CritterEvent.Type.ENTERED_SAFARI) {
+			arrivalStartsRun = false;
 			startSession("entry banner");
 			SafariLocation.markEntered();
 			ticksAway = 0;
@@ -150,7 +151,11 @@ public final class SessionManager {
 		// the mod blind after joining mid-run or missing that one message.
 		SafariLocation.markEntered();
 
-		if (current == null) startSession("first catch");
+		if (current == null) {
+			arrivalStartsRun = false;
+			ticksAway = 0;
+			startSession("first catch");
+		}
 		lastEventMillis = System.currentTimeMillis();
 		current.record(event, lastEventMillis);
 
@@ -227,6 +232,7 @@ public final class SessionManager {
 		TraderWatch.reset();
 
 		HideonwallSpots.reset();
+		dev.sleepcodex.foragingpuckgrinding.journal.client.HoneybugRelease.reset();
 		WallTracker.resetAll();
 
 		MoundTracker.reset();

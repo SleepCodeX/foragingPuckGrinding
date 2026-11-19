@@ -50,7 +50,7 @@ public enum HudBox {
 		}
 	},
 
-	MISSING("Missing panel", HudBox::missingPanel) {
+	MISSING("Attempts and sightings", HudBox::missingPanel) {
 		@Override
 		public float x() {
 			return ConfigManager.get().display.missingX;

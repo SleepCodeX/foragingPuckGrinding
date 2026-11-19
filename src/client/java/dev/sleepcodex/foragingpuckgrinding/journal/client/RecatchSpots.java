@@ -92,6 +92,7 @@ public final class RecatchSpots {
 	}
 
 	public static void tick() {
+		if (!ConfigManager.get().display.recatchHelper) { if (pinnedBox != null || !lastSeen.isEmpty()) reset(); return; }
 		long now = System.currentTimeMillis();
 
 		if (CritterEntities.scannedAt() != lastScan) {

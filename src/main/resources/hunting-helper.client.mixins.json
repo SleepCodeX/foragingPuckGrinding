@@ -9,7 +9,8 @@
     "GlowingEntityMixin",
     "LivingEntityRendererMixin",
     "OutlineVisibilityMixin",
-    "MarketCacheAccess"
+    "MarketCacheAccess",
+    "NestSurveyAccess"
   ],
   "injectors": {"defaultRequire": 1}
 }

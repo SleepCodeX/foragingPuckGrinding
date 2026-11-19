@@ -23,12 +23,9 @@ public final class LogReplayMain {
 	private static final DateTimeFormatter STAMP =
 		DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault());
 
-	private static final String DEFAULT_LOGS =
-		System.getProperty("user.home")
-			+ "/.local/share/atlauncher/instances/SkyBlockEnhancedModernEdition/logs";
-
 	public static void main(String[] args) throws Exception {
-		Path logsDir = Path.of(args.length > 0 ? args[0] : DEFAULT_LOGS);
+		if (args.length == 0) throw new IllegalArgumentException("Supply a logs directory via -Plogs=/path/to/logs");
+		Path logsDir = Path.of(args[0]);
 		String selfName = args.length > 1 ? args[1] : null;
 
 		List<SafariSession> sessions = LogScanner.scan(logsDir, selfName);

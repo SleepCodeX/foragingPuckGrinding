@@ -5,7 +5,6 @@ import dev.sleepcodex.foragingpuckgrinding.journal.data.Critters;
 import dev.sleepcodex.foragingpuckgrinding.journal.data.SafariBiome;
 import dev.sleepcodex.foragingpuckgrinding.journal.session.SafariSession;
 import dev.sleepcodex.foragingpuckgrinding.journal.session.SessionManager;
-import dev.sleepcodex.foragingpuckgrinding.journal.session.TrackingMode;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -22,7 +21,6 @@ import java.util.List;
  */
 public final class MissingHud implements HudElement {
 
-	private static final int DONE = 0xFF55FF55;
 	private static final int DIM = 0xFF888888;
 	private static final int WALL = 0xFFFFAA00;
 
@@ -48,69 +46,19 @@ public final class MissingHud implements HudElement {
 
 	/** Builds the list for {@code biome}; {@code session} may be null before the first catch. */
 	static HudPanel buildPanel(SafariBiome biome, SafariSession session) {
-		// Before the first catch there is no session yet, but standing in a biome with
-		// nothing caught is exactly when the full list is most useful — so fall back
-		// to the whole roster rather than hiding the panel.
-		List<Critter> missing = session == null ? Critters.inBiome(biome) : session.missing(biome);
-
-		// A species already accounted for still deserves listing while one of them is
-		// stood in front of you: every catch is another shard, so "done" only ever
-		// meant done for the dex, never nothing left to take.
-		List<Critter> alsoHere = session == null ? List.of()
-			: Critters.inBiome(biome).stream()
-				.filter(c -> !missing.contains(c))
-				.filter(c -> session.nearby(c) > 0)
-				.toList();
-
 		HudPanel panel = new HudPanel();
-
-		if (missing.isEmpty() && alsoHere.isEmpty()) {
-			panel.title(biome.displayName() + " Biome", 0xFF000000 | biome.colour());
-			panel.line("all " + Critters.totalIn(biome) + " caught", DONE);
-		} else if (missing.isEmpty()) {
-			panel.title(biome.displayName() + " Biome — all caught", DONE);
-		} else {
-			panel.title("%s Biome — %d left".formatted(biome.displayName(), missing.size()),
-				0xFF000000 | biome.colour());
-			for (Critter critter : missing) {
-				// A quota species shows how many of its spawns are already taken, since
-				// "caught one" is not the same as "done with it".
-				int caught = session == null ? 0 : session.partyCatches(critter);
-				int total = session == null ? 0 : session.required(critter);
-				int near = session == null ? 0 : session.nearby(critter);
-				int attempts = session == null ? 0 : session.attempts(critter);
-
-				// Nearby beats everything: it means one is in front of you right now.
-				// Then quota progress, then an attempt count meaning it keeps escaping.
-				String note;
-				if (near > 0) note = near + " near";
-				else if (total > 1 && !TrackingMode.uniqueOnly()) note = caught + "/" + total;
-				else note = attempts > 0 ? attempts + " tried" : "";
-				panel.pair(critter.name(), note, CritterHud.rarityColour(critter), DIM);
-			}
-		}
-
-		// Anything the run can no longer produce is stated outright rather than just
-		// dropping off the list, so its absence does not look like a tracking bug.
+		panel.title(biome.displayName() + " field notes", 0xFF000000 | biome.colour());
 		if (session != null) {
-			List<Critter> gone = Critters.inBiome(biome).stream()
-				.filter(session::isUnavailable)
-				.toList();
-			if (!gone.isEmpty()) {
-				panel.blank();
-				for (Critter critter : gone) {
-					panel.pair(critter.name(), "none this run", DIM, DIM);
-				}
-			}
-		}
-
-		// Listed after the outstanding ones, dimmer, so they read as a bonus rather
-		// than as something still owed.
-		if (!alsoHere.isEmpty()) {
-			panel.blank();
-			panel.line("also here", DIM);
-			for (Critter critter : alsoHere) {
-				panel.pair(critter.name(), session.nearby(critter) + " near", DONE, DIM);
+			for (Critter critter : Critters.inBiome(biome)) {
+				int nearby = session.nearby(critter);
+				int attempts = session.attempts(critter);
+				int failures = session.failures(critter);
+				List<String> notes = new java.util.ArrayList<>();
+				if (nearby > 0 && ConfigManager.get().display.countSpawns) notes.add(nearby + " near");
+				if (attempts > 0) notes.add(attempts + " tried");
+				if (failures > 0) notes.add(failures + " missed");
+				if (session.isUnavailable(critter)) notes.add("none this run");
+				if (!notes.isEmpty()) panel.pair(critter.name(), String.join(" · ", notes), CritterHud.rarityColour(critter), DIM);
 			}
 		}
 

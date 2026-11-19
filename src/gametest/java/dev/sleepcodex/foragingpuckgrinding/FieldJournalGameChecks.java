@@ -56,6 +56,11 @@ final class FieldJournalGameChecks {
                     || !run.catchersOf(rockmite).contains("Moss") || TraderWatch.found().size() != 1)
                 throw new AssertionError("Field report or Hunter dialogue lost an event");
             visible.onReceiveGameMessage(Component.literal("You received a Nozzlenose Shard!"), false);
+            visible.onReceiveGameMessage(Component.literal("Party > [VIP] Moss: Hunter Dennis (Icy -106 87 -7): Gimmiegold Shard for Purple Gem"), false);
+            visible.onReceiveGameMessage(Component.literal("Party > [VIP] Moss: Hunter Dennis (Icy 999999999999 87 -7): Gimmiegold Shard for Purple Gem"), false);
+            if (TraderWatch.found().size() != 1 || TraderWatch.found().getFirst().spot().x() != -106)
+                throw new AssertionError("Party offer was lost or overwritten by malformed coordinates");
+            visible.onReceiveGameMessage(Component.literal("Party > [VIP] Moss: Trade taken: Gimmiegold Shard"), false);
             if (!TraderWatch.found().isEmpty() || ChatQueue.pendingCount() != 0)
                 throw new AssertionError("Trade retirement or local-only delivery failed");
         });

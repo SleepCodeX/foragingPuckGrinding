@@ -176,11 +176,9 @@ public final class TraderWatch {
 		// works for anyone who would rather not have the chat lines.
 		record(new Trade(offer.npc(), offer.critter(), offer.item(), spot));
 
-		if (!ConfigManager.get().alerts.traderAlerts) return;
-
 		String where = spot == null ? "" : " (" + spot.describe() + ")";
 		Minecraft client = Minecraft.getInstance();
-		if (client.gui != null) {
+		if (ConfigManager.get().alerts.traderAlerts && client.gui != null) {
 			client.gui.hud.getChat().addClientSystemMessage(
 				Component.literal("[Field journal] ").withStyle(ChatFormatting.GOLD)
 					.append(Component.literal(offer.npc() + where + ": ").withStyle(ChatFormatting.AQUA))
