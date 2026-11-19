@@ -37,6 +37,7 @@ public final class RunHistory {
 
 	private static final List<RunRecord> runs = new ArrayList<>();
 	private static Path file;
+	private static java.util.Map<Critter, SpeciesStat> cachedStats;
 
 	/** One species' record across every saved run. */
 	public record SpeciesStat(Critter critter, int total, int runsSeen, int best) {
@@ -60,6 +61,7 @@ public final class RunHistory {
 
 	public static void load(Path path) {
 		file = path;
+		cachedStats = null;
 		runs.clear();
 		if (path == null || !Files.isRegularFile(path)) return;
 
@@ -183,7 +185,8 @@ public final class RunHistory {
 
 	/** Every species with its totals across the saved runs, most-caught first. */
 	public static List<SpeciesStat> speciesStats() {
-		List<SpeciesStat> stats = new ArrayList<>();
+		if (cachedStats != null) return List.copyOf(cachedStats.values());
+		java.util.Map<Critter, SpeciesStat> stats = new java.util.LinkedHashMap<>();
 		for (Critter critter : Critters.all()) {
 			int total = 0;
 			int runsSeen = 0;
@@ -195,17 +198,16 @@ public final class RunHistory {
 				runsSeen++;
 				best = Math.max(best, caught);
 			}
-			stats.add(new SpeciesStat(critter, total, runsSeen, best));
+			stats.put(critter, new SpeciesStat(critter, total, runsSeen, best));
 		}
-		return stats;
+		cachedStats = stats;
+		return List.copyOf(stats.values());
 	}
 
 	/** The stat for one species, so a view can look one up without scanning. */
 	public static SpeciesStat statFor(Critter critter) {
-		return speciesStats().stream()
-			.filter(stat -> stat.critter().equals(critter))
-			.findFirst()
-			.orElse(new SpeciesStat(critter, 0, 0, 0));
+		if (cachedStats == null) speciesStats();
+		return cachedStats.get(critter);
 	}
 
 	public static long totalTimeMillis() {
@@ -244,6 +246,7 @@ public final class RunHistory {
 	}
 
 	private static void save() {
+		cachedStats = null;
 		if (file == null) return;
 		try {
 			dev.sleepcodex.foragingpuckgrinding.journal.client.JournalFiles.write(file, GSON.toJson(runs));

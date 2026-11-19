@@ -44,7 +44,6 @@ import java.util.List;
  */
 public final class WaypointRenderer {
 
-	private static final float MAX_DISTANCE = 200.0f;
 	private static final float LINE_WIDTH = 3.0f;
 	/** Where the label sits above the top of the box. */
 	private static final float LABEL_HEIGHT = 0.4f;
@@ -113,7 +112,9 @@ public final class WaypointRenderer {
 	}
 
 	private static boolean tooFar(Markers.Marker marker, Vec3 camera) {
-		return marker.box().getCenter().distanceToSqr(camera) > MAX_DISTANCE * MAX_DISTANCE;
+		Vec3 at = marker.box().getCenter();
+		return !dev.sleepcodex.foragingpuckgrinding.TracerRange.contains(camera.x, camera.z, at.x, at.z,
+			Minecraft.getInstance().options.getEffectiveRenderDistance());
 	}
 
 	/**

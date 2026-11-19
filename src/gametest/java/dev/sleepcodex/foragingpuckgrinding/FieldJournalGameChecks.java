@@ -45,11 +45,20 @@ final class FieldJournalGameChecks {
         c.waitForScreen(HudEditorScreen.class);
         c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
         c.waitForScreen(FieldJournalScreen.class);
+        c.runOnClient(client -> ClientReceiveMessageEvents.GAME.invoker().onReceiveGameMessage(
+                Component.literal(client.getUser().getName() + " entered Critter Safari!"), false));
+        world.getServer().runCommand("summon silverfish 0 -59 5 {NoAI:1b,NoGravity:1b,Silent:1b,Tags:['journal_fixture'],CustomName:'Rockmite'}");
+        c.waitFor(client -> CritterEntities.all().stream().anyMatch(s -> s.critter().name().equals("Rockmite") && s.mob() != null));
         c.runOnClient(client -> {
             var visible = ClientReceiveMessageEvents.GAME.invoker();
             var hidden = ClientReceiveMessageEvents.GAME_CANCELED.invoker();
-            visible.onReceiveGameMessage(Component.literal(client.getUser().getName() + " entered Critter Safari!"), false);
             visible.onReceiveGameMessage(Component.literal("You threw a Critter Capsule at the Rockmite!"), false);
+            if (RecatchSpots.pinned() == null || !RecatchSpots.pinnedCritter().name().equals("Rockmite"))
+                throw new AssertionError("Throw did not pin the observed mob");
+            visible.onReceiveGameMessage(Component.literal("The Rockmite escaped your Critter Capsule!"), false);
+            if (RecatchSpots.pinned() == null) throw new AssertionError("Escaped throw lost its recatch pin");
+            if (HideonwallSpots.all().size() != 8 || !HideonwallSpots.all().contains(new net.minecraft.core.BlockPos(-24,71,-76)))
+                throw new AssertionError("Missing corrected Haunted perch");
             hidden.onReceiveGameMessageCanceled(Component.literal("LOOT SHARE! You received 2x Rockmite Shard from Moss catching a Rockmite!"), false);
             visible.onReceiveGameMessage(Component.literal("[NPC] Hunter Harry: Say, do you have a use for a Nozzlenose Shard?"), false);
             visible.onReceiveGameMessage(Component.literal("[NPC] Hunter Harry: I'll give you it in exchange for a Yogi Berry!"), false);
@@ -67,6 +76,12 @@ final class FieldJournalGameChecks {
             if (!TraderWatch.found().isEmpty() || ChatQueue.pendingCount() != 0)
                 throw new AssertionError("Trade retirement or local-only delivery failed");
         });
+        c.runOnClient(client -> {
+            ClientReceiveMessageEvents.GAME.invoker().onReceiveGameMessage(
+                    Component.literal("CAPTURE! You caught a Rockmite and gained a Rockmite Shard!"), false);
+            if (RecatchSpots.pinned() != null) throw new AssertionError("Successful capture kept its pin");
+        });
+        world.getServer().runCommand("kill @e[tag=journal_fixture]");
         c.clickScreenButton("Open field report");
         c.waitForScreen(CritterScreen.class);
         c.waitTicks(3);

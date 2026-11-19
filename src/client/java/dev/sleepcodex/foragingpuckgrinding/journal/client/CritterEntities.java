@@ -4,9 +4,10 @@ import dev.sleepcodex.foragingpuckgrinding.journal.data.Critter;
 import dev.sleepcodex.foragingpuckgrinding.journal.data.Critters;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 
+import dev.sleepcodex.foragingpuckgrinding.SpatialBuckets;
+import net.minecraft.world.entity.LivingEntity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public final class CritterEntities {
 	/** The word a rare variant is assumed to carry in its name. */
 	private static final String SPARKLING = "Sparkling";
 
+	private static final SpatialBuckets<Entity> bodies = new SpatialBuckets<>();
 	private static List<Sighting> sightings = List.of();
 	private static long scannedAt;
 	private static int ticks;
@@ -74,6 +76,7 @@ public final class CritterEntities {
 		scannedAt = System.currentTimeMillis();
 		if (client.level == null || !SafariLocation.inSafari()) {
 			sightings = List.of();
+			bodies.clear();
 			return;
 		}
 		sightings = scan(client);
@@ -98,7 +101,7 @@ public final class CritterEntities {
 		List<Entity> labels = new ArrayList<>();
 		List<Critter> species = new ArrayList<>();
 		List<Boolean> sparkling = new ArrayList<>();
-		List<Entity> candidates = new ArrayList<>();
+		bodies.clear();
 
 		for (Entity entity : client.level.entitiesForRendering()) {
 			// The name identifies a label, not the entity type: most are armour stands
@@ -121,14 +124,14 @@ public final class CritterEntities {
 				species.add(named);
 				sparkling.add(rare);
 			} else if (isMobLike(entity)) {
-				candidates.add(entity);
+				bodies.add(entity, entity.getX(), entity.getZ());
 			}
 		}
 
 		List<Sighting> result = new ArrayList<>(labels.size());
 		for (int i = 0; i < labels.size(); i++) {
 			Entity label = labels.get(i);
-			Entity mob = nearest(candidates, label);
+			Entity mob = isMobLike(label) ? label : nearest(label);
 			// Worked out once per sweep rather than per reader: the answer has to be the
 			// same for all of them within a sweep — the sparkling call announces once per
 			// critter, so a wavering answer would either lose the announcement or repeat
@@ -149,24 +152,21 @@ public final class CritterEntities {
 
 	/** Excludes the scaffolding entities Hypixel builds its props out of. */
 	private static boolean isMobLike(Entity entity) {
-		EntityType<?> type = entity.getType();
-		return type != EntityTypes.ARMOR_STAND
-			&& type != EntityTypes.INTERACTION
-			&& type != EntityTypes.ITEM_DISPLAY
-			&& type != EntityTypes.BLOCK_DISPLAY
-			&& type != EntityTypes.TEXT_DISPLAY
-			&& type != EntityTypes.PLAYER
-			&& type != EntityTypes.ITEM;
+		return entity instanceof LivingEntity && entity.getType() != EntityTypes.ARMOR_STAND
+			&& entity.getType() != EntityTypes.PLAYER && entity.isAlive();
 	}
 
-	private static Entity nearest(List<Entity> candidates, Entity label) {
+	private static Entity nearest(Entity label) {
 		Entity best = null;
-		double bestSq = LABEL_TO_MOB_RADIUS * LABEL_TO_MOB_RADIUS;
-		for (Entity candidate : candidates) {
-			double distanceSq = candidate.position().distanceToSqr(label.position());
-			if (distanceSq >= bestSq) continue;
-			bestSq = distanceSq;
-			best = candidate;
+		double bound = LABEL_TO_MOB_RADIUS * LABEL_TO_MOB_RADIUS;
+		int cx = SpatialBuckets.cell(label.getX()), cz = SpatialBuckets.cell(label.getZ());
+		for (int x = cx - 1; x <= cx + 1; x++) {
+			for (int z = cz - 1; z <= cz + 1; z++) {
+				for (Entity body : bodies.column(x, z)) {
+					double distance = body.position().distanceToSqr(label.position());
+					if (distance < bound) { best = body; bound = distance; }
+				}
+			}
 		}
 		return best;
 	}

@@ -50,12 +50,6 @@ import java.util.List;
  */
 public final class Visibility {
 
-	/**
-	 * Past this there is nothing to be gained by claiming a sighting, and it bounds what
-	 * each ray costs. Hypixel stops tracking well inside it.
-	 */
-	private static final double MAX_RANGE = 128.0;
-
 	/** Paintings do not move, so the list is worth keeping for a moment. */
 	private static final long PAINTING_CACHE_MILLIS = 1_000;
 	private static List<AABB> paintings = List.of();
@@ -91,7 +85,7 @@ public final class Visibility {
 
 		Vec3 eye = player.getEyePosition();
 		AABB box = target.getBoundingBox();
-		if (eye.distanceToSqr(box.getCenter()) > MAX_RANGE * MAX_RANGE) return false;
+		if (!inLoadedRange(client, eye, box.getCenter())) return false;
 
 		for (Vec3 point : samples(box)) {
 			if (clip(client.level, player, eye, point).getType() != HitResult.Type.MISS) continue;
@@ -118,7 +112,7 @@ public final class Visibility {
 
 		Vec3 eye = player.getEyePosition();
 		Vec3 centre = Vec3.atCenterOf(pos);
-		if (eye.distanceToSqr(centre) > MAX_RANGE * MAX_RANGE) return false;
+		if (!client.level.isLoaded(pos) || !inLoadedRange(client, eye, centre)) return false;
 
 		BlockHitResult hit = clip(client.level, player, eye, centre);
 		boolean clearOfBlocks = hit.getType() == HitResult.Type.MISS || hit.getBlockPos().equals(pos);
@@ -133,6 +127,10 @@ public final class Visibility {
 	 * ray would happily report a clear line to a perch the player cannot see any part of,
 	 * and the mark would claim one had been spotted when nothing had.
 	 */
+	private static boolean inLoadedRange(Minecraft client, Vec3 eye, Vec3 target) {
+		return dev.sleepcodex.foragingpuckgrinding.TracerRange.contains(eye.x, eye.z, target.x, target.z, client.options.getEffectiveRenderDistance());
+	}
+
 	private static boolean behindAPainting(Vec3 from, Vec3 to) {
 		for (AABB painting : paintings()) {
 			if (painting.clip(from, to).isPresent()) return true;
