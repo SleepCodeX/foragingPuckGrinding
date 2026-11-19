@@ -28,7 +28,7 @@ abstract class TrackerPage extends Screen {
     @Override protected final void init() {
         if (entered == 0) entered = System.nanoTime();
         actions.clear();
-        w = Math.min(462, width - 20);
+        w = Math.min(preferredWidth(), width - 20);
         h = Math.min(preferredHeight(), height - 16);
         left = (width - w) / 2;
         top = (height - h) / 2;
@@ -37,6 +37,7 @@ abstract class TrackerPage extends Screen {
     }
 
     void refresh() { clearWidgets(); setFocused(null); init(); }
+    int preferredWidth() { return 462; }
     abstract int preferredHeight();
     abstract void layout();
     abstract String subtitle();

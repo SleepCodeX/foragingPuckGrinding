@@ -38,7 +38,7 @@ final class CustomEditorScreen extends TrackerPage {
     }
     @Override int preferredHeight() { return 258; }
     @Override String subtitle() {
-        return mode == CustomTracker.Mode.NAMETAG ? "Match part of a SkyBlock mob’s name" : "Match a Minecraft mob across all of its names";
+        return mode == CustomTracker.Mode.NAMETAG ? "Match a nametag (e.g. Revenant Sycophant)" : "Match by mob type (e.g. wither_skeleton)";
     }
     private boolean namedMode() { return mode == CustomTracker.Mode.NAMETAG; }
     private void remember(String text) { if (namedMode()) named = text; else typed = text; }
@@ -56,7 +56,7 @@ final class CustomEditorScreen extends TrackerPage {
         field.setBordered(false);
         field.setMaxLength(96);
         field.setValue(namedMode() ? named : typed);
-        field.setHint(Component.literal(namedMode() ? "e.g. Revenant" : "e.g. wither_skeleton"));
+        field.setHint(Component.literal(namedMode() ? "e.g. Revenant Sycophant" : "e.g. wither_skeleton"));
         field.setTextColor(MenuTheme.TEXT);
         addRenderableWidget(field);
         paletteY = (top + 117 + footer - 48) / 2;
@@ -67,7 +67,7 @@ final class CustomEditorScreen extends TrackerPage {
         if (original != null) button(confirmRemove ? "Confirm removal" : "Remove", x + 63, footer, 91, 23,
                 Tone.DANGER, this::remove);
         save = button("Save tracker", left + w - 99, footer, 83, 23, Tone.PRIMARY, this::commit);
-        field.setResponder(text -> { remember(text); confirmRemove = false; validate(); });
+        field.setResponder(text -> { remember(text); validate(); });
         validate();
         setInitialFocus(field);
     }

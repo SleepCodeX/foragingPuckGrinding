@@ -1,3 +1,14 @@
+# Hunting Helper 1.5.0
+
+Open **/hh → Custom trackers** or **/hh custom** to manage as many rules as you need. Each has its own switch, line color and model glow.
+
+- **Nametag** reads floating SkyBlock armor stands, text displays and names attached directly to mobs. Enter **Revenant Sycophant** for the miniboss, or **rev** for partial Revenant names and the Tier V **Atoned Horror**.
+- **Mob type** accepts IDs such as **wither_skeleton** and **zombie** across their different SkyBlock names.
+- The charcoal settings screen opens with a shorter Hivethief fade. Five presets and the custom library share a six-card grid. A separate, rebindable settings key is available in Minecraft Controls.
+- Rules save on disk and run together across all loaded entities in the effective client render distance. The five original hunting presets keep their original names and location rules.
+
+Minecraft 26.2 · Fabric Loader 0.19.5+ · Fabric API 0.161.0+26.2 · Java 25
+
 # Hunting Helper 1.4.0
 
 A matte charcoal redesign and five Hypixel hunting trackers.

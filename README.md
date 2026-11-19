@@ -1,39 +1,38 @@
 # Hunting Helper
 
-Hypixel SkyBlock mob tracers, matching boxes and through-wall model glow for Minecraft 26.2 / Fabric.
+Hunting Helper draws tracers, matching boxes and colored model outlines for mobs in Hypixel SkyBlock. Open **`/hh`** to use the five hunting presets or build your own trackers.
 
-![Frosted charcoal settings and Hivethief opening fade](docs/media/1.4.0/menu-opening.gif)
+![Hunting Helper's in-game settings opening](docs/media/1.5.0/menu-opening.gif)
 
-A matte black interface with small icons, quiet borders and independent controls for every tracker.
-All five fit at the usual GUI size; smaller windows scroll and support keyboard navigation.
+## Custom trackers
 
-**Vex · Blue Jay · Hivethief · Parched · Pollendart**
+Open **Custom trackers → Add tracker**, or go straight to the library with **`/hh custom`**. Rules can run together. Each row has an on/off switch, **Edit** and **Remove**. Choose a line color and a separate glow color, **Match line**, or **Off**.
 
-Choose each mob's **Line** and **Glow** colors. Glow can **Match line**, use a separate color, or turn **Off**.
-Your selections and colors persist.
+| Mode | Example input | What it highlights |
+| --- | --- | --- |
+| Nametag | `Revenant Sycophant` | Mobs carrying that SkyBlock name, including decorated level and health labels |
+| Nametag | `rev` | Names containing those letters, including Revenant Horror and its minibosses, plus the Tier V Atoned Horror |
+| Nametag | `Pollendart` | The bee under a Pollendart label |
+| Mob type | `wither_skeleton` | Every loaded wither skeleton in range, across different SkyBlock names |
+| Mob type | `zombie` | Mobs with the exact Minecraft zombie type |
 
-![Scrollable color controls](docs/media/1.4.0/colors.png)
+Nametag matching ignores capitalization and Minecraft formatting. The tracker reads armor stands, text displays and custom names on mobs. If several rules match one body, a matching nametag takes priority over a mob type. The first saved custom rule wins within the same mode.
 
-![Five trackers through a wall](docs/media/1.4.0/trackers.png)
+![Custom library in Minecraft](docs/media/1.5.0/library.png)
 
-## Controls
+## Hunting presets and controls
 
-- **`/hh`** or **`/huntinghelper`** opens settings.
-- **V** toggles selected trackers; **F1** hides overlays.
-- **Select all / Clear all** changes the selection.
-- **`/hh debug`** toggles diagnostic logging.
+**Vex · Blue Jay · Hivethief · Parched · Pollendart**. The last four presets use the Torrhus location indicator. Vex and custom rules work in all areas. The renderer checks client-loaded entities every tick across the entire effective render distance.
 
-Every loaded entity across the full render distance is checked on every client tick.
-Hypixel nametags identify mobs; Vex, Blue Jay and Hivethief retain their original type fallback.
-Blue Jay, Hivethief, Parched and Pollendart apply in Torrhus.
+- **`/hh`** or **`/huntinghelper`** opens settings. You can also bind **Open tracker settings** in Minecraft Controls.
+- **V** toggles all selected trackers. **F1** hides overlays.
+- **Select all / Clear all** controls the five hunting presets.
+- **`/hh debug`** toggles detection summaries in the game log.
 
 ## Install
 
 **Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+ · Fabric API 0.161.0+26.2**
 
-[Download Hunting Helper 1.4.0](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.4.0/hunting-helper-1.4.0%2Bmc26.2.jar)
-and replace the older tracer JAR in `mods`.
+[Download Hunting Helper 1.5.0](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.5.0/hunting-helper-1.5.0%2Bmc26.2.jar) and replace the previous tracer JAR in `mods`. Your settings carry over.
 
-[Visual guide](docs/media/1.4.0) · [Build and behavior](docs/DEVELOPMENT.md) · [Release downloads](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest)
-
-Automated checks run the packaged Minecraft client. Live Hypixel, third-party shaders and the complete personal modpack are not reproduced by CI.
+[In-game screenshots](docs/media/1.5.0) · [Build and behavior](docs/DEVELOPMENT.md) · [Release downloads](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest)

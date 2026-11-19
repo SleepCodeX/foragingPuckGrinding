@@ -49,6 +49,18 @@ class CustomRulesTest {
         assertThrows(IllegalArgumentException.class, () -> rule(CustomTracker.Mode.NAMETAG, "§c "));
     }
 
+    @Test void tierFiveUsesItsSlayerNameAsAnAlias() {
+        for (String query : List.of("ReV", "Revenant", "Revenant Horror", "Revenant Horror Tier V")) {
+            var tracker = rule(CustomTracker.Mode.NAMETAG, query);
+            var rules = new CustomRules(List.of(tracker));
+            assertSame(tracker, rules.name("☠ [Lv377] §cAtoned Horror 10M❤"));
+            assertNull(rules.name("[Lv271] Atoned Champion"));
+            assertNull(rules.name("Unatoned Horror"));
+        }
+        var narrow = rule(CustomTracker.Mode.NAMETAG, "Revenant Sycophant");
+        assertNull(new CustomRules(List.of(narrow)).name("Atoned Horror"));
+    }
+
     @Test void failedSaveKeepsPreviousSnapshot() throws Exception {
         Path blocked = Files.writeString(directory.resolve("file"), "occupied");
         var config = new TracerConfig(blocked.resolve("subfile"));

@@ -10,6 +10,9 @@ import java.util.UUID;
 
 /** Immutable configuration snapshot. Rebuild the match indexes only when the user changes rules. */
 final class CustomRules {
+    private static final java.util.regex.Pattern ATONED_HORROR = java.util.regex.Pattern.compile("\\batoned horror\\b");
+    private static final String TIER_FIVE_NAME = "revenant horror tier v";
+
     private record Named(String needle, CustomTracker rule) { }
     final List<CustomTracker> all;
     private final List<Named> names = new ArrayList<>();
@@ -38,7 +41,10 @@ final class CustomRules {
     CustomTracker name(String raw) {
         if (names.isEmpty()) return null;
         String normalized = CustomTracker.normalizedName(raw);
-        for (Named name : names) if (normalized.contains(name.needle())) return name.rule();
+        boolean tierFive = normalized.contains("atoned horror") && ATONED_HORROR.matcher(normalized).find();
+        for (Named name : names) {
+            if (normalized.contains(name.needle()) || (tierFive && TIER_FIVE_NAME.contains(name.needle()))) return name.rule();
+        }
         return null;
     }
 

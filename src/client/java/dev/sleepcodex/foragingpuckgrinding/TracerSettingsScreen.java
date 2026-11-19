@@ -110,11 +110,7 @@ public final class TracerSettingsScreen extends Screen {
         int customX = left + 20 + (cards ? (TYPES.length % COLUMNS) * (cardWidth + gap) : 0);
         int customY = bodyTop + 6 + (cards ? TYPES.length / COLUMNS : TYPES.length) * (cardHeight + gap);
         customButton = bodyButton(Component.literal("Custom trackers"), customX, customY, cardWidth, cardHeight,
-                b -> {
-                    var library = new CustomLibraryScreen(this, config);
-                    if (config.custom().all.isEmpty()) Minecraft.getInstance().gui.setScreen(new CustomEditorScreen(library, config, null));
-                    else Minecraft.getInstance().gui.setScreen(library);
-                });
+                b -> openCustom());
         allButton = addRenderableWidget(Button.builder(Component.literal("Select all"), b -> {
             select.accept(EnumSet.allOf(TracerTarget.class)); refreshLabels();
         }).bounds(left + 16, footer, 83, 24).build());
@@ -246,7 +242,7 @@ public final class TracerSettingsScreen extends Screen {
         center(g, total == 0 ? "Nametag or mob type" : total + (total == 1 ? " saved rule" : " saved rules"),
                 mid, y + h / 2 + 5, .76, MenuTheme.MUTED);
         c.round(x + 10, y + h - 25, w - 20, 19, 5, MenuTheme.CONTROL);
-        center(g, total == 0 ? "Create a tracker  +" : "Manage trackers  ›", mid, y + h - 20, .8, MenuTheme.TEXT);
+        center(g, "Open library  ›", mid, y + h - 20, .8, MenuTheme.TEXT);
     }
 
     private void drawTarget(GuiGraphicsExtractor graphics, MenuCanvas canvas, TracerTarget target, int mouseX, int mouseY) {

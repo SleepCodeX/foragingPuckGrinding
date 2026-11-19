@@ -1,0 +1,129 @@
+package dev.sleepcodex.foragingpuckgrinding;
+
+import java.io.IOException;
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
+import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.world.entity.EntityTypes;
+import org.lwjgl.glfw.GLFW;
+
+/** Exercise the shipped screens, saved rules and real client entity associations together. */
+final class CustomTrackerGameChecks {
+    static void run(ClientGameTestContext c, TestSingleplayerContext world) {
+        var server = world.getServer();
+        server.runCommand("scoreboard objectives setdisplay sidebar");
+        server.runCommand("time set night");
+        open(c, "hh", TracerSettingsScreen.class);
+        c.clickScreenButton("Clear all");
+        c.clickScreenButton("Custom trackers");
+        c.waitForScreen(CustomLibraryScreen.class);
+        c.clickScreenButton("Add tracker");
+        c.waitForScreen(CustomEditorScreen.class);
+        c.takeScreenshot("custom-nametag-editor");
+        enter(c, "rEv");
+        c.clickScreenButton("Line Pink");
+        c.clickScreenButton("Save tracker");
+        c.waitForScreen(CustomLibraryScreen.class);
+        c.clickScreenButton("On");
+        c.clickScreenButton("Off");
+        c.clickScreenButton("Add tracker");
+        c.clickScreenButton("Mob type");
+        c.takeScreenshot("custom-mob-type-editor");
+        enter(c, "wither_skeleto");
+        c.runOnClient(client -> {
+            var save = client.gui.screen().children().stream().filter(Button.class::isInstance).map(Button.class::cast)
+                    .filter(b -> b.getMessage().getString().equals("Save tracker")).findFirst().orElseThrow();
+            if (save.active) throw new AssertionError("Unknown mob ID was accepted");
+        });
+        c.getInput().typeChars("n");
+        c.clickScreenButton("Line Green");
+        c.clickScreenButton("Save tracker");
+        c.waitForScreen(CustomLibraryScreen.class);
+        c.clickScreenButton("Add tracker");
+        enter(c, "Honeybuzz");
+        c.clickScreenButton("Line Gold");
+        c.clickScreenButton("Save tracker");
+        c.waitForScreen(CustomLibraryScreen.class);
+        c.takeScreenshot("custom-tracker-library");
+        c.clickScreenButton("Back");
+        c.clickScreenButton("Done");
+        String body = " {NoAI:1b,NoGravity:1b,PersistenceRequired:1b,Silent:1b}";
+        server.runCommand("summon husk -8 -57 16" + body);
+        server.runCommand("summon armor_stand -8 -55 16 {Invisible:1b,Marker:1b,NoGravity:1b,CustomName:'[Lv377] Atoned Horror 10M❤'}");
+        server.runCommand("summon husk -5 -57 18 {NoAI:1b,NoGravity:1b,CustomName:'Revenant Sycophant'}");
+        server.runCommand("summon husk -2 -57 20 {NoAI:1b,NoGravity:1b,CustomName:'Atoned Champion'}");
+        server.runCommand("summon wither_skeleton 1 -57 18 {NoAI:1b,NoGravity:1b,CustomName:'Wither Guard'}");
+        server.runCommand("summon wither_skeleton 4 -57 16 {NoAI:1b,NoGravity:1b,CustomName:'Wither Archer'}");
+        server.runCommand("summon bee 7.0 -55 18.0" + body);
+        server.runCommand("summon bee 7.95 -55 18.0" + body);
+        server.runCommand("summon text_display 7.0 -53 18.0 {text:'[Lv24] Honeybuzz'}");
+        server.runCommand("summon armor_stand 7.95 -53 18.0 {Invisible:1b,Marker:1b,NoGravity:1b,CustomName:'[Lv24] Pollendart'}");
+
+        c.waitFor(client -> {
+            int husks = 0, skeletons = 0, bees = 0;
+            for (var mob : client.level.entitiesForRendering()) {
+                int color = TrackedOutlines.colorFor(mob);
+                if (mob.getType() == EntityTypes.HUSK) {
+                    if (color != (mob.getX() < -3 ? OverlayColor.PINK.argb() : 0)) return false;
+                    husks++;
+                } else if (mob.getType() == EntityTypes.WITHER_SKELETON) {
+                    if (color != OverlayColor.GREEN.argb()) return false;
+                    skeletons++;
+                } else if (mob.getType() == EntityTypes.BEE) {
+                    if (color != (mob.getX() < 7.5 ? OverlayColor.GOLD.argb() : 0)) return false;
+                    bees++;
+                }
+            }
+            return husks == 3 && skeletons == 2 && bees == 2;
+        });
+        c.waitTicks(210);
+        c.takeScreenshot("custom-tracked-mobs");
+        open(c, "hh custom", CustomLibraryScreen.class);
+        // Page through a compact library, then remove its final rule through the same widgets players use.
+        c.getInput().resizeWindow(960,720);
+        c.runOnClient(client -> { client.options.guiScale().set(3); client.resizeGui(); });
+        c.waitTicks(3);
+        c.getInput().pressKey(GLFW.GLFW_KEY_PAGE_DOWN);
+        c.clickScreenButton("Edit");
+        c.waitForScreen(CustomEditorScreen.class);
+        c.runOnClient(client -> {
+            if (!field(client.gui.screen()).getValue().equals("Honeybuzz")) throw new AssertionError("Wrong compact page");
+        });
+        c.clickScreenButton("Glow Off");
+        c.clickScreenButton("Save tracker");
+        c.waitForScreen(CustomLibraryScreen.class);
+        c.clickScreenButton("Remove");
+        c.clickScreenButton("Confirm");
+        c.waitForScreen(CustomLibraryScreen.class);
+        c.clickScreenButton("Back");
+        c.clickScreenButton("Done");
+        c.waitTicks(3);
+        c.runOnClient(client -> {
+            var config = new TracerConfig(FabricLoader.getInstance().getConfigDir().resolve("foragingpuckgrinding.properties"));
+            try { config.load(); } catch (IOException e) { throw new AssertionError(e); }
+            if (config.custom().all.size() != 2 || config.custom().name("Honeybuzz") != null
+                    || config.custom().name("Atoned Horror") == null || !config.selectedTargets().isEmpty())
+                throw new AssertionError("The custom editor did not preserve the saved state");
+            for (var entity : client.level.entitiesForRendering())
+                if (entity.getType() == EntityTypes.BEE && TrackedOutlines.colorFor(entity) != 0)
+                    throw new AssertionError("Removed bee tracker still glows");
+        });
+        System.out.println("PASS: partial name, Tier V alias, text and stand labels, typed bodies, custom editor and library");
+    }
+
+    private static EditBox field(net.minecraft.client.gui.screens.Screen screen) {
+        return screen.children().stream().filter(EditBox.class::isInstance).map(EditBox.class::cast).findFirst().orElseThrow();
+    }
+    private static void enter(ClientGameTestContext c, String value) {
+        c.runOnClient(client -> client.gui.screen().setFocused(field(client.gui.screen())));
+        c.getInput().typeChars(value);
+    }
+    private static <T extends net.minecraft.client.gui.screens.Screen> void open(ClientGameTestContext c, String command, Class<T> screen) {
+        c.getInput().pressKey(o -> o.keyChat);
+        c.getInput().typeChars("/" + command);
+        c.getInput().pressKey(GLFW.GLFW_KEY_ENTER);
+        c.waitForScreen(screen);
+    }
+}

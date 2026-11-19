@@ -153,6 +153,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 world.getServer().runCommand("kill @e[type=minecraft:vex]");world.getServer().runCommand("kill @e[type=minecraft:parrot]");context.waitTicks(40);
                 requireColors(context.takeScreenshot("unrelated-entities-excluded"),false,false,false);
                 requireNametagDetection(context,world);
+                CustomTrackerGameChecks.run(context, world);
                 command(context,"vextracers off");
                 System.out.println("PASS: native colored model outlines through walls, independent saved line/glow colors, scrollable dropdown keyboard controls, Hivethief crossfade, tracker selection, F1, location gating and removal, nametag detection for Parched and Pollendart, tint fill, far glow, /hh menu and debug");
             } finally {
