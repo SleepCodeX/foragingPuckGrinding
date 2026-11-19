@@ -4,9 +4,9 @@ One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`*
 
 **Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+**
 
-[Download Hunting Helper 1.6.1](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/hunting-helper-1.6.1%2Bmc26.2.jar) · [In-game visual guide](docs/FIELD-JOURNAL.md)
+[Download Hunting Helper 1.6.2](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/hunting-helper-1.6.2%2Bmc26.2.jar) · [In-game visual guide](docs/FIELD-JOURNAL.md)
 
-![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/menu-opening.gif)
+![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/menu-opening.gif)
 
 ## Custom trackers
 
@@ -22,7 +22,7 @@ Open **Custom trackers → Add tracker**, or go straight to the library with **`
 
 Nametag matching ignores capitalization and Minecraft formatting. The tracker reads armor stands, text displays and custom names on mobs. If several rules match one body, a matching nametag takes priority over a mob type. The first saved custom rule wins within the same mode.
 
-![Custom library in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/library.png)
+![Custom library in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/library.png)
 
 ## Hunting presets and controls
 
@@ -39,7 +39,7 @@ Nametag matching ignores capitalization and Minecraft formatting. The tracker re
 
 Install the Hunting Helper JAR on Fabric Loader. It includes Fabric API, Sparkling Mutuals, Fabric Language Kotlin and the native field journal. The custom trackers and settings run locally. Party synchronization, live Bazaar/profile data and other online features use their respective services when active.
 
-![Bundled Safari settings](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/safari.png)
+![Bundled Safari settings](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/safari.png)
 
 [Upstream feature guide](https://github.com/johnceoskyblock/sparkling-mutuals/tree/v4.3.7) · [Upstream release](https://github.com/johnceoskyblock/sparkling-mutuals/releases/tag/v4.3.7)
 
@@ -47,15 +47,15 @@ Install the Hunting Helper JAR on Fabric Loader. It includes Fabric API, Sparkli
 
 Use **/fc** for the run HUD. **Species caught** credits the first capture of each creature, including a teammate's loot share. **Fully Collected** counts species cleared under the Safari completion rules. The current biome's **remaining** panel lists every unfinished species, with partially caught creatures first. Three Gazer catches show **Gazer · 1 remaining**. Catch the fourth and the row clears.
 
-Open **/hh remaining** or **Field journal → Remaining critters** to inspect Forest, Cavern, Icy or Haunted from anywhere. Published spawn ranges narrow with loaded mobs and catch messages. Feeder, mound, wall and coin checks stay visible while their spawns are unresolved. The tracker also receives loot shares hidden from chat.
+Open **/hh remaining** or **Field journal → Remaining critters** to inspect Forest, Cavern, Icy or Haunted from anywhere. Published spawn ranges narrow with loaded mobs and catch messages. Feeder, mound, wall and coin checks stay visible while their spawns are unresolved. The **Located** column shows how many creatures the run has located and still needs to catch. A Shyworm can burrow or a Chuckwalla can retreat and keep its place on the list. A hidden loot share checks it off.
 
-![Haunted remaining list in the packaged Minecraft client](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/full-clear-remaining.png)
+![Cavern checklist with one located Shyworm, Chuckwalla, Driftling and Scrappy left](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/cavern-checklist.png)
 
 ## Safari field journal
 
 Open **/hh → Field journal** or **/hh journal**. The nearest Hunter offers appear in a movable panel. Taken trades clear automatically, including compatible offers and completions received through party chat. **World markers** adds recatch pins, eight Hideonwall perches, and the three Icy Troodon walls. **Open field report** shows who caught each species, capsule attempts, and the spread between selling the run's shards now and listing them.
 
-![Field journal settings in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/field-journal.png)
+![Field journal settings in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/field-journal.png)
 
 [Field journal controls and in-game screenshots](docs/FIELD-JOURNAL.md)
 

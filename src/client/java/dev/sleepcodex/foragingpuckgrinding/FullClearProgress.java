@@ -1,5 +1,6 @@
 package dev.sleepcodex.foragingpuckgrinding;
 
+import dev.sleepcodex.foragingpuckgrinding.mixin.SafariPopulationAccess;
 import java.util.ArrayList;
 import java.util.List;
 import net.johnceo.sparklingmutuals.hud.HudPanel;
@@ -60,7 +61,28 @@ public final class FullClearProgress {
         return new HudPanel(original.getTitle(), original.getTitleColor(), rows, original.getTitleIcon(), null, null);
     }
 
-    record Remaining(SafariCritter species, int caught, String amount) {}
+    record Remaining(SafariCritter species, int caught, Integer located, String amount) {
+        String hudAmount() {
+            // Only repeat the located count when it explains an uncertain total.
+            if (located != null && located > 0 && !amount.equals(located + " remaining"))
+                return located + " located · " + amount;
+            return amount;
+        }
+    }
+
+    private static boolean isBird(String name) {
+        return name.equals("Bluebird") || name.equals("Parakeet") || name.equals("Macaw");
+    }
+
+    private static Integer locatedLeft(SafariRun run, String name, int caught) {
+        if (run == null) return null;
+        int population = isBird(name) ? run.getBirds().spawnedCount(name)
+                : ((SafariPopulationAccess) (Object) run).huntingHelper$populations().getOrDefault(name, 0);
+        if (name.equals("Rockmite")) population = Math.max(population, run.getRockmiteMounds());
+        // Repeated sightings, hidden bodies and captures share one run ledger. An empty sweep
+        // cannot turn a previously located animal into a catch.
+        return population == 0 ? null : Math.max(0, population - caught);
+    }
 
     static List<Remaining> remaining(SafariRun run, SafariBiome biome) {
         var partial = new ArrayList<Remaining>();
@@ -68,17 +90,18 @@ public final class FullClearProgress {
         for (var species : biome.getCritters()) {
             String name = species.getName();
             int captured = caught(run, name);
-            String amount = amount(run, name, captured);
-            if (amount != null) (captured > 0 ? partial : unstarted).add(new Remaining(species, captured, amount));
+            Integer located = locatedLeft(run, name, captured);
+            String amount = amount(run, name, captured, located);
+            if (amount != null) (captured > 0 ? partial : unstarted).add(new Remaining(species, captured, located, amount));
         }
         partial.addAll(unstarted);
         return partial;
     }
 
-    private static String amount(SafariRun run, String name, int caught) {
+    private static String amount(SafariRun run, String name, int caught, Integer located) {
         int upper = maximum(name);
         int target = SafariFullClear.INSTANCE.minimum(name);
-        boolean bird = name.equals("Bluebird") || name.equals("Parakeet") || name.equals("Macaw");
+        boolean bird = isBird(name);
         if (run != null) {
             if (bird) target = run.getBirds().spawnedCount(name);
             else {
@@ -87,7 +110,7 @@ public final class FullClearProgress {
                 if (name.equals("Honeybug") && run.getBeeNestCountKnown()) upper = run.getHoneybugCaptureTarget();
             }
         }
-        int left = Math.max(0, target - caught);
+        int left = Math.max(located == null ? 0 : located, target - caught);
         if (left == 0) {
             if (upper > 0 && caught >= upper) return null;
             if (run != null && (run.fullClearMissingComplete(name) || run.sharedCritterComplete(name,
@@ -115,7 +138,7 @@ public final class FullClearProgress {
     public static HudPanel missing(SafariRun run, SafariBiome biome) {
         var rows = new ArrayList<HudRow>();
         for (var item : remaining(run, biome)) {
-            rows.add(new HudRow(item.species().getName(), item.amount(), item.species().getColor(),
+            rows.add(new HudRow(item.species().getName(), item.hudAmount(), item.species().getColor(),
                     item.caught() > 0 ? HudRow.WHITE : MUTED, null, null, null, List.of(), UiIcons.Kind.CHECK, List.of()));
         }
         if (rows.isEmpty()) rows.add(new HudRow("Area cleared", null, biome.getColor(), MUTED,

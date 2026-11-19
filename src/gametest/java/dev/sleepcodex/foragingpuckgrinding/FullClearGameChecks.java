@@ -138,6 +138,8 @@ final class FullClearGameChecks {
             expect(panel(SafariTracking.INSTANCE.getRun(), SafariBiome.HAUNTED), "Gazer", "4 remaining");
         });
         checkLoadedFoxes(c, world);
+        SafariRosterGameChecks.run(c);
+        CavernPopulationGameChecks.run(c, world);
         c.runOnClient(client -> {
             SafariFullClear.INSTANCE.select(SafariMode.UNIQUE);
             if (panel(SafariTracking.INSTANCE.getRun(), SafariBiome.HAUNTED).getTitle().equals("Haunted remaining"))

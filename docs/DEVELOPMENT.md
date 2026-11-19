@@ -30,8 +30,8 @@ Build from this checkout with **JDK 25**:
 
 Windows: `gradlew.bat build`. Output:
 
-- `build/libs/hunting-helper-1.6.1+mc26.2.jar` — installable mod.
-- `build/libs/hunting-helper-1.6.1+mc26.2-sources.jar` — Java source archive.
+- `build/libs/hunting-helper-1.6.2+mc26.2.jar` — installable mod.
+- `build/libs/hunting-helper-1.6.2+mc26.2-sources.jar` — Java source archive.
 
 [GitHub Actions](https://github.com/SleepCodeX/foragingPuckGrinding/actions/workflows/build.yml)
 builds the mod and source JARs from the visible commit and uploads both, alongside
@@ -141,3 +141,5 @@ The native packaged-client test opens Safari settings through Hunting Helper and
 ## Safari field journal
 
 The Minecraft 26.2 journal is compiled directly into the client source set. The packaged test loads Fabric API from Hunting Helper, opens its screens, exercises filtered chat, records a trade and removes it on completion. It reads the bundled Safari quote snapshot for both order-book prices. Each release now publishes native screenshots from the same production test as the distributed JAR. [Journal controls and upstream attribution](FIELD-JOURNAL.md)
+
+The packaged client verifies all 37 Safari species through the capture handlers. It exercises the bounded and source-dependent species, run resets, repeated scans and a Cavern scene with textured Shyworm and Driftling armor stands, Chuckwalla item displays and Scrappy armadillos.
