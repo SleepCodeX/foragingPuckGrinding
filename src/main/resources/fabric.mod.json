@@ -3,7 +3,7 @@
   "id": "foragingpuckgrinding",
   "version": "${version}",
   "name": "Hunting Helper",
-  "description": "Simple, toggleable Vex and Blue Jay tracers with a compact settings menu.",
+  "description": "Colored tracers and matching mob boxes for Vex, Blue Jay and Hivethief, with independent toggles.",
   "icon": "assets/foragingpuckgrinding/icon.png",
   "authors": ["SleepCodeX"],
   "contact": {"sources": "https://github.com/SleepCodeX/foragingPuckGrinding"},

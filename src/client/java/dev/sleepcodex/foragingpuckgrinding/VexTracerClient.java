@@ -42,7 +42,7 @@ public final class VexTracerClient implements ClientModInitializer {
             if (menuRequested) {
                 menuRequested = false;
                 client.gui.setScreen(new TracerSettingsScreen(config, toggle,
-                        enabled -> setEnabled(client, enabled), target -> setTarget(client, target)));
+                        enabled -> setEnabled(client, enabled), targets -> setTargets(client, targets)));
             }
             renderer.tick(client);
         });
@@ -64,9 +64,9 @@ public final class VexTracerClient implements ClientModInitializer {
         return 1;
     }
 
-    private void setTarget(Minecraft client, TracerTarget target) {
+    private void setTargets(Minecraft client, java.util.Set<TracerTarget> targets) {
         try {
-            config.setTarget(target);
+            config.setTargets(targets);
         } catch (IOException exception) {
             LOGGER.warn("Hunting Helper target changed, but could not be saved", exception);
             if (client.player != null) client.player.sendSystemMessage(

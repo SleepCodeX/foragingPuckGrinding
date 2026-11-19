@@ -73,6 +73,8 @@ jar {
     from('licenses') { into 'licenses' }
 }
 sourcesJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.client.allSource
     from('LICENSE', 'NOTICE')
     from('licenses') { into 'licenses' }
 }
