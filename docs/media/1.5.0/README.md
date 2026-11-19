@@ -17,4 +17,3 @@ The packaged Fabric client generated these images in a simulated SkyBlock scene.
 
 ![Sparkling Mutuals Safari settings opened from Hunting Helper](safari.png)
 
-![Hivethief model choices](appearance.png)

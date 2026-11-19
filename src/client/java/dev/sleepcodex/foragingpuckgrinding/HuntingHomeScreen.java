@@ -36,8 +36,8 @@ final class HuntingHomeScreen extends Screen {
     private final TracerSettingsScreen presets;
     private final TracerConfig config;
     private final LongSupplier clock;
-    private long opened;
-    private Button all, appearance, done;
+    private final long opened;
+    private Button all, done;
     private int x, y, w, h, safariY;
     private boolean compact;
 
@@ -49,8 +49,6 @@ final class HuntingHomeScreen extends Screen {
         this.presets = presets; this.config = config; this.clock = clock; opened = clock.getAsLong();
     }
     HuntingHomeScreen withClock(LongSupplier source) { return new HuntingHomeScreen(presets, config, source); }
-
-    void replay() { opened = clock.getAsLong(); Minecraft.getInstance().gui.setScreen(this); }
 
     void openCustom() { Minecraft.getInstance().gui.setScreen(new CustomLibraryScreen(this, config)); }
 
@@ -86,8 +84,6 @@ final class HuntingHomeScreen extends Screen {
                     listY + (i / 2) * (rowH + rowGap), col, rowH, false, () -> openSafari(section));
         }
         all = button("All Safari settings", x + inset, footer, 116, compact ? 20 : 25, () -> openSafari(null));
-        appearance = button("Appearance", all.getRight() + 6, footer, 76, compact ? 20 : 25,
-                () -> Minecraft.getInstance().gui.setScreen(new AppearanceScreen(this, config)));
         done = button("Done", x + w - inset - 66, footer, 66, compact ? 20 : 25, this::onClose);
     }
 
@@ -126,7 +122,6 @@ final class HuntingHomeScreen extends Screen {
             MenuFont.text(g,"Critter Safari",x+(compact?12:17),safariY,.84,MenuTheme.ACCENT);
             for (Tile tile:tiles) drawTile(g,c,tile,mx,my);
             footer(g,c,all,mx,my,false);
-            footer(g,c,appearance,mx,my,false);
             footer(g,c,done,mx,my,true);
         } finally {
             MenuFont.opacity(1);
@@ -134,7 +129,7 @@ final class HuntingHomeScreen extends Screen {
         }
         // The same icon is drawn exactly once, including the final, stationary header frame.
         int cx = blend(width / 2, hx, travel), cy = blend(height / 2, hy, travel);
-        new MenuCanvas(g, backdrop).hivethief(config.style(), cx, cy,
+        new MenuCanvas(g, backdrop).hivethief(cx, cy,
                 blend(badgeSize - 7, compact ? 28 : 36, travel));
     }
 

@@ -4,7 +4,7 @@ Hunting Helper draws tracers, matching boxes and colored model outlines for mobs
 
 ![Hunting Helper's in-game settings opening](docs/media/1.5.0/menu-opening.gif)
 
-**Appearance** lets you preview Frost, Amber or Graphite. Picking a model replays the opening and saves your choice.
+The ivory-and-honey Frost Hivethief opens the settings and settles into the header.
 
 ## Custom trackers
 

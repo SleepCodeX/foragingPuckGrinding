@@ -7,6 +7,10 @@ final class MobSymbols {
     private MobSymbols() { }
 
     static void draw(GuiGraphicsExtractor graphics, MenuCanvas canvas, TracerTarget target, int x, int y, int size) {
+        if (target == TracerTarget.HIVE_THIEF) {
+            canvas.hivethief(x, y, size);
+            return;
+        }
         graphics.pose().pushMatrix();
         graphics.pose().translate(x, y);
         graphics.pose().scale(size / 24f, size / 24f);
@@ -30,16 +34,6 @@ final class MobSymbols {
                     canvas.round(6, -8, 2, 2, 1, 0xFF243C55);
                     canvas.round(-1, 7, 2, 4, 1, 0xFFD1B28B);
                     canvas.round(4, 7, 2, 4, 1, 0xFFD1B28B);
-                }
-                case HIVE_THIEF -> {
-                    canvas.round(-9, -10, 18, 15, 3, 0xFFFFC655);
-                    canvas.round(-8, -9, 16, 12, 2, 0xFFFFF0CC);
-                    canvas.round(-5, -5, 3, 3, 1, 0xFF755D4E);
-                    canvas.round(2, -5, 3, 3, 1, 0xFF755D4E);
-                    canvas.round(-2, 0, 4, 2, 1, 0xFFB68A69);
-                    canvas.round(-6, 4, 3, 7, 1, 0xFFF1C87A);
-                    canvas.round(-1, 4, 3, 9, 1, 0xFFFFE2A1);
-                    canvas.round(4, 4, 3, 6, 1, 0xFFF1C87A);
                 }
                 case PARCHED -> {
                     canvas.round(-8, -9, 16, 14, 5, 0xFFEADFC4);

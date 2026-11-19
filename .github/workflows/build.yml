@@ -142,7 +142,6 @@ jobs:
               "custom-tracker-library": "library",
               "custom-tracked-mobs": "custom-targets",
               "bundled-safari-settings": "safari",
-              "hivethief-models": "appearance",
               "home-dashboard": "home",
               "compact-dashboard": "home-compact",
           }.items():

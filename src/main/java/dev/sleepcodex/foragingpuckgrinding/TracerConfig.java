@@ -19,7 +19,6 @@ public final class TracerConfig {
     private CustomRules custom = new CustomRules(java.util.List.of());
     private final Path path;
     private boolean enabled;
-    private HivethiefStyle style = HivethiefStyle.FROST;
     private EnumSet<TracerTarget> targets = EnumSet.of(TracerTarget.VEX);
     private final EnumMap<TracerTarget, OverlayColor> lines = new EnumMap<>(TracerTarget.class);
     private final EnumMap<TracerTarget, OverlayColor> glows = new EnumMap<>(TracerTarget.class);
@@ -38,7 +37,6 @@ public final class TracerConfig {
 
     public void load() throws IOException {
         enabled = false;
-        style = HivethiefStyle.FROST;
         targets = EnumSet.of(TracerTarget.VEX);
         resetColors();
         custom = new CustomRules(java.util.List.of());
@@ -48,7 +46,6 @@ public final class TracerConfig {
             properties.load(reader);
         }
         custom = CustomRules.read(properties);
-        style = HivethiefStyle.parse(properties.getProperty("appearance.hivethief"));
         enabled = Boolean.parseBoolean(properties.getProperty("enabled", "false").trim());
         for (TracerTarget target : TracerTarget.values()) {
             OverlayColor line = OverlayColor.parse(properties.getProperty("line." + target.name()), OverlayColor.defaultFor(target));
@@ -70,12 +67,6 @@ public final class TracerConfig {
             }
             if (targets.isEmpty()) targets.add(TracerTarget.VEX);
         }
-    }
-
-    HivethiefStyle style() { return style; }
-    void setStyle(HivethiefStyle value) throws IOException {
-        save(custom, value);
-        style = value;
     }
 
     public boolean enabled() {
@@ -154,15 +145,12 @@ public final class TracerConfig {
 
     private void save() throws IOException { save(custom); }
 
-    private void save(CustomRules savedCustom) throws IOException { save(savedCustom, style); }
-
-    private void save(CustomRules savedCustom, HivethiefStyle savedStyle) throws IOException {
+    private void save(CustomRules savedCustom) throws IOException {
         Files.createDirectories(path.toAbsolutePath().getParent());
         Path temporary = Files.createTempFile(path.toAbsolutePath().getParent(), "vex-tracer-", ".tmp");
         try {
             Properties properties = new Properties();
             savedCustom.write(properties);
-            properties.setProperty("appearance.hivethief", savedStyle.name());
             properties.setProperty("enabled", Boolean.toString(enabled));
             properties.setProperty("targets", targets.stream().map(Enum::name).collect(Collectors.joining(",")));
             for (TracerTarget target : TracerTarget.values()) {
