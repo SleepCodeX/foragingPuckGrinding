@@ -4,9 +4,9 @@ One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`*
 
 **Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+**
 
-[Download Hunting Helper 1.6.1](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/hunting-helper-1.6.1%2Bmc26.2.jar) · [Safari hunting features](docs/HUNTING.md)
+[Download Hunting Helper 1.6.2](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/hunting-helper-1.6.2%2Bmc26.2.jar) · [Safari hunting features](docs/HUNTING.md)
 
-![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/menu-opening.gif)
+![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/menu-opening.gif)
 
 ## Custom trackers
 
@@ -22,7 +22,7 @@ Open **Custom trackers → Add tracker**, or go straight to the library with **`
 
 Nametag matching ignores capitalization and Minecraft formatting. The tracker reads armor stands, text displays and custom names on mobs. If several rules match one body, a matching nametag takes priority over a mob type. The first saved custom rule wins within the same mode.
 
-![Custom library in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/library.png)
+![Custom library in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/library.png)
 
 ## Hunting presets and controls
 
@@ -48,6 +48,7 @@ CritterMod's tools that SM did not have now live inside it and read SM's run led
 - **Hunter trades**: offers in a movable box and as waypoints, shared with party in CritterMod's format, retired when taken. Party prefixes are read in any capitalisation.
 - **World marks**: Hideonwall perches, recatch pins, Troodon walls.
 - **Floor-drop filter**: quest items only, hide quest items already collected, while items a Hunter trade wants stay highlighted.
+- **Located creatures** for all 37 species: the run remembers every creature it has seen (loaded models, feeder birds, Rockmite mounds) through burrows, escapes and biome changes, and checks one off per catch. The second HUD shows "1 located", the run report has a Located column.
 - **This run** (**/hh run**): who caught each species, capsules tried and escaped, shards and their value at both Bazaar prices.
 - Per-event party/all-chat broadcasts, and a one-time import of CritterMod and Hunting Helper 1.6 journal settings and run history.
 

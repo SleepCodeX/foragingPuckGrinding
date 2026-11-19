@@ -30,8 +30,8 @@ Build from this checkout with **JDK 25**:
 
 Windows: `gradlew.bat build`. Output:
 
-- `build/libs/hunting-helper-1.6.1+mc26.2.jar` — installable mod.
-- `build/libs/hunting-helper-1.6.1+mc26.2-sources.jar` — Java source archive.
+- `build/libs/hunting-helper-1.6.2+mc26.2.jar` — installable mod.
+- `build/libs/hunting-helper-1.6.2+mc26.2-sources.jar` — Java source archive.
 
 [GitHub Actions](https://github.com/SleepCodeX/foragingPuckGrinding/actions/workflows/build.yml)
 builds the mod and source JARs from the visible commit and uploads both, alongside
@@ -141,3 +141,5 @@ The native packaged-client test opens Safari settings through Hunting Helper and
 ## Safari hunting features
 
 The CritterMod tools are Sparkling Mutuals code in `net.johnceo.sparklingmutuals.hunting` (Kotlin in `src/client/kotlin`, ported Java world logic in `src/client/java/net`). They read SM's run ledger and add no second catch parser. `SafariSettingsScreen` renders SM's `SettingsCatalog` with Hunting Helper's widgets and is installed through `SettingsScreens.factory`. `HuntingGameChecks` drives the second HUD (Gazer 2/4, uniques only), canceled chat, trades with a lower-case party prefix, recatch pins, the run announcements, the floor-drop trade exception, the run report, the HUD editor, `/hh` sections and `/sm`, and captures screenshots. [Features](HUNTING.md) · [SM changes](SM-UPSTREAM.md)
+
+The client tests also verify all 37 Safari species through the capture handlers (`SafariRosterGameChecks`): bounded and source-dependent populations, repeated scans, catches counted once per stack, the second HUD rows and fresh-run isolation. `CavernPopulationGameChecks` builds a Cavern scene with textured Shyworm and Driftling armor stands, Chuckwalla item displays and Scrappy armadillos and checks the located counts through burrows, hidden tags and despawns.

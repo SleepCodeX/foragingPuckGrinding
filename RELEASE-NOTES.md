@@ -8,6 +8,14 @@
 - **Party prefixes in any case.** "party >" and "PARTY >" lines are read like "Party >" for shared trades and SM's party commands.
 - **Imports.** Settings and run history from standalone CritterMod (`config/crittermod*.json`) and from the 1.6 field journal are merged once into the new settings and SM's history. With CritterMod also installed, Hunting Helper's trade box, marks and broadcasts stay off.
 - The full-clear "remaining" override of SM's panels was removed; SM's own panels show again and the second HUD covers per-area counts.
+- **Located creatures** (from 1.6.2) now come straight from Sparkling Mutuals' run: the second HUD shows "N located" and the run report (**/hh run**, **/hh remaining**) has a Located column.
+
+# Hunting Helper 1.6.2
+
+- **All 37 Safari species** have a located-creature count in **/hh remaining**. When the total is uncertain, **/fc** can show how many have been located alongside the expected remainder. The row keeps its progress through burrows, escapes and biome changes.
+- **Cavern checklist.** See how many Shyworms, Chuckwallas, Driftlings and Scrappies are still accounted for after personal and party catches. The packaged Minecraft test also covers the other three areas, feeder birds, wall and mound critters, and coin spawns.
+- **Install on Fabric Loader** with the Hunting Helper JAR. Fabric API, Kotlin and the Safari suite are included.
+- [Cavern screenshot](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/cavern-checklist.png) · [All species and spawn counts](https://github.com/SleepCodeX/foragingPuckGrinding/blob/v1.6.2/docs/FIELD-JOURNAL.md#per-species-counts)
 
 # Hunting Helper 1.6.1
 

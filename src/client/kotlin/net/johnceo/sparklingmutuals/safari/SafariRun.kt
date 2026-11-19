@@ -186,6 +186,8 @@ class SafariRun(val startedAt: Long, checkClock: () -> Long = System::currentTim
         (populationCaptureDebt[species] ?: 0) > 0 ||
             lastPopulationCapture[species]?.let { populationClock() - it in 0..2500 } == true
     private val knownPopulation = mutableMapOf<String, Int>()
+    /** Hunting Helper: read-only population high-water mark, for the located counts (hunting/HuntingCompletion.kt). */
+    fun populationOf(name: String) = knownPopulation[name] ?: 0
     /** Current uncaptured UUIDs, never the union of pre/post-escape identities. */
     fun observePopulation(live: List<Pair<String, java.util.UUID>>) {
         val remaining = live.filterNot { sparklingCaptures.resolved(it.second) }

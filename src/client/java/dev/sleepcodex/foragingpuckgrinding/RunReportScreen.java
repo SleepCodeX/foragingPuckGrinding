@@ -76,10 +76,11 @@ final class RunReportScreen extends TrackerPage {
         Map<String, Integer> shards = run == null ? Map.of() : RunHistory.INSTANCE.liveShards(run);
         String self = Minecraft.getInstance().getUser().getName();
         int x = left + 18, right = left + w - 18, y = top + 80;
-        int caughtX = x + 98, byX = x + 150, triedX = right - 168, escapedX = right - 128, shardsX = right - 88;
+        int caughtX = x + 94, locatedX = x + 146, byX = x + 186, triedX = right - 168, escapedX = right - 128, shardsX = right - 88;
         double head = .72;
         MenuFont.text(g, "Critter", x, y, head, MenuTheme.MUTED);
         MenuFont.text(g, "Caught", caughtX, y, head, MenuTheme.MUTED);
+        MenuFont.text(g, "Located", locatedX, y, head, MenuTheme.MUTED);
         MenuFont.text(g, "By", byX, y, head, MenuTheme.MUTED);
         MenuFont.text(g, "Tried", triedX, y, head, MenuTheme.MUTED);
         MenuFont.text(g, "Esc.", escapedX, y, head, MenuTheme.MUTED);
@@ -98,6 +99,8 @@ final class RunReportScreen extends TrackerPage {
             MenuFont.text(g, name, x, y, scale, done ? MenuTheme.TEXT : MenuTheme.MUTED);
             String count = gone ? "none this run" : target > 1 ? caught + "/" + target : Integer.toString(caught);
             MenuFont.text(g, count, caughtX, y, scale, done ? 0xFF7FD6A0 : MenuTheme.TEXT);
+            Integer located = HuntingCompletion.INSTANCE.located(critter, source);
+            MenuFont.text(g, located == null ? "-" : located.toString(), locatedX, y, scale, located == null ? MenuTheme.MUTED : MenuTheme.TEXT);
             StringBuilder by = new StringBuilder();
             for (var entry : HuntingRuns.INSTANCE.catchers(run, name, self)) {
                 if (!by.isEmpty()) by.append(", ");

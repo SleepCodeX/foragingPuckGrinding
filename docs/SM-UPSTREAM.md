@@ -65,6 +65,7 @@ Each modification is marked with a `// Hunting Helper:` comment (`#` in the defa
 | `party/PartyManager.kt` | `requestPartyInfo` / `refreshPartyInfo` only on Hypixel | No party queries in test worlds |
 | `safari/SafariCatch.kt` | Loot-share parse handles rank prefixes and catchers named like a species | Correct catch counts |
 | `safari/SafariTracking.kt` | `receive` is public | Canceled chat (GAME_CANCELED) is forwarded by `HuntingChat` |
+| `safari/SafariRun.kt` | `populationOf(name)` reads the private `knownPopulation` high-water mark | Located counts for all species (replaces upstream Hunting Helper #10's `SafariPopulationAccess` mixin) |
 | `history/RunHistory.kt` | `receiveCanceled(raw)` and `liveShards(run)` | Canceled shard lines count; run report reads live shards |
 | `commands/PartyCommand.kt`, `alerts/WarpListRanks.kt` | Channel prefix (`Party >`, `guild >`) matched case-insensitively | Same fix as CritterMod PR #5 |
 | `commands/SparklingCommand.kt`, `contest/ContestGui.kt`, `config/SafariSettings.kt` (runnable 13) | Open settings through `SettingsScreens` | `/sm`, `/sm config`, HUD-editor right-click open Hunting Helper's screen |

@@ -191,6 +191,11 @@ final class HuntingGameChecks {
         c.waitTicks(3);
         c.takeScreenshot("hud-editor-with-hunting-panels");
 
+        // Located and remaining creatures for all 37 species, then a real Cavern scene (upstream #10).
+        c.runOnClient(client -> client.gui.setScreen(null));
+        SafariRosterGameChecks.run(c);
+        CavernPopulationGameChecks.run(c, world);
+
         server.runCommand(restore);
         c.runOnClient(client -> {
             SafariTracking.INSTANCE.finish();

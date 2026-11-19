@@ -39,6 +39,7 @@ object HuntingHuds {
             val notes = buildList {
                 entry.note.takeIf { !uniquesOnly }?.let(::add)
                 nearby[name]?.takeIf { it > 0 }?.let { add("$it near") }
+                entry.located?.takeIf { it > 0 }?.let { add("$it located") }
                 if (isEmpty()) attempts(name).takeIf { it > 0 }?.let { add("$it tried") }
             }
             rows += HudRow(name, notes.joinToString(" · ").ifEmpty { null }, entry.critter.color, DIM, icon = null)
@@ -47,11 +48,14 @@ object HuntingHuds {
             if (rows.isNotEmpty()) rows += HudRow(icon = null)
             area.unavailable.forEach { rows += HudRow(it.name, "none this run", DIM, DIM, icon = null) }
         }
-        val alsoHere = area.done.filter { (nearby[it.critter.name] ?: 0) > 0 }
+        // Done for the list, but creatures the run located are still shards to take.
+        fun extra(entry: HuntingCompletion.Entry) = listOfNotNull(nearby[entry.critter.name]?.takeIf { it > 0 }?.let { "$it near" },
+            entry.located?.takeIf { it > 0 }?.let { "$it located" }).joinToString(" · ")
+        val alsoHere = area.done.filter { extra(it).isNotEmpty() }
         if (alsoHere.isNotEmpty()) {
             rows += HudRow(icon = null)
             rows += HudRow("also here", null, DIM, DIM, icon = null)
-            alsoHere.forEach { rows += HudRow(it.critter.name, "${nearby[it.critter.name]} near", DONE, DIM, icon = null) }
+            alsoHere.forEach { rows += HudRow(it.critter.name, extra(it), DONE, DIM, icon = null) }
         }
         val left = area.missing.size
         return when {

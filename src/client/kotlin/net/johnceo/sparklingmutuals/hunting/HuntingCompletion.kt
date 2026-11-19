@@ -22,9 +22,11 @@ object HuntingCompletion {
         fun caught(name: String): Int
         fun unavailable(name: String): Boolean
         fun sharedDone(name: String): Boolean = false
+        /** Creatures the run has located (loaded models, feeder birds, Rockmite mounds), caught or not. */
+        fun population(name: String): Int = 0
     }
 
-    data class Entry(val critter: SafariCritter, val caught: Int, val target: Int) {
+    data class Entry(val critter: SafariCritter, val caught: Int, val target: Int, val located: Int? = null) {
         val note get() = if (target > 1) "$caught/$target" else null
     }
     data class Area(val biome: SafariBiome, val missing: List<Entry>, val unavailable: List<SafariCritter>, val done: List<Entry>)
@@ -33,6 +35,21 @@ object HuntingCompletion {
         override fun caught(name: String) = run?.captureProgress(name) ?: 0
         override fun unavailable(name: String) = run?.uniqueUnavailable(name) == true
         override fun sharedDone(name: String) = run?.sharedCritterComplete(name, SafariMode.UNIQUE) == true
+        override fun population(name: String): Int {
+            run ?: return 0
+            val seen = if (name in BIRDS) run.birds.spawnedCount(name) else run.populationOf(name)
+            return if (name == "Rockmite") maxOf(seen, run.rockmiteMounds) else seen
+        }
+    }
+    private val BIRDS = setOf("Bluebird", "Parakeet", "Macaw")
+
+    /**
+     * Located creatures still uncaught, or null while the run has no count. Sightings persist across scans, burrows
+     * and biome changes; a capture message checks one off (Hunting Helper #10, now read from SM's run directly).
+     */
+    fun located(critter: SafariCritter, source: Source): Int? {
+        val population = source.population(critter.name)
+        return if (population == 0) null else (population - source.caught(critter.name)).coerceAtLeast(0)
     }
 
     fun target(critter: SafariCritter, uniquesOnly: Boolean) = critter.required(uniquesOnly)
@@ -51,7 +68,7 @@ object HuntingCompletion {
         val gone = mutableListOf<SafariCritter>()
         val done = mutableListOf<Entry>()
         biome.critters.forEach { critter ->
-            val entry = Entry(critter, source.caught(critter.name), target(critter, uniquesOnly))
+            val entry = Entry(critter, source.caught(critter.name), target(critter, uniquesOnly), located(critter, source))
             when {
                 unavailable(critter, source) -> gone += critter
                 done(critter, source, uniquesOnly) -> done += entry

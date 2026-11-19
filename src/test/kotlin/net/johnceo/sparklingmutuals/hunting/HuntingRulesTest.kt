@@ -8,8 +8,10 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 /** A run as the ledger would report it: catches by species, and what the run can no longer produce. */
-private class FakeRun(val caught: MutableMap<String, Int> = mutableMapOf(), val gone: MutableSet<String> = mutableSetOf()) : HuntingCompletion.Source {
+private class FakeRun(val caught: MutableMap<String, Int> = mutableMapOf(), val gone: MutableSet<String> = mutableSetOf(),
+                      val seen: MutableMap<String, Int> = mutableMapOf()) : HuntingCompletion.Source {
     override fun caught(name: String) = caught[name] ?: 0
+    override fun population(name: String) = seen[name] ?: 0
     override fun unavailable(name: String) = name in gone
     fun all(except: Set<String> = emptySet(), quota: Boolean = true) = apply {
         SafariRoster.all.filter { it.name !in except }.forEach { caught[it.name] = if (quota) it.quota else 1 }
@@ -130,5 +132,22 @@ class MilestoneTrackerTest {
         assertEquals(MilestoneTracker.Milestone.ALL_BUT_MACAW, MilestoneTracker().update(run, uniquesOnly = true))
         run.gone += "Macaw"
         assertEquals(MilestoneTracker.Milestone.ALL_DONE, MilestoneTracker().update(run, uniquesOnly = true))
+    }
+}
+
+class LocatedCreaturesTest {
+    @Test fun `located counts survive catches and show on the second HUD`() {
+        val shyworm = SafariRoster.named("Shyworm")!!
+        val run = FakeRun(seen = mutableMapOf("Shyworm" to 3, "Gemzie" to 3))
+        assertNull(HuntingCompletion.located(SafariRoster.named("Foxtrot")!!, run), "no count yet")
+        assertEquals(3, HuntingCompletion.located(shyworm, run))
+        assertEquals("3 located", HuntingHuds.missingPanel(SafariBiome.CAVERN, run, false).rows.first { it.label == "Shyworm" }.value)
+        run.caught["Shyworm"] = 2; run.caught["Gemzie"] = 2
+        assertEquals(1, HuntingCompletion.located(shyworm, run))
+        val panel = HuntingHuds.missingPanel(SafariBiome.CAVERN, run, false)
+        assertEquals("2/3 · 1 located", panel.rows.first { it.label == "Gemzie" }.value)
+        assertEquals("1 located", panel.rows.first { it.label == "Shyworm" }.value, "done, but still listed under also here")
+        run.caught["Shyworm"] = 5
+        assertEquals(0, HuntingCompletion.located(shyworm, run), "never negative")
     }
 }

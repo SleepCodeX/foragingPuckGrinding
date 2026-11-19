@@ -15,6 +15,21 @@ On by default inside Safari areas, separate from SM's own progress and missing p
 
 Counts come from the run ledger (`SafariRun.captureProgress`: your catches, loot shares and SM party-sync captures). Quotas come from SM's roster (`SafariCritter.quota`), which is CritterMod's table (Gemzie 3, Troodon 3, Gazer 4) plus SM's Scrappy 3. Move or resize it in **/sm gui** like any SM panel.
 
+## Located creatures
+
+**Located** is the number of uncaught creatures the run has evidence for: loaded models seen by SM's scanner (`SafariRun.populationOf`), feeder birds that spawned, and Rockmite mounds. The run keeps sightings across scans, burrows, escapes and biome changes; a Shyworm that burrows or a Chuckwalla that runs off keeps its place. A capture message checks off one animal, even if it gives several shards, and a hidden loot share counts too. With no evidence yet the count is a dash.
+
+The second HUD adds "2 located" to a missing species, and keeps a species that is done for the list under **also here** while located creatures are left, since each is another shard. The run report shows a **Located** column per area.
+
+| Area | Ordinary or fixed spawns per run | Conditional spawns |
+| --- | --- | --- |
+| Forest | Foxtrot 6–8, Treefrog 3–6, Woodchucker 3–6, Fluffling 1–3, Hideonfloor 1–3 | Honeybug 3–6 until surveyed nests give a count. Bluebird, Parakeet and Macaw depend on the feeder. |
+| Cavern | Cavernfish 4–8, Flitter 6–8, Shyworm 4–8, Driftling 3–6, Chuckwalla 2–4, Scrappy 3, Gemzie 3 | Rockmite comes from mounds. Snoozle comes from breakable walls. |
+| Icy | Strongarm 4–8, Tepid 6–8, Polaris 2–4, Shuddersquid 3–6, Billygoat 2–4, Mantis Shrimp 3–6, Nozzlenose 2–4, Troodon 3, Wumpa 1 | Wumpa appears after the Icy prerequisites. |
+| Haunted | Areita 3–6, Bloodbat 3–6, Duplico 2–4, Gazer 4, Litterbug 4–8, Solsnatcher 4–8, Hideonwall 2–4, Hideyho 1, Doomspiral 1 | Gimmiegold depends on Shining Coins. |
+
+Ranges describe a full run, including creatures unlocked through encounters. [Safari critter and spawn table](https://hypixelskyblock.minecraft.wiki/w/Critter_Safari#List_of_Critters) · [Hypixel spawn changes](https://hypixel.net/threads/august-11-skyblock-patch-notes.6139155/)
+
 ## Run announcements
 
 **Everything except Macaw done!** and **Everything Done!** use the same rule as the second HUD, so they follow Uniques only. Each fires once per run with its own switch. If one catch completes everything, only "Everything Done!" fires (CritterMod's suppression). They appear in SM's banner slot and chat, and can be posted to the party or all chat.
@@ -44,7 +59,7 @@ An item that an untaken Hunter trade wants (found by you or shared by the party)
 
 ## Run report
 
-**/hh → This run** or **/hh run** lists each area's species: caught out of the quota, who caught them (you and loot-share catchers), capsules tried and escaped, shards received and their Bazaar value. The footer totals the run at both instant-sell and sell-offer prices. The price side follows SM's **History → Coins at insta-sell**; **Subtract Bazaar tax** removes the 1.25% sale tax. Saved runs, profit by day and per-species totals are in SM's history (**/sm history**).
+**/hh → This run**, **/hh run** or **/hh remaining** lists each area's species: caught out of the quota, located creatures left, who caught them (you and loot-share catchers), capsules tried and escaped, shards received and their Bazaar value. The footer totals the run at both instant-sell and sell-offer prices. The price side follows SM's **History → Coins at insta-sell**; **Subtract Bazaar tax** removes the 1.25% sale tax. Saved runs, profit by day and per-species totals are in SM's history (**/sm history**).
 
 ## Encounter broadcasts
 
