@@ -44,9 +44,13 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 command(context,"vextracers on");requireColors(context.takeScreenshot("vex-purple-boxes"),true,false,false);
                 context.getInput().pressKey(GLFW.GLFW_KEY_V);context.waitTicks(3);
                 requireColors(context.takeScreenshot("keybind-off"),false,false,false);
-                openMenu(context);context.takeScreenshot("tracker-menu-compact");
+                openMenu(context);
+                context.runOnClient(client -> client.options.guiScale().set(3));
+                context.getInput().resizeWindow(960,720);context.waitTicks(3);
+                requireButtonsFit(context);context.takeScreenshot("tracker-menu-compact");
                 context.clickScreenButton("Tracers: OFF");context.clickScreenButton("Select all");
-                context.getInput().resizeWindow(1280,720);context.waitTicks(3);
+                context.runOnClient(client -> client.options.guiScale().set(2));
+                context.getInput().resizeWindow(1280,720);context.waitTicks(3);requireButtonsFit(context);
                 context.takeScreenshot("tracker-menu-all");context.clickScreenButton("Done");context.waitTicks(14);
                 requireColors(context.takeScreenshot("all-colored-lines-and-boxes"),true,true,true);
 
@@ -86,8 +90,28 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     }
     private static void openMenu(ClientGameTestContext c) {
         command(c,"huntinghelper");c.waitForScreen(TracerSettingsScreen.class);
-        long until=System.nanoTime()+700_000_000L;c.waitFor(client->System.nanoTime()>=until);
+        long until=System.nanoTime()+220_000_000L;c.waitFor(client->System.nanoTime()>=until);
     }
+    private static void requireButtonsFit(ClientGameTestContext context) {
+        context.runOnClient(client -> {
+            var buttons = client.gui.screen().children().stream()
+                    .filter(net.minecraft.client.gui.components.Button.class::isInstance)
+                    .map(net.minecraft.client.gui.components.Button.class::cast).toList();
+            if (buttons.size() != 7) throw new AssertionError("Master, three trackers and three footer controls must be reachable");
+            int width = client.getWindow().getGuiScaledWidth(), height = client.getWindow().getGuiScaledHeight();
+            for (int i = 0; i < buttons.size(); i++) {
+                var a = buttons.get(i);
+                if (a.getX() < 0 || a.getY() < 0 || a.getRight() > width || a.getBottom() > height)
+                    throw new AssertionError("A tracker control is clipped");
+                for (int j = i + 1; j < buttons.size(); j++) {
+                    var b = buttons.get(j);
+                    if (a.getX() < b.getRight() && a.getRight() > b.getX() && a.getY() < b.getBottom() && a.getBottom() > b.getY())
+                        throw new AssertionError("Tracker controls overlap");
+                }
+            }
+        });
+    }
+
     private static void command(ClientGameTestContext c,String command) {
         c.getInput().pressKey(o->o.keyChat);c.getInput().typeChars("/"+command);
         c.getInput().holdKeyFor(InputConstants.KEY_RETURN,0);c.waitTicks(3);

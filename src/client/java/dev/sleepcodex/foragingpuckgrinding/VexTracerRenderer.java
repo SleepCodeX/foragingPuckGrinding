@@ -5,8 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionContext;
@@ -38,24 +37,67 @@ final class VexTracerRenderer {
     private final TorrhusContext torrhus = new TorrhusContext();
     private final Vector3f look = new Vector3f();
     private ClientLevel cachedLevel;
-    private List<Entity> candidates = List.of();
+    private Entity[] candidates = new Entity[0];
+    private TracerTarget[] candidateTypes = new TracerTarget[0];
+    private int candidateCount;
+    private TracerRange.Bounds range;
+    private int rangeChunkX, rangeChunkZ, rangeChunks;
+
 
     VexTracerRenderer(TracerConfig config) { this.config = config; }
 
     void tick(Minecraft client) {
-        cachedLevel = client.level;
-        boolean area = torrhus.update(client, config.enabled() &&
+        if (cachedLevel != client.level) {
+            clearCandidates();
+            cachedLevel = client.level;
+            range = null;
+        }
+        boolean tracking = config.enabled() && config.hasTargets() && client.player != null && cachedLevel != null;
+        boolean area = torrhus.update(client, tracking &&
                 (config.isSelected(TracerTarget.BLUE_JAY) || config.isSelected(TracerTarget.HIVE_THIEF)));
-        if (!config.enabled() || !config.hasTargets() || cachedLevel == null) {
-            candidates = List.of(); return;
+        if (!tracking) {
+            clearCandidates();
+            return;
         }
-        var selected = new ArrayList<Entity>();
+        updateRange(client);
+        int count = 0;
+        // Inspect every loaded entity in the complete chunk footprint once per tick.
+        // Reuse discovery storage and classify each mob here, never in the render loop.
         for (Entity entity : cachedLevel.entitiesForRendering()) {
-            if (!entity.isAlive() || entity.isRemoved()) continue;
+            if (!entity.isAlive() || entity.isRemoved() || !range.contains(entity.getX(), entity.getZ())) continue;
             TracerTarget type = typeOf(entity);
-            if (type != null && config.isSelected(type) && (type == TracerTarget.VEX || area)) selected.add(entity);
+            if (type == null || !config.isSelected(type) || (type != TracerTarget.VEX && !area)) continue;
+            if (count == candidates.length) {
+                int capacity = Math.max(16, count * 2);
+                candidates = Arrays.copyOf(candidates, capacity);
+                candidateTypes = Arrays.copyOf(candidateTypes, capacity);
+            }
+            candidates[count] = entity;
+            candidateTypes[count++] = type;
         }
-        candidates = selected.isEmpty() ? List.of() : List.copyOf(selected);
+        if (count < candidateCount) {
+            Arrays.fill(candidates, count, candidateCount, null);
+            Arrays.fill(candidateTypes, count, candidateCount, null);
+        }
+        candidateCount = count;
+    }
+
+    private void clearCandidates() {
+        Arrays.fill(candidates, 0, candidateCount, null);
+        Arrays.fill(candidateTypes, 0, candidateCount, null);
+        candidateCount = 0;
+    }
+
+    private void updateRange(Minecraft client) {
+        int x = (int) Math.floor(client.player.getX() / 16);
+        int z = (int) Math.floor(client.player.getZ() / 16);
+        int chunks = client.options.getEffectiveRenderDistance();
+        if (range == null || x != rangeChunkX || z != rangeChunkZ || chunks != rangeChunks) {
+            range = TracerRange.aroundChunk(x, z, chunks);
+            rangeChunkX = x;
+            rangeChunkZ = z;
+            rangeChunks = chunks;
+        }
     }
 
     private static TracerTarget typeOf(Entity entity) {
@@ -68,24 +110,25 @@ final class VexTracerRenderer {
     void extract(LevelExtractionContext context) {
         context.levelState().setData(LINES, EMPTY);
         Minecraft client = Minecraft.getInstance();
-        if (!config.enabled() || !config.hasTargets() || candidates.isEmpty() || context.level() != cachedLevel
+        if (!config.enabled() || !config.hasTargets() || candidateCount == 0 || context.level() != cachedLevel
                 || client.player == null || client.gui.hud.isHidden()) return;
         var camera = context.camera().position();
         look.set(0, 0, -1).rotate(context.camera().rotation());
         float ox = look.x * 2, oy = look.y * 2, oz = look.z * 2;
         float partial = context.deltaTracker().getGameTimeDeltaPartialTick(false);
-        int chunks = client.options.getEffectiveRenderDistance();
-        float[] targets = new float[candidates.size() * STRIDE];
-        int[] colors = new int[candidates.size()];
+        updateRange(client);
+        float[] targets = new float[candidateCount * STRIDE];
+        int[] colors = new int[candidateCount];
         int count = 0;
-        for (Entity entity : candidates) {
+        for (int candidate = 0; candidate < candidateCount; candidate++) {
+            Entity entity = candidates[candidate];
             if (!entity.isAlive() || entity.isRemoved()) continue;
-            TracerTarget type = typeOf(entity);
+            TracerTarget type = candidateTypes[candidate];
             if (type == null || !config.isSelected(type)) continue;
             double px = Mth.lerp(partial, entity.xOld, entity.getX());
             double py = Mth.lerp(partial, entity.yOld, entity.getY());
             double pz = Mth.lerp(partial, entity.zOld, entity.getZ());
-            if (!TracerRange.contains(camera.x, camera.z, px, pz, chunks)) continue;
+            if (!range.contains(px, pz)) continue;
             var box = entity.getBoundingBox();
             double dx = px - entity.getX() - camera.x, dy = py - entity.getY() - camera.y, dz = pz - entity.getZ() - camera.z;
             int at = count * STRIDE;
