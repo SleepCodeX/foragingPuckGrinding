@@ -288,7 +288,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
             var buttons=client.gui.screen().children().stream()
                     .filter(net.minecraft.client.gui.components.Button.class::isInstance)
                     .map(net.minecraft.client.gui.components.Button.class::cast).filter(b->b.visible).toList();
-            if(buttons.size()!=TracerTarget.values().length*3+4)
+            if(buttons.size()!=TracerTarget.values().length*3+5)
                 throw new AssertionError("The normal menu must show every tracker and color control without scrolling");
         });
     }
@@ -317,7 +317,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     private static void requireKeyboardReachability(ClientGameTestContext context) {
         HashSet<String> reached=new HashSet<>();
         context.runOnClient(client -> client.gui.screen().setFocused(null));
-        int controls=TracerTarget.values().length*3+4;
+        int controls=TracerTarget.values().length*3+5;
         for(int i=0;i<controls;i++) {
             context.getInput().pressKey(GLFW.GLFW_KEY_TAB);
             context.runOnClient(client -> {

@@ -24,7 +24,7 @@ public final class VexTracerClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private final TracerConfig config = new TracerConfig(
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".properties"));
-    private boolean menuRequested;
+    private boolean menuRequested, customRequested;
 
     @Override
     public void onInitializeClient() {
@@ -36,17 +36,22 @@ public final class VexTracerClient implements ClientModInitializer {
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "tracers"));
         KeyMapping toggle = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.foragingpuckgrinding.toggle_vex_tracers", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, category));
+        KeyMapping settings = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.foragingpuckgrinding.settings", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, category));
         // Register the tint pipeline at startup instead of mid-frame when the first glow appears.
         java.util.Objects.requireNonNull(Highlight.FILL);
         VexTracerRenderer renderer = new VexTracerRenderer(config);
         TrackedOutlines.install(renderer);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggle.consumeClick()) setEnabled(client, !config.enabled());
+            while (settings.consumeClick()) requestMenu();
             if (menuRequested) {
                 menuRequested = false;
-                client.gui.setScreen(new TracerSettingsScreen(config, toggle,
+                var screen = new TracerSettingsScreen(config, toggle,
                         enabled -> setEnabled(client, enabled), targets -> setTargets(client, targets),
-                        (target, glow, color) -> setColor(client, target, glow, color)));
+                        (target, glow, color) -> setColor(client, target, glow, color));
+                if (customRequested) screen.openCustom(); else client.gui.setScreen(screen);
+                customRequested = false;
             }
             renderer.tick(client);
         });
@@ -59,6 +64,7 @@ public final class VexTracerClient implements ClientModInitializer {
                         .then(literal("menu").executes(context -> requestMenu())));
             for (String name : new String[] {"huntinghelper", "hh"}) {
                 dispatcher.register(literal(name).executes(context -> requestMenu())
+                        .then(literal("custom").executes(context -> { requestMenu(); customRequested = true; return 1; }))
                         .then(literal("debug").executes(context -> toggleDebug())));
             }
         });

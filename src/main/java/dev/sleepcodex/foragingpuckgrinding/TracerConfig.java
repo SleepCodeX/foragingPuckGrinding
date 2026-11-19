@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 /** Master visibility and independent mob choices, with migration from the older selector. */
 public final class TracerConfig {
+    private CustomRules custom = new CustomRules(java.util.List.of());
     private final Path path;
     private boolean enabled;
     private EnumSet<TracerTarget> targets = EnumSet.of(TracerTarget.VEX);
@@ -38,11 +39,13 @@ public final class TracerConfig {
         enabled = false;
         targets = EnumSet.of(TracerTarget.VEX);
         resetColors();
+        custom = new CustomRules(java.util.List.of());
         if (!Files.exists(path)) return;
         Properties properties = new Properties();
         try (Reader reader = Files.newBufferedReader(path)) {
             properties.load(reader);
         }
+        custom = CustomRules.read(properties);
         enabled = Boolean.parseBoolean(properties.getProperty("enabled", "false").trim());
         for (TracerTarget target : TracerTarget.values()) {
             OverlayColor line = OverlayColor.parse(properties.getProperty("line." + target.name()), OverlayColor.defaultFor(target));
@@ -76,7 +79,7 @@ public final class TracerConfig {
     }
 
     public boolean isSelected(TracerTarget target) { return targets.contains(target); }
-    public boolean hasTargets() { return !targets.isEmpty(); }
+    public boolean hasTargets() { return !targets.isEmpty() || custom.hasNames() || custom.hasTypes(); }
     public EnumSet<TracerTarget> selectedTargets() { return targets.clone(); }
 
     public OverlayColor lineChoice(TracerTarget target) { return lines.get(target); }
@@ -100,11 +103,54 @@ public final class TracerConfig {
         save();
     }
 
-    private void save() throws IOException {
+    CustomRules custom() { return custom; }
+
+    void putCustom(CustomTracker rule) throws IOException {
+        var next = new java.util.ArrayList<>(custom.all);
+        for (int i = 0; i < next.size(); i++) {
+            if (next.get(i).id().equals(rule.id())) {
+                next.set(i, rule);
+                storeCustom(next);
+                return;
+            }
+        }
+        next.add(rule);
+        storeCustom(next);
+    }
+
+    void removeCustom(java.util.UUID id) throws IOException {
+        var next = new java.util.ArrayList<>(custom.all);
+        if (next.removeIf(rule -> rule.id().equals(id))) storeCustom(next);
+    }
+
+    private void storeCustom(java.util.List<CustomTracker> rules) throws IOException {
+        var next = new CustomRules(rules);
+        save(next);
+        custom = next;
+    }
+
+    boolean isSelected(TrackingRule rule) {
+        return rule instanceof TracerTarget preset ? isSelected(preset) : custom.current((CustomTracker) rule);
+    }
+
+    int lineColor(TrackingRule rule) {
+        return rule instanceof TracerTarget preset ? lineColor(preset) : ((CustomTracker) rule).line().argb();
+    }
+
+    int glowColor(TrackingRule rule) {
+        if (rule instanceof TracerTarget preset) return glowColor(preset);
+        var tracker = (CustomTracker) rule;
+        return (tracker.glow() == OverlayColor.MATCH ? tracker.line() : tracker.glow()).argb();
+    }
+
+    private void save() throws IOException { save(custom); }
+
+    private void save(CustomRules savedCustom) throws IOException {
         Files.createDirectories(path.toAbsolutePath().getParent());
         Path temporary = Files.createTempFile(path.toAbsolutePath().getParent(), "vex-tracer-", ".tmp");
         try {
             Properties properties = new Properties();
+            savedCustom.write(properties);
             properties.setProperty("enabled", Boolean.toString(enabled));
             properties.setProperty("targets", targets.stream().map(Enum::name).collect(Collectors.joining(",")));
             for (TracerTarget target : TracerTarget.values()) {

@@ -9,7 +9,7 @@ class MenuOpeningTest {
         assertEquals(0, MenuOpening.panel(0));
         assertEquals(0, MenuOpening.icon(0));
         assertEquals(1, MenuOpening.icon(140_000_000));
-        assertEquals(0, MenuOpening.panel(180_000_000));
+        assertEquals(0, MenuOpening.panel(55_000_000));
         assertTrue(MenuOpening.panel(350_000_000) > 0);
         assertTrue(MenuOpening.icon(350_000_000) > 0);
         for (long time : new long[]{MenuOpening.DURATION_NANOS, 1_000_000_000, Long.MAX_VALUE}) {

@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Each mob has one stable selection key and the same color for its line and box. */
-public enum TracerTarget {
+public enum TracerTarget implements TrackingRule {
     VEX("Vex", 0xFFCC55FF),
     BLUE_JAY("Blue Jay", 0xFF45D9FF),
     HIVE_THIEF("Hivethief", 0xFFFFC655),
