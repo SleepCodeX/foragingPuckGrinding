@@ -1,6 +1,13 @@
 # Hunting Helper - Unreleased
 
-- **Sparkling Mutuals is now Hunting Helper source.** The 4.3.7 suite is compiled into Hunting Helper instead of being nested as a separate JAR. Features, `/sm` commands and `config/sparkling-mutuals` settings are unchanged. A standalone Sparkling Mutuals JAR in `mods` is now reported as a conflict. [Upstream source and local changes](https://github.com/SleepCodeX/foragingPuckGrinding/blob/main/docs/SM-UPSTREAM.md)
+- **Sparkling Mutuals is now Hunting Helper source.** The 4.3.7 suite is compiled into Hunting Helper instead of being nested as a separate JAR. `/sm` commands and `config/sparkling-mutuals` settings are unchanged. A standalone Sparkling Mutuals JAR in `mods` is now reported as a conflict. [Upstream source and local changes](https://github.com/SleepCodeX/foragingPuckGrinding/blob/main/docs/SM-UPSTREAM.md)
+- **One Safari mod.** The field journal's CritterMod tools moved into Sparkling Mutuals and count from its run ledger: Hunter trades (box, waypoints, party sharing, retirement), Hideonwall perches, recatch pins, Troodon walls, capsule attempts, who caught what, shard value and encounter broadcasts. Duplicates (progress panel, encounter banners, birdfeeder and sparkling alerts, darkness, mound and nest tracking, history) now use SM's versions. `/cm`, `/ct`, `/critters` and `/hh journal` are gone; `/hh run` opens the run report.
+- **Missing in this area.** A second HUD inside Safari areas lists the current area's missing species with "N left". Quota species read "Gazer 2/4"; **Uniques only** (off by default) ticks them after one catch. **Everything except Macaw done!** and **Everything Done!** follow the same count.
+- **Floor-drop filter.** "Quest items only" and "Hide collected quest items" (both off) under ESP → Floor drops. Items an active Hunter trade wants stay highlighted.
+- **Hunting Helper look everywhere.** `/hh`, `/sm` and the HUD editor open SM's settings in Hunting Helper's matte charcoal screen, built from SM's settings metadata. SM's HUDs, history, banners and chat accents use the same palette. The update check follows Hunting Helper releases.
+- **Party prefixes in any case.** "party >" and "PARTY >" lines are read like "Party >" for shared trades and SM's party commands.
+- **Imports.** Settings and run history from standalone CritterMod (`config/crittermod*.json`) and from the 1.6 field journal are merged once into the new settings and SM's history. With CritterMod also installed, Hunting Helper's trade box, marks and broadcasts stay off.
+- The full-clear "remaining" override of SM's panels was removed; SM's own panels show again and the second HUD covers per-area counts.
 
 # Hunting Helper 1.6.1
 

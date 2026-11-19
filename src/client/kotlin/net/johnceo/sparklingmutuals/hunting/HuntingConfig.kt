@@ -47,11 +47,17 @@ object HuntingConfig {
     var hideonwallFoundColor = AppearanceConfig.color(0x55FF55)
     var recatchMarks = false
     var recatchColor = AppearanceConfig.color(0xFFFF55)
+    var troodonWallMarks = false
+    var troodonWallColor = AppearanceConfig.color(0x55AAFF)
+    var troodonWallCount = true
     // Encounter broadcasts that Sparkling Mutuals has no party message for
     var gemzieAudience = Audience.NOBODY
     var wumpaAudience = Audience.NOBODY
     var doomspiralAudience = Audience.NOBODY
     var macawAudience = Audience.NOBODY
+    // Floor-drop filter (QuestDropFilter)
+    var questItemsOnly = false
+    var hideCollectedQuestItems = false
     // Shard value
     var subtractTax = true
     // One-time migrations
@@ -88,9 +94,12 @@ object HuntingConfig {
         hideonwallColor = color("hideonwallColor", AppearanceConfig.color(0xAA55FF))
         hideonwallFoundColor = color("hideonwallFoundColor", AppearanceConfig.color(0x55FF55))
         recatchMarks = bool("recatchMarks", false); recatchColor = color("recatchColor", AppearanceConfig.color(0xFFFF55))
+        troodonWallMarks = bool("troodonWallMarks", false); troodonWallColor = color("troodonWallColor", AppearanceConfig.color(0x55AAFF))
+        troodonWallCount = bool("troodonWallCount", true)
         gemzieAudience = audience("gemzieAudience"); wumpaAudience = audience("wumpaAudience")
         doomspiralAudience = audience("doomspiralAudience"); macawAudience = audience("macawAudience")
         subtractTax = bool("subtractTax", true)
+        questItemsOnly = bool("questItemsOnly", false); hideCollectedQuestItems = bool("hideCollectedQuestItems", false)
         critterModSettingsImported = bool("migrated.critterModSettings", false)
         critterModRunsImported = bool("migrated.critterModRuns", false)
         journalSettingsImported = bool("migrated.journalSettings", false)
@@ -106,9 +115,11 @@ object HuntingConfig {
         put("acceptSharedTrades", acceptSharedTrades); put("tradeAudience", tradeAudience.name); put("tradeColor", tradeColor)
         put("hideonwallMarks", hideonwallMarks); put("hideonwallColor", hideonwallColor); put("hideonwallFoundColor", hideonwallFoundColor)
         put("recatchMarks", recatchMarks); put("recatchColor", recatchColor)
+        put("troodonWallMarks", troodonWallMarks); put("troodonWallColor", troodonWallColor); put("troodonWallCount", troodonWallCount)
         put("gemzieAudience", gemzieAudience.name); put("wumpaAudience", wumpaAudience.name)
         put("doomspiralAudience", doomspiralAudience.name); put("macawAudience", macawAudience.name)
         put("subtractTax", subtractTax)
+        put("questItemsOnly", questItemsOnly); put("hideCollectedQuestItems", hideCollectedQuestItems)
         put("migrated.critterModSettings", critterModSettingsImported); put("migrated.critterModRuns", critterModRunsImported)
         put("migrated.journalSettings", journalSettingsImported); put("migrated.journalRuns", journalRunsImported)
         put("migrated.theme", themeApplied)

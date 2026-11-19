@@ -107,8 +107,8 @@ enum class SafariHud(private val defaultLabel: String, val layout: HudLayout) {
     HUNTING_BOX_VALUE("Hunting Box value", HudLayout(.35f,.1f)),
     DEVELOPER("Safari developer", HudLayout(.34f, .24f)),
     // Hunting Helper: the CritterMod-style second HUD and the Hunter trades box (hunting/HuntingHuds.kt).
-    HUNTING_MISSING("Missing in this area", HudLayout(.20f, .011f, .6f, 640f, 360f)),
-    HUNTING_TRADES("Hunter trades", HudLayout(.014f, .62f, .6f, 640f, 360f));
+    HUNTING_MISSING("Missing in this area", HudLayout(.235f, .011f, .6f, 640f, 360f)),
+    HUNTING_TRADES("Hunter trades", HudLayout(.014f, .53f, .6f, 640f, 360f));
     val label get() = if (this == MISSING && net.johnceo.sparklingmutuals.config.ConfigManager.sparklingMode)
         "Unchecked critters" else defaultLabel
     companion object {

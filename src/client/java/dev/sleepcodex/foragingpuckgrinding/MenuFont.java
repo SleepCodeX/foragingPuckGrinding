@@ -29,11 +29,24 @@ final class MenuFont {
         Glyph glyph=ch<GLYPHS.length?GLYPHS[ch]:EXTRA.get(ch);
         return glyph==null?GLYPHS[63]:glyph;
     }
+    /** Characters the atlas lacks are drawn as their nearest bundled glyph rather than as "?". */
+    static String normalize(String text){
+        StringBuilder out=null;
+        for(int i=0;i<text.length();i++){
+            char ch=text.charAt(i);
+            char mapped=switch((int)ch){case 0xB7->(char)0x2022;case 0x2013,0x2014,0x2212->'-';case 0x2018,0x2019->(char)39;case 0x201C,0x201D->'"';case 0x203A->'>';case 0x2039->'<';case 0xA0->' ';default->ch;};
+            if(mapped!=ch&&out==null)out=new StringBuilder(text.substring(0,i));
+            if(out!=null)out.append(mapped);
+        }
+        return out==null?text:out.toString();
+    }
     static double width(String text){
+        text=normalize(text);
         double w=0;for(int i=0;i<text.length();) {int ch=text.codePointAt(i);i+=Character.charCount(ch);w+=metric(ch).advance*9/64;}
         return w;
     }
     static void text(GuiGraphicsExtractor g,String text,double x,double y,double scale,int color){
+        text=normalize(text);
         color=(color&0xFFFFFF)|((int)Math.round((color>>>24)*opacity)<<24);
         if((color>>>24)==0)return;
         double pixel=9/64.*scale;

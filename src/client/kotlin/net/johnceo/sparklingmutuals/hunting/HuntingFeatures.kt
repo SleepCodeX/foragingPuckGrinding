@@ -49,6 +49,7 @@ object HuntingFeatures {
         TraderWatch.reset()
         HideonwallSpots.reset()
         RecatchSpots.reset()
+        TroodonWalls.reset()
         HuntingBroadcasts.reset()
     }
 
@@ -56,12 +57,13 @@ object HuntingFeatures {
         val current = SafariTracking.ledger.current
         // A new run starts the run-scoped helpers afresh, as CritterMod's session start did; leaving keeps them.
         if (current != null && current !== run) {
-            if (run != null) { TraderWatch.reset(); HideonwallSpots.reset(); RecatchSpots.reset() }
+            if (run != null) { TraderWatch.reset(); HideonwallSpots.reset(); RecatchSpots.reset(); TroodonWalls.reset() }
             run = current
         }
         CritterEntities.tick()
         HideonwallSpots.tick()
         RecatchSpots.tick()
+        TroodonWalls.tick()
         TraderWatch.tick()
         if (++ticks % 10 == 0) {
             HuntingBroadcasts.tick(current)

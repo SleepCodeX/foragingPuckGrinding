@@ -57,10 +57,16 @@ final class RunReportScreen extends TrackerPage {
         button("Back", left + 15, footer, 61, 23, Tone.NORMAL, this::onClose);
     }
 
-    private static double price(String species) {
-        Double quote = BazaarPrices.INSTANCE.cachedShardPrice(species, ConfigManager.INSTANCE.getRunCoinsInstaSell());
+    private static double price(String species, boolean insta) {
+        Double quote = BazaarPrices.INSTANCE.cachedShardPrice(species, insta);
         if (quote == null) return 0;
         return HuntingConfig.INSTANCE.getSubtractTax() ? quote * TAX : quote;
+    }
+    private static double price(String species) { return price(species, ConfigManager.INSTANCE.getRunCoinsInstaSell()); }
+    private static long value(Map<String, Integer> shards, boolean insta) {
+        long total = 0;
+        for (var entry : shards.entrySet()) total += Math.round(price(entry.getKey(), insta) * entry.getValue());
+        return total;
     }
 
     @Override void content(GuiGraphicsExtractor g, MenuCanvas c, int mx, int my, float delta) {
@@ -108,12 +114,12 @@ final class RunReportScreen extends TrackerPage {
             MenuFont.text(g, value, right - MenuFont.width(value) * scale, y, scale, 0xFFE6D08A);
             y += step;
         }
-        long total = 0;
-        boolean priced = BazaarPrices.INSTANCE.ready();
-        for (var entry : shards.entrySet()) total += Math.round(price(entry.getKey()) * entry.getValue());
-        String side = ConfigManager.INSTANCE.getRunCoinsInstaSell() ? "instant sell" : "sell offer";
-        String summary = !priced ? "Run value: loading Bazaar prices…"
-                : "Run value " + BazaarPrices.INSTANCE.format(total) + "  ·  " + side + (HuntingConfig.INSTANCE.getSubtractTax() ? ", after tax" : "");
+        boolean insta = ConfigManager.INSTANCE.getRunCoinsInstaSell();
+        long total = value(shards, insta), other = value(shards, !insta);
+        String summary = !BazaarPrices.INSTANCE.ready() ? "Run value: loading Bazaar prices…"
+                : "Run value " + BazaarPrices.INSTANCE.format(total) + " " + (insta ? "instant sell" : "as sell offers")
+                + "  ·  " + BazaarPrices.INSTANCE.format(other) + " " + (insta ? "as sell offers" : "instant sell")
+                + (HuntingConfig.INSTANCE.getSubtractTax() ? "  ·  after tax" : "");
         MenuFont.text(g, summary, left + 86, footer + 7, .78, MenuTheme.MUTED);
     }
 }

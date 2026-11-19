@@ -138,6 +138,6 @@ Sparkling Mutuals 4.3.7 is compiled from source in `src/client/kotlin` and `src/
 
 The native packaged-client test opens Safari settings through Hunting Helper and returns to the original menu. It runs with only the distributed Hunting Helper JAR and the game-test harness. Live party synchronization and external services require an eligible session and peers. See [Sparkling Mutuals source](https://github.com/johnceoskyblock/sparkling-mutuals/tree/2b361320476d7e6e6a42390d4b1c3b7ab5e20731) and [NOTICE](../NOTICE).
 
-## Safari field journal
+## Safari hunting features
 
-The Minecraft 26.2 journal is compiled directly into the client source set. The packaged test loads Fabric API from Hunting Helper, opens its screens, exercises filtered chat, records a trade and removes it on completion. It reads the bundled Safari quote snapshot for both order-book prices. Each release now publishes native screenshots from the same production test as the distributed JAR. [Journal controls and upstream attribution](FIELD-JOURNAL.md)
+The CritterMod tools are Sparkling Mutuals code in `net.johnceo.sparklingmutuals.hunting` (Kotlin in `src/client/kotlin`, ported Java world logic in `src/client/java/net`). They read SM's run ledger and add no second catch parser. `SafariSettingsScreen` renders SM's `SettingsCatalog` with Hunting Helper's widgets and is installed through `SettingsScreens.factory`. `HuntingGameChecks` drives the second HUD (Gazer 2/4, uniques only), canceled chat, trades with a lower-case party prefix, recatch pins, the run announcements, the floor-drop trade exception, the run report, the HUD editor, `/hh` sections and `/sm`, and captures screenshots. [Features](HUNTING.md) · [SM changes](SM-UPSTREAM.md)

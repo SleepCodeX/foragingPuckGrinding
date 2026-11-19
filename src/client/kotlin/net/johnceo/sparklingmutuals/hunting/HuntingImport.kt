@@ -63,6 +63,9 @@ object HuntingImport {
             set(d.bool("highlightTrades")) { HuntingConfig.tradeMarks = it }
             set(d.bool("highlightHideonwalls")) { HuntingConfig.hideonwallMarks = it }
             set(d.bool("recatchHelper")) { HuntingConfig.recatchMarks = it }
+            set(d.bool("highlightTroodonWalls")) { HuntingConfig.troodonWallMarks = it }
+            set(d.bool("showTroodonWalls")) { HuntingConfig.troodonWallCount = it }
+            set(color(d.string("troodonWallColour"), HuntingConfig.troodonWallColor)) { HuntingConfig.troodonWallColor = it }
             set(color(d.string("tradeColour"), HuntingConfig.tradeColor)) { HuntingConfig.tradeColor = it }
             set(color(d.string("hideonwallColour"), HuntingConfig.hideonwallColor)) { HuntingConfig.hideonwallColor = it }
             set(color(d.string("hideonwallFoundColour"), HuntingConfig.hideonwallFoundColor)) { HuntingConfig.hideonwallFoundColor = it }

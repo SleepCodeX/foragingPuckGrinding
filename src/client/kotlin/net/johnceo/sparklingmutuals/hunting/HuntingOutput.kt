@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
  */
 object HuntingOutput {
     private val logger = LoggerFactory.getLogger("hunting-helper")
-    @JvmStatic val critterModLoaded: Boolean by lazy { FabricLoader.getInstance().isModLoaded("crittermod") }
+    @JvmStatic val critterModLoaded: Boolean by lazy { runCatching { FabricLoader.getInstance().isModLoaded("crittermod") }.getOrDefault(false) }
 
     fun warnIfDoubled() {
         if (critterModLoaded) logger.warn("CritterMod is also installed: Hunting Helper's Hunter trade HUD, trade/perch/recatch marks " +
@@ -25,6 +25,7 @@ object HuntingOutput {
     @JvmStatic fun tradeMarks() = !critterModLoaded && HuntingConfig.tradeMarks
     @JvmStatic fun hideonwallMarks() = !critterModLoaded && HuntingConfig.hideonwallMarks
     @JvmStatic fun recatchMarks() = !critterModLoaded && HuntingConfig.recatchMarks
+    @JvmStatic fun troodonWallMarks() = !critterModLoaded && HuntingConfig.troodonWallMarks
 
     /** `[HH] ` in the Sparkling Mutuals chat accent. */
     @JvmStatic fun prefix(): MutableComponent = Component.literal("[HH] ").withStyle { it.withColor(SafariTheme.CHAT_ACCENT) }

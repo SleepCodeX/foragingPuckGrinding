@@ -4,6 +4,11 @@ import net.johnceo.sparklingmutuals.safari.resources.FloorDropType
 
 /** Independent of objective completion; global ESP visibility controls still apply. */
 class FloorDropToggleSettings {
+    // Hunting Helper: quest-item filter (hunting/QuestDropFilter.kt). Items an active Hunter trade wants stay highlighted.
+    @JvmField @ConfigOption(name = "Quest items only", desc = "Highlight only gems, bird food, incense, coins and the Icebreaker.")
+    @ConfigEditorBoolean var questOnly = net.johnceo.sparklingmutuals.hunting.HuntingConfig.questItemsOnly
+    @JvmField @ConfigOption(name = "Hide collected quest items", desc = "Stop once this run has collected what its objectives need (one of each gem).")
+    @ConfigEditorBoolean var hideCollected = net.johnceo.sparklingmutuals.hunting.HuntingConfig.hideCollectedQuestItems
     @JvmField @ConfigOption(name = "Lime Gem", desc = "")
     @ConfigEditorBoolean var lime = SafariEspConfig.floorAlwaysOn(FloorDropType.LIME)
     @JvmField @ConfigOption(name = "Purple Gem", desc = "")
@@ -26,10 +31,10 @@ class FloorDropToggleSettings {
     @ConfigEditorBoolean var rewards = SafariEspConfig.floorAlwaysOn(FloorDropType.GENERIC)
 
     fun apply(): Boolean {
-        var changed = false
+        var changed = net.johnceo.sparklingmutuals.hunting.QuestDropFilter.apply(questOnly, hideCollected) // Hunting Helper
         javaClass.fields.forEach { field ->
             val label = field.getAnnotation(ConfigOption::class.java)?.name ?: return@forEach
-            val type = FloorDropType.entries.single { it.label == label }
+            val type = FloorDropType.entries.singleOrNull { it.label == label } ?: return@forEach // Hunting Helper: was single
             val enabled = field.getBoolean(this)
             if (SafariEspConfig.floorAlwaysOnToggles.put(type, enabled) != enabled) changed = true
         }

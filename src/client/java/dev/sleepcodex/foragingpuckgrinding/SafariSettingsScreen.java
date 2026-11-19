@@ -336,7 +336,9 @@ final class SafariSettingsScreen extends Screen {
         footerButton(g, c, done, true, px, py);
         if (blocked) { hits.clear(); drawModal(g, c, mx, my); }
         search.visible = !blocked;
-        super.extractRenderState(g, mx, my, delta);
+        // Buttons are drawn above in Hunting Helper's style; only the text fields use vanilla rendering.
+        if (search.visible) search.extractRenderState(g, mx, my, delta);
+        if (editor != null) editor.extractRenderState(g, mx, my, delta);
     }
 
     private void footerButton(GuiGraphicsExtractor g, MenuCanvas c, Button b, boolean primary, int mx, int my) {
@@ -619,6 +621,7 @@ final class SafariSettingsScreen extends Screen {
             if ((key == 257 || key == 335) && editor != null) { saveEditor(); return true; }
             return super.keyPressed(event);
         }
+        if (key == 256) { onClose(); return true; }
         if (key == 266 || key == 267) { scroll = Math.clamp(scroll + (key == 266 ? -1 : 1) * (bodyBottom - bodyTop - 20), 0, maxScroll()); return true; }
         return super.keyPressed(event);
     }

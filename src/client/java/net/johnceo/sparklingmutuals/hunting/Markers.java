@@ -60,6 +60,13 @@ public final class Markers {
 			}
 		}
 
+		if (HuntingOutput.troodonWallMarks() && biome == SafariBiome.ICY) {
+			for (TroodonWalls.Wall wall : TroodonWalls.walls()) {
+				if (wall.state() != TroodonWalls.State.BROKEN)
+					markers.add(block(wall.pos(), "Troodon wall", colour(config.getTroodonWallColor())));
+			}
+		}
+
 		// Not gated on the biome: it is pinned by a capsule you threw, wherever you were standing.
 		if (HuntingOutput.recatchMarks() && RecatchSpots.pinned() != null) {
 			markers.add(new Marker(RecatchSpots.pinned(), RecatchSpots.pinnedCritter().getName(),

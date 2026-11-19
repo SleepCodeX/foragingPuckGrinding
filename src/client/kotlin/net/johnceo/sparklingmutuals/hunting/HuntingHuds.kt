@@ -62,8 +62,17 @@ object HuntingHuds {
         }
     }
 
-    fun missingPanel(run: SafariRun?, biome: SafariBiome): HudPanel = missingPanel(biome, HuntingCompletion.of(run),
-        HuntingConfig.uniquesOnly, if (HuntingConfig.missingNearby) nearby() else emptyMap()) { HuntingRuns.attempts(run, it) }
+    fun missingPanel(run: SafariRun?, biome: SafariBiome): HudPanel {
+        val panel = missingPanel(biome, HuntingCompletion.of(run), HuntingConfig.uniquesOnly,
+            if (HuntingConfig.missingNearby) nearby() else emptyMap()) { HuntingRuns.attempts(run, it) }
+        if (biome != SafariBiome.ICY || !HuntingConfig.troodonWallCount) return panel
+        val walls = TroodonWalls.walls().takeIf { it.isNotEmpty() } ?: return panel
+        val intact = walls.count { it.state() == TroodonWalls.State.INTACT }
+        val unknown = walls.count { it.state() == TroodonWalls.State.UNKNOWN }
+        val row = if (intact == 0 && unknown == 0) HudRow("Troodon walls all broken", null, DONE, DONE, icon = null)
+            else HudRow("Troodon walls to break", intact.toString() + if (unknown > 0) " (+$unknown?)" else "", 0xFFFFAA00.toInt(), DIM, icon = null)
+        return HudPanel(panel.title, panel.titleColor, panel.rows + HudRow(icon = null) + row, panel.titleIcon)
+    }
 
     /** Trades found this run, nearest first; null when there are none. */
     fun tradesPanel(trades: List<TraderWatch.Trade> = TraderWatch.found()): HudPanel? {

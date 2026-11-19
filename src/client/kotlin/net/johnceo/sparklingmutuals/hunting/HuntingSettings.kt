@@ -55,6 +55,8 @@ class HuntingSettings {
         @ConfigEditorBoolean var uniquesOnly = HuntingConfig.uniquesOnly
         @JvmField @ConfigOption(name = "Nearby counts", desc = "\"2 near\" for critters in line of sight.")
         @ConfigEditorBoolean var nearby = HuntingConfig.missingNearby
+        @JvmField @ConfigOption(name = "Troodon walls left", desc = "In Icy, the breakable walls still standing.")
+        @ConfigEditorBoolean var troodonWalls = HuntingConfig.troodonWallCount
         @JvmField @ConfigOption(name = "Appearance", desc = "") @Accordion
         var appearance = PanelAppearanceSettings(AppearanceConfig.panels.getValue("hunting_missing")) { AppearanceConfig.selectedHex }
         @JvmField @ConfigOption(name = "Position and size", desc = "") @ConfigEditorButton(buttonText = "Edit HUDs") val placement = placement()
@@ -86,6 +88,9 @@ class HuntingSettings {
         @JvmField @ConfigOption(name = "Recatch pins", desc = "Where a critter was when your capsule hit it, until it is caught or runs off.")
         @ConfigEditorBoolean var recatch = HuntingConfig.recatchMarks
         @JvmField @ConfigOption(name = "Recatch color", desc = "") @ConfigEditorColour var recatchColor = HuntingConfig.recatchColor
+        @JvmField @ConfigOption(name = "Troodon walls", desc = "The three breakable Icy walls, until each is seen broken.")
+        @ConfigEditorBoolean var troodon = HuntingConfig.troodonWallMarks
+        @JvmField @ConfigOption(name = "Troodon wall color", desc = "") @ConfigEditorColour var troodonColor = HuntingConfig.troodonWallColor
     }
     class Broadcasts {
         @JvmField @ConfigOption(name = "Gemzie", desc = "") @ConfigEditorDropdown(values = ["Nobody", "Party", "All"]) var gemzie = HuntingConfig.gemzieAudience.ordinal
@@ -108,6 +113,8 @@ class HuntingSettings {
             hideonwallMarks = marks.hideonwall; hideonwallColor = color(marks.perchColor, hideonwallColor)
             hideonwallFoundColor = color(marks.foundColor, hideonwallFoundColor)
             recatchMarks = marks.recatch; recatchColor = color(marks.recatchColor, recatchColor)
+            troodonWallMarks = marks.troodon; troodonWallColor = color(marks.troodonColor, troodonWallColor)
+            troodonWallCount = this@HuntingSettings.missingHud.troodonWalls
             gemzieAudience = Audience.of(broadcasts.gemzie); wumpaAudience = Audience.of(broadcasts.wumpa)
             doomspiralAudience = Audience.of(broadcasts.doomspiral); macawAudience = Audience.of(broadcasts.macaw)
             subtractTax = this@HuntingSettings.subtractTax

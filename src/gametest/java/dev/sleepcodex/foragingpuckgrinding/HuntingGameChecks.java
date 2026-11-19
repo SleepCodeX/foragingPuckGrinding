@@ -142,6 +142,13 @@ final class HuntingGameChecks {
             visible("[NPC] Hunter Harry: Say, do you have a use for a Nozzlenose Shard? I found it lying around...");
             visible("[NPC] Hunter Harry: I'll give you it in exchange for a Yogi Berry!");
             require(TraderWatch.found().size() == 1, "Hunter dialogue lost");
+            // Floor-drop filter: the trade's Yogi Berry stays highlighted, rewards are filtered.
+            HuntingConfig.INSTANCE.setQuestItemsOnly(true);
+            HuntingConfig.INSTANCE.setHideCollectedQuestItems(true);
+            var drops = net.johnceo.sparklingmutuals.hunting.QuestDropFilter.INSTANCE;
+            require(Boolean.TRUE.equals(drops.decide(net.johnceo.sparklingmutuals.safari.resources.FloorDropType.BERRY)), "Trade item must stay highlighted");
+            require(Boolean.FALSE.equals(drops.decide(net.johnceo.sparklingmutuals.safari.resources.FloorDropType.GENERIC)), "Rewards must be filtered");
+            require(drops.decide(net.johnceo.sparklingmutuals.safari.resources.FloorDropType.LIME) == null, "Uncollected gem left to SM");
             visible("party > [VIP] Moss: Hunter Dennis (Icy -106 87 -7): Gimmiegold Shard for Purple Gem");
             visible("Party > [VIP] Moss: Hunter Dennis (Icy 999999999999 87 -7): Gimmiegold Shard for Purple Gem");
             require(TraderWatch.found().size() == 2 && TraderWatch.found().getLast().spot().x() == -106, "Shared trade lost or overwritten");
@@ -153,6 +160,10 @@ final class HuntingGameChecks {
             visible("You received a Nozzlenose Shard!");
             visible("PARTY > Moss: Trade taken: Gimmiegold Shard");
             require(TraderWatch.found().isEmpty(), "Taken trades were not retired");
+            require(net.johnceo.sparklingmutuals.hunting.QuestDropFilter.INSTANCE.decide(net.johnceo.sparklingmutuals.safari.resources.FloorDropType.BERRY) == null,
+                    "A taken trade no longer forces its item");
+            HuntingConfig.INSTANCE.setQuestItemsOnly(false);
+            HuntingConfig.INSTANCE.setHideCollectedQuestItems(false);
         });
 
         // Whole-run announcements, counted like the second HUD.
@@ -207,9 +218,10 @@ final class HuntingGameChecks {
         c.waitForScreen(RunReportScreen.class);
         c.clickScreenButton("Back");
         c.waitForScreen(HuntingHomeScreen.class);
-        c.getInput().pressKey(o -> o.keyChat);
-        c.getInput().typeChars("/sm");
-        c.getInput().pressKey(GLFW.GLFW_KEY_ENTER);
+        c.runOnClient(client -> client.gui.setScreen(null));
+        c.waitTicks(2);
+        // Fabric routes the command to the client dispatcher, as typing /sm does.
+        c.runOnClient(client -> client.player.connection.sendCommand("sm"));
         c.waitForScreen(SafariSettingsScreen.class);
         c.waitTicks(4);
         c.takeScreenshot("sm-command-hh-settings");
@@ -219,9 +231,9 @@ final class HuntingGameChecks {
         c.takeScreenshot("sm-settings-esp");
         c.clickScreenButton("Done");
         c.waitFor(client -> client.gui.screen() == null);
-        c.getInput().pressKey(o -> o.keyChat);
-        c.getInput().typeChars("/hh");
-        c.getInput().pressKey(GLFW.GLFW_KEY_ENTER);
+        c.waitTicks(2);
+        // Fabric routes the command to the client dispatcher, as typing /hh does.
+        c.runOnClient(client -> client.player.connection.sendCommand("hh"));
         c.waitForScreen(HuntingHomeScreen.class);
     }
 }

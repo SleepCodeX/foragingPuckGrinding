@@ -54,7 +54,7 @@ class SafariFeatureIntegrationTest {
             "modes.unique.hideCritters", "modes.unique.hideDrops", "modes.fullClear.hideCritters",
             "modes.fullClear.hideDrops", "modes.sparkling.hideCritters", "modes.sparkling.hideDrops",
             // Hunting Helper: opt-in hunting features (CritterMod defaults)
-            "hunting.missingHud.uniquesOnly", "hunting.marks.hideonwall", "hunting.marks.recatch")
+            "hunting.missingHud.uniquesOnly", "hunting.marks.hideonwall", "hunting.marks.recatch", "hunting.marks.troodon")
         val modes = setOf("modes.unique.enabled", "modes.fullClear.enabled", "modes.sparkling.enabled")
         assertAll(switches.filterKeys { it !in modes && !it.startsWith("banner.") }.map { (name,value) ->
             org.junit.jupiter.api.function.Executable {

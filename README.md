@@ -1,10 +1,10 @@
 # Hunting Helper
 
-One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, customize through-wall highlights, see which Safari creatures remain in each area, review Hunter offers and per-player field reports, or open the complete Sparkling Mutuals suite.
+One Fabric mod for hunting and Critter Safari in Hypixel SkyBlock. Open **`/hh`** to track mobs by name or type, customize through-wall highlights, and run the Critter Safari with the complete Sparkling Mutuals suite, extended with CritterMod's Hunter trades, marks and "Missing in this area" HUD, all in Hunting Helper's matte charcoal style.
 
 **Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+**
 
-[Download Hunting Helper 1.6.1](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/hunting-helper-1.6.1%2Bmc26.2.jar) · [In-game visual guide](docs/FIELD-JOURNAL.md)
+[Download Hunting Helper 1.6.1](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/hunting-helper-1.6.1%2Bmc26.2.jar) · [Safari hunting features](docs/HUNTING.md)
 
 ![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/menu-opening.gif)
 
@@ -33,34 +33,28 @@ Nametag matching ignores capitalization and Minecraft formatting. The tracker re
 - **All presets / Clear presets** controls the five hunting presets.
 - **`/hh debug`** toggles detection summaries in the game log.
 
-## Sparkling Mutuals Safari suite
+## Critter Safari (Sparkling Mutuals)
 
-**/hh → All Safari settings** opens the full Sparkling Mutuals 4.3.7 interface. Closing it takes you back to Hunting Helper. The dashboard also takes you directly to modes, critter highlights, HUDs, capture tools, party settings, contests, history, and SkyBlock helpers. Party sync, auto-entry, warping, history, achievements and Hunting Box valuation use the original implementation. The upstream **/sm** commands and saved settings are available.
+Sparkling Mutuals 4.3.7 is compiled into Hunting Helper and is the Safari backend: run tracking, HUDs, ESP, banners, party sync, auto-entry, warping, history, achievements and Hunting Box valuation are SM's own. Its settings open in Hunting Helper's style from **/hh** (Safari modes, Hunting & journal, Visuals & ESP, HUD layout, Alerts, Capture tools, Party & sync, Miria contests, Run history, SkyBlock helpers), from **/hh safari** and from **/sm**. Every SM setting is read from SM's own metadata, so new upstream settings show up without UI changes. SM's history and update screens use the same charcoal palette, and the update check follows Hunting Helper's releases.
 
-Install the Hunting Helper JAR on Fabric Loader. It includes Fabric API, Fabric Language Kotlin, the native field journal and the Sparkling Mutuals source. Sparkling Mutuals is compiled into Hunting Helper, so remove any standalone Sparkling Mutuals JAR from `mods` (the loader reports the conflict). Its `config/sparkling-mutuals` settings carry over. [Upstream source and local changes](docs/SM-UPSTREAM.md) The custom trackers and settings run locally. Party synchronization, live Bazaar/profile data and other online features use their respective services when active.
+Remove any standalone Sparkling Mutuals JAR from `mods` (the loader reports the conflict). `config/sparkling-mutuals` settings, history and PBs carry over. [Upstream source and local changes](docs/SM-UPSTREAM.md) · [Upstream feature guide](https://github.com/johnceoskyblock/sparkling-mutuals/tree/v4.3.7)
 
-![Bundled Safari settings](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/safari.png)
+## Hunting features
 
-[Upstream feature guide](https://github.com/johnceoskyblock/sparkling-mutuals/tree/v4.3.7) · [Upstream release](https://github.com/johnceoskyblock/sparkling-mutuals/releases/tag/v4.3.7)
+CritterMod's tools that SM did not have now live inside it and read SM's run ledger:
 
-## Full-clear tracking
+- **Missing in this area**: a second HUD inside Safari areas listing the current area's missing species with "N left". Quota species read **Gazer 2/4** until done; **Uniques only** ticks them after one catch.
+- **Everything except Macaw done!** and **Everything Done!** announcements, each with a switch.
+- **Hunter trades**: offers in a movable box and as waypoints, shared with party in CritterMod's format, retired when taken. Party prefixes are read in any capitalisation.
+- **World marks**: Hideonwall perches, recatch pins, Troodon walls.
+- **Floor-drop filter**: quest items only, hide quest items already collected, while items a Hunter trade wants stay highlighted.
+- **This run** (**/hh run**): who caught each species, capsules tried and escaped, shards and their value at both Bazaar prices.
+- Per-event party/all-chat broadcasts, and a one-time import of CritterMod and Hunting Helper 1.6 journal settings and run history.
 
-Use **/fc** for the run HUD. **Species caught** credits the first capture of each creature, including a teammate's loot share. **Fully Collected** counts species cleared under the Safari completion rules. The current biome's **remaining** panel lists every unfinished species, with partially caught creatures first. Three Gazer catches show **Gazer · 1 remaining**. Catch the fourth and the row clears.
-
-Open **/hh remaining** or **Field journal → Remaining critters** to inspect Forest, Cavern, Icy or Haunted from anywhere. Published spawn ranges narrow with loaded mobs and catch messages. Feeder, mound, wall and coin checks stay visible while their spawns are unresolved. The tracker also receives loot shares hidden from chat.
-
-![Haunted remaining list in the packaged Minecraft client](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/full-clear-remaining.png)
-
-## Safari field journal
-
-Open **/hh → Field journal** or **/hh journal**. The nearest Hunter offers appear in a movable panel. Taken trades clear automatically, including compatible offers and completions received through party chat. **World markers** adds recatch pins, eight Hideonwall perches, and the three Icy Troodon walls. **Open field report** shows who caught each species, capsule attempts, and the spread between selling the run's shards now and listing them.
-
-![Field journal settings in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.1/field-journal.png)
-
-[Field journal controls and in-game screenshots](docs/FIELD-JOURNAL.md)
+[Hunting features and settings](docs/HUNTING.md)
 
 ## Install
 
 Put the Hunting Helper JAR in `mods` on Minecraft 26.2 with Fabric Loader. Replace the previous Hunting Helper JAR when updating. Your saved trackers and colors carry over.
 
-[In-game screenshots](docs/FIELD-JOURNAL.md) · [Build and behavior](docs/DEVELOPMENT.md) · [Release downloads](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest)
+[Hunting features](docs/HUNTING.md) · [Build and behavior](docs/DEVELOPMENT.md) · [Release downloads](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest)
