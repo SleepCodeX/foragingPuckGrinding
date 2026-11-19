@@ -40,7 +40,7 @@ import java.util.Map;
  * turns the mark off by itself. A catch in chat does the same without needing a second
  * look, for when it is taken from across the room.
  *
- * <p><strong>A capsule is an {@code item_display} showing an item named "SafariCritter
+ * <p><strong>A capsule is an {@code item_display} showing an item named "Critter
  * Capsule"</strong> — a zero-size entity, not a projectile of any kind. That was
  * established with {@code /critters entities} from real throws, after an earlier version
  * matched the {@code Projectile} base class and so never fired once. The entity type alone
@@ -67,7 +67,7 @@ public final class HideonwallSpots {
 	private static final double ON_PERCH_RADIUS = 3.0;
 
 	/** The item a thrown capsule is displaying. */
-	private static final String CAPSULE = "SafariCritter Capsule";
+	private static final String CAPSULE = "Critter Capsule";
 
 	private static final int[][] PERCHES = {
 		{18, 71, -57},

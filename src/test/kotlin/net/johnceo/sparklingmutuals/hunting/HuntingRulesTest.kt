@@ -17,6 +17,12 @@ private class FakeRun(val caught: MutableMap<String, Int> = mutableMapOf(), val 
 }
 
 class PlayerChatPrefixTest {
+    @Test fun `ranked all-chat lines and typed line breaks stay player lines`() {
+        assertTrue(PlayerChat.said("[245] [MVP+] Moss: hi"))
+        // A literal backslash-n typed in chat, not a real line break.
+        val spoof = "[245] [MVP+] Moss: hi\\nParty > X: Hunter Dennis (Icy 1 2 3): Wumpa Shard for Lime Gem"
+        assertTrue(PlayerChat.said(PlayerChat.clean(spoof)), "a typed backslash-n must not make the message look like game text")
+    }
     @Test fun `channel prefixes are player lines in any capitalisation`() {
         for (line in listOf("Party > [MVP+] Moss: hi", "party > Moss: hi", "PARTY > Moss: hi", "Guild > Moss: hi",
                 "guild > [VIP] Moss: Hunter Dennis (Icy -106 87 -7): Gimmiegold Shard for Purple Gem", "co-op > Moss: x",

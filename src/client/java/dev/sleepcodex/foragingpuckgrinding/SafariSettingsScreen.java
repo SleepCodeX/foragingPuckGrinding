@@ -70,6 +70,7 @@ final class SafariSettingsScreen extends Screen {
     private int left, top, w, h, navRight, bodyTop, bodyBottom, bodyLeft, bodyRight, footer;
     private boolean targetApplied, contentDrawing;
     private String focusPath;
+    private String highlightPath;
     private long highlightUntil;
     private EditBox search, editor;
     private Button back, done;
@@ -355,13 +356,14 @@ final class SafariSettingsScreen extends Screen {
         if (focusPath != null) {
             int offset = 0;
             for (Card card : cards) { if (card.row().getPath().equals(focusPath)) { scroll = offset; break; } offset += card.height() + 6; }
-            focusPath = focusPath + "\u0000";
+            highlightPath = focusPath;
+            focusPath = null;
         }
         scroll = Math.clamp(scroll, 0, maxScroll());
         g.enableScissor(bodyLeft, bodyTop, bodyRight, bodyBottom);
         contentDrawing = true;
         int y = bodyTop - scroll;
-        String highlighted = highlightUntil > System.currentTimeMillis() && focusPath != null ? focusPath.replace("\u0000", "") : null;
+        String highlighted = highlightUntil > System.currentTimeMillis() ? highlightPath : null;
         try {
             for (Card card : cards) {
                 if (y + card.height() > bodyTop && y < bodyBottom) drawCard(g, c, card, y, mx, my, card.row().getPath().equals(highlighted));
@@ -427,7 +429,13 @@ final class SafariSettingsScreen extends Screen {
         if (button != null) {
             c.round(r.x(), r.y(), r.w(), r.h(), 5, over ? MenuTheme.CONTROL_HOVER : MenuTheme.CONTROL);
             centered(g, button.buttonText(), r, .8, MenuTheme.TEXT);
-            hit(r, () -> { settings.apply(false); if (value instanceof Runnable run) run.run(); else settings.executeRunnable(button.runnableId()); });
+            hit(r, () -> {
+                settings.apply(false);
+                if (value instanceof Runnable run) run.run(); else settings.executeRunnable(button.runnableId());
+                // A button may write config itself ("Import again"): reload it so the next tick and init() don't write the old values back.
+                settings = new SafariSettings();
+                rebuild();
+            });
         } else if (range != null) {
             float fraction = Math.clamp(((value instanceof Number n ? n.floatValue() : 0) - range.minValue()) / (range.maxValue() - range.minValue()), 0, 1);
             int trackX = r.x() + 30, trackW = r.w() - 34;

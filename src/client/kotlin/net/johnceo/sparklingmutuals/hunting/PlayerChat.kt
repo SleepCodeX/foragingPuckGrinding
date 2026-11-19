@@ -10,7 +10,7 @@ object PlayerChat {
     private val said = Regex(
         "^(?i:Party|Guild|Officer|Co-op|Coop|Team|Friend)\\s*>.*" +
             "|^(?i:From|To) .*" +
-            "|^(?:\\[(?!NPC]|MOB])[^]]+]\\s*)?\\w{1,16}: .*")
+            "|^(?:\\[(?!NPC]|MOB])[^]]+]\\s*)*\\w{1,16}: .*")
     /** `Party > [VIP] Someone: text`, any capitalisation of "Party"; groups are the sender and the text. */
     private val party = Regex("^(?i:Party)\\s*>\\s*(?:\\[[^]]+]\\s*)*(\\w{1,16}): (.+)$")
     private val formatting = Regex("§.")

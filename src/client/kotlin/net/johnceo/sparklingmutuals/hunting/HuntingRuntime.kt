@@ -67,6 +67,13 @@ object HuntingChat {
 
     fun receive(raw: String) {
         val run = SafariTracking.ledger.current
+        // A player can type a literal "\n": judge the whole message first, so typed text is never split into
+        // pieces that look like game or party lines (fake trades, waypoints, broadcasts).
+        val whole = PlayerChat.clean(raw)
+        if (PlayerChat.said(whole.lineSequence().first())) {
+            if (SafariAssist.inSafari || run != null) TraderWatch.onChatMessage(whole)
+            return
+        }
         for (line in PlayerChat.lines(raw)) {
             // Anything a player can type, a player can quote: only the shared-trade reader wants these.
             if (PlayerChat.said(line)) {

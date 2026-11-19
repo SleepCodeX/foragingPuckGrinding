@@ -23,9 +23,9 @@ import java.util.Set;
  * <p>All from the chat lines Hypixel already sends and the entity that was there:
  *
  * <ul>
- * <li>{@code You threw a SafariCritter Capsule at the Rockmite!} pins the last place its body
+ * <li>{@code You threw a Critter Capsule at the Rockmite!} pins the last place its body
  *     was seen, at the size it was;
- * <li>{@code The Rockmite escaped your SafariCritter Capsule!} holds the pin — that is exactly
+ * <li>{@code The Rockmite escaped your Critter Capsule!} holds the pin — that is exactly
  *     the moment it is worth having;
  * <li>{@code CAPTURE!} clears it, and so does the critter running off, or time passing.
  * </ul>
