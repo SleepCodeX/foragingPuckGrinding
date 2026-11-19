@@ -10,7 +10,9 @@
     "LivingEntityRendererMixin",
     "OutlineVisibilityMixin",
     "MarketCacheAccess",
-    "NestSurveyAccess"
+    "NestSurveyAccess",
+    "HypixelSessionAccess",
+    "SafariPartyConnectionMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }
