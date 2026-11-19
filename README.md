@@ -7,6 +7,8 @@ OneClient-inspired controls for mob tracers, matching boxes and through-wall glo
 Choose each mob's **line** and **glow** colors from scrollable dropdowns.
 Glow can **Match line**, use its own color, or turn **Off**.
 
+![Scrollable color palette](docs/media/1.3.0/colors.png)
+
 ![Colored tracers, boxes and model glow through walls](docs/media/1.3.0/trackers.png)
 
 **Purple Vex · Cyan Blue Jay · Gold Hivethief** by default.
