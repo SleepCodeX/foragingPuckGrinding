@@ -8,7 +8,8 @@
     "EntityRenderStateMixin",
     "GlowingEntityMixin",
     "LivingEntityRendererMixin",
-    "OutlineVisibilityMixin"
+    "OutlineVisibilityMixin",
+    "MarketCacheAccess"
   ],
   "injectors": {"defaultRequire": 1}
 }

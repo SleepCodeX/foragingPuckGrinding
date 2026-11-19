@@ -37,3 +37,5 @@ Hunting Helper uses Fabric Loader's native nested-mod support. Upstream componen
 retain their licenses. Hunting Helper's MIT license applies to its own code.
 
 The Frost Hivethief menu artwork was generated for Hunting Helper.
+
+Safari field journal code and area data are adapted from Critter Safari Tracker 0.10.1 for Minecraft 26.2, copyright 2026 MrCloudy2, under the MIT License. See licenses/CritterMod-LICENSE.txt. Source: https://github.com/MrCloudy2/critterMod/tree/f26b5ead85ce66e30b7815386497dc9b3442a127

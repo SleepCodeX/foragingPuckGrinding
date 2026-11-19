@@ -25,6 +25,7 @@ final class CustomTrackerGameChecks {
                 if (!host.getMetadata().getId().equals(VexTracerClient.MOD_ID)) throw new AssertionError("Unexpected parent " + host);
             }
         });
+        FieldJournalGameChecks.run(c, world);
         c.clickScreenButton("All Safari settings");
         c.waitForScreen(net.johnceo.sparklingmutuals.config.SafariConfigScreen.class);
         c.waitTicks(4);

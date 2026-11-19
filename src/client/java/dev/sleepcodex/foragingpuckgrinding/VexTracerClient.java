@@ -24,7 +24,7 @@ public final class VexTracerClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private final TracerConfig config = new TracerConfig(
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".properties"));
-    private boolean menuRequested, customRequested;
+    private boolean menuRequested, customRequested, journalRequested;
 
     @Override
     public void onInitializeClient() {
@@ -52,7 +52,10 @@ public final class VexTracerClient implements ClientModInitializer {
                         (target, glow, color) -> setColor(client, target, glow, color));
                 var home = new HuntingHomeScreen(screen, config);
                 screen.home = home;
-                if (customRequested) home.openCustom(); else client.gui.setScreen(home);
+                if (customRequested) home.openCustom();
+                else if (journalRequested) client.gui.setScreen(new FieldJournalScreen(home));
+                else client.gui.setScreen(home);
+                journalRequested = false;
                 customRequested = false;
             }
             renderer.tick(client);
@@ -66,6 +69,7 @@ public final class VexTracerClient implements ClientModInitializer {
                         .then(literal("menu").executes(context -> requestMenu())));
             for (String name : new String[] {"huntinghelper", "hh"}) {
                 dispatcher.register(literal(name).executes(context -> requestMenu())
+                        .then(literal("journal").executes(context -> { requestMenu(); journalRequested = true; return 1; }))
                         .then(literal("custom").executes(context -> { requestMenu(); customRequested = true; return 1; }))
                         .then(literal("debug").executes(context -> toggleDebug())));
             }
@@ -83,6 +87,8 @@ public final class VexTracerClient implements ClientModInitializer {
     }
 
     private int requestMenu() {
+        customRequested = false;
+        journalRequested = false;
         menuRequested = true;
         return 1;
     }

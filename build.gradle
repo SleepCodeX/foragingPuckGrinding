@@ -3,6 +3,7 @@ plugins {
 }
 base { archivesName = 'hunting-helper' }
 loom {
+    accessWidenerPath = file('src/main/resources/hunting-helper.accesswidener')
     splitEnvironmentSourceSets()
     mods {
         foragingpuckgrinding {
@@ -130,4 +131,13 @@ sourcesJar {
     from sourceSets.client.allSource
     from('LICENSE', 'NOTICE')
     from('licenses') { into 'licenses' }
+}
+
+tasks.register('replaySafariLogs', JavaExec) {
+    group = 'verification'
+    description = 'Print Safari run reports from a Minecraft logs directory.'
+    dependsOn tasks.named('clientClasses')
+    classpath = sourceSets.client.runtimeClasspath
+    mainClass = 'dev.sleepcodex.foragingpuckgrinding.journal.importer.LogReplayMain'
+    if (providers.gradleProperty('logs').isPresent()) args providers.gradleProperty('logs').get()
 }
