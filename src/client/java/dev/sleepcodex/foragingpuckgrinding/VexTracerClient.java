@@ -50,7 +50,9 @@ public final class VexTracerClient implements ClientModInitializer {
                 var screen = new TracerSettingsScreen(config, toggle,
                         enabled -> setEnabled(client, enabled), targets -> setTargets(client, targets),
                         (target, glow, color) -> setColor(client, target, glow, color));
-                if (customRequested) screen.openCustom(); else client.gui.setScreen(screen);
+                var home = new HuntingHomeScreen(screen, config);
+                screen.home = home;
+                if (customRequested) home.openCustom(); else client.gui.setScreen(home);
                 customRequested = false;
             }
             renderer.tick(client);

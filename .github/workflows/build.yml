@@ -142,11 +142,13 @@ jobs:
               "custom-tracker-library": "library",
               "custom-tracked-mobs": "custom-targets",
               "bundled-safari-settings": "safari",
+              "home-dashboard": "home",
+              "compact-dashboard": "home-compact",
           }.items():
               copyfile(shot(name), out / (file + ".png"))
           frames = []
           for i in range(11):
-              with Image.open(shot(f"menu-opening-{i:02d}")) as image:
+              with Image.open(shot(f"home-opening-{i:02d}")) as image:
                   frames.append(image.convert("RGB").resize((800,450), Image.Resampling.LANCZOS))
           frames[0].save(out / "menu-opening.gif", save_all=True, append_images=frames[1:],
                          duration=[40]*10+[1400], loop=0)

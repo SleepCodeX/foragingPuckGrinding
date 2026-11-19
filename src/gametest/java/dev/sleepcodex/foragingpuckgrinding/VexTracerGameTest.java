@@ -248,7 +248,8 @@ public final class VexTracerGameTest implements FabricClientGameTest {
 
 
         // /hh opens the same menu; the second card row (Parched, Pollendart) is reached by scrolling.
-        command(context,"hh");context.waitForScreen(TracerSettingsScreen.class);
+        command(context,"hh");context.waitForScreen(HuntingHomeScreen.class);
+        context.clickScreenButton("Hunting presets");context.waitForScreen(TracerSettingsScreen.class);
         long until=System.nanoTime()+MenuOpening.DURATION_NANOS;context.waitFor(client->System.nanoTime()>=until);
         context.getInput().pressKey(GLFW.GLFW_KEY_END);requireButtonsFit(context);
         context.runOnClient(client -> {
@@ -299,7 +300,8 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     private static boolean near(double value,double expected) { return Math.abs(value-expected)<1; }
 
     private static void openMenu(ClientGameTestContext c) {
-        command(c,"huntinghelper");c.waitForScreen(TracerSettingsScreen.class);
+        command(c,"huntinghelper");c.waitForScreen(HuntingHomeScreen.class);
+        c.clickScreenButton("Hunting presets");c.waitForScreen(TracerSettingsScreen.class);
         long until=System.nanoTime()+MenuOpening.DURATION_NANOS;c.waitFor(client->System.nanoTime()>=until);
     }
     private void requireOutlines(ClientGameTestContext context,int vex,int ghast) {

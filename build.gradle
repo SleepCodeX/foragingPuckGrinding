@@ -48,6 +48,7 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     productionRuntimeMods "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    gametestCompileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.4.20'
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -94,17 +95,27 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
 }
 test { useJUnitPlatform() }
-def checkEmbedded = tasks.register('verifyBundledMods') {
-    inputs.files(configurations.safariBundle, configurations.kotlinBundle)
-    inputs.property('safariSha256', safariHash)
-    inputs.property('kotlinSha256', kotlinHash)
-    doLast {
-        [ [configurations.safariBundle.singleFile, safariHash],
-          [configurations.kotlinBundle.singleFile, kotlinHash] ].each { pair ->
-            String actual = java.security.MessageDigest.getInstance('SHA-256').digest(pair[0].bytes).encodeHex().toString()
-            if (actual != pair[1]) throw new GradleException("Checksum mismatch for ${pair[0].name}: ${actual}")
-        }
+abstract class VerifyBundledMods extends DefaultTask {
+    @InputFiles abstract ConfigurableFileCollection getSafariFiles()
+    @InputFiles abstract ConfigurableFileCollection getKotlinFiles()
+    @Input abstract Property<String> getSafariDigest()
+    @Input abstract Property<String> getKotlinDigest()
+
+    @TaskAction void verify() {
+        checkFile(safariFiles.singleFile, safariDigest.get())
+        checkFile(kotlinFiles.singleFile, kotlinDigest.get())
     }
+
+    private static void checkFile(File file, String expected) {
+        String actual = java.security.MessageDigest.getInstance('SHA-256').digest(file.bytes).encodeHex().toString()
+        if (actual != expected) throw new GradleException("Checksum mismatch for ${file.name}: ${actual}")
+    }
+}
+def checkEmbedded = tasks.register('verifyBundledMods', VerifyBundledMods) {
+    safariFiles.from(configurations.safariBundle)
+    kotlinFiles.from(configurations.kotlinBundle)
+    safariDigest.set(safariHash)
+    kotlinDigest.set(kotlinHash)
 }
 jar {
     dependsOn checkEmbedded

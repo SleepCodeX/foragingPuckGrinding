@@ -15,7 +15,8 @@ final class CustomTrackerGameChecks {
         var server = world.getServer();
         server.runCommand("scoreboard objectives setdisplay sidebar");
         server.runCommand("time set night");
-        open(c, "hh", TracerSettingsScreen.class);
+        open(c, "hh", HuntingHomeScreen.class);
+        captureHome(c);
         c.runOnClient(client -> {
             var loader = FabricLoader.getInstance();
             for (String nested : java.util.List.of("sparkling-mutuals", "fabric-language-kotlin")) {
@@ -24,11 +25,22 @@ final class CustomTrackerGameChecks {
                 if (!host.getMetadata().getId().equals(VexTracerClient.MOD_ID)) throw new AssertionError("Unexpected parent " + host);
             }
         });
-        c.clickScreenButton("Safari settings");
+        c.clickScreenButton("All Safari settings");
         c.waitForScreen(net.johnceo.sparklingmutuals.config.SafariConfigScreen.class);
         c.waitTicks(4);
         c.takeScreenshot("bundled-safari-settings");
         c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        c.waitForScreen(HuntingHomeScreen.class);
+        var catalog = c.computeOnClient(client -> new net.johnceo.sparklingmutuals.config.SettingsCatalog(
+                new net.johnceo.sparklingmutuals.config.SafariSettings()));
+        for (var section : HuntingHomeScreen.Section.values()) {
+            if (catalog.locate(section.target()) == null) throw new AssertionError("Unknown Safari settings route " + section);
+            c.clickScreenButton(section.label);
+            c.waitForScreen(net.johnceo.sparklingmutuals.config.SafariConfigScreen.class);
+            c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            c.waitForScreen(HuntingHomeScreen.class);
+        }
+        c.clickScreenButton("Hunting presets");
         c.waitForScreen(TracerSettingsScreen.class);
         c.clickScreenButton("Clear presets");
         c.clickScreenButton("Custom trackers");
@@ -125,6 +137,24 @@ final class CustomTrackerGameChecks {
                     throw new AssertionError("Removed bee tracker still glows");
         });
         System.out.println("PASS: partial name, Tier V alias, text and stand labels, typed bodies, custom editor and library");
+    }
+
+    private static void captureHome(ClientGameTestContext c) {
+        var home = c.computeOnClient(client -> (HuntingHomeScreen)client.gui.screen());
+        var time = new java.util.concurrent.atomic.AtomicLong();
+        c.runOnClient(client -> client.gui.setScreen(home.withClock(time::get)));
+        for (int i = 0; i <= 10; i++) {
+            time.set(i * 40_000_000L);
+            c.waitTicks(1);
+            c.takeScreenshot(String.format("home-opening-%02d", i));
+        }
+        c.takeScreenshot("home-dashboard");
+        c.getInput().resizeWindow(960, 720);
+        c.runOnClient(client -> { client.options.guiScale().set(3); client.resizeGui(); });
+        c.waitTicks(2);
+        c.takeScreenshot("compact-dashboard");
+        c.getInput().resizeWindow(1280, 720);
+        c.runOnClient(client -> { client.options.guiScale().set(2); client.resizeGui(); client.gui.setScreen(home); });
     }
 
     private static EditBox field(net.minecraft.client.gui.screens.Screen screen) {

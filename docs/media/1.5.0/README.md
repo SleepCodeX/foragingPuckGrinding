@@ -2,9 +2,13 @@
 
 ![Settings opening](menu-opening.gif)
 
-| Settings | Custom trackers |
+| Dashboard | Compact dashboard |
 | --- | --- |
-| ![Six-card dashboard](settings.png) | ![Custom rule library](library.png) |
+| ![Settings home](home.png) | ![Compact dashboard](home-compact.png) |
+
+| Hunting settings | Custom trackers |
+| --- | --- |
+| ![Hunting presets](settings.png) | ![Custom rule library](library.png) |
 | ![Nametag editor](nametag-editor.png) | ![Mob type editor](type-editor.png) |
 | ![Compact settings](compact.png) | ![Large settings](large.png) |
 | ![Preset color dropdown](colors.png) | ![Custom overlays](custom-targets.png) |

@@ -31,13 +31,15 @@ public final class TracerSettingsScreen extends Screen {
     private final Consumer<Set<TracerTarget>> select;
     private final ColorChange colorChange;
     private final LongSupplier clock;
-    private final long openedAt;
+    private long openedAt;
+    HuntingHomeScreen home;
+    void settle() { openedAt = clock.getAsLong() - MenuOpening.DURATION_NANOS; }
     private final Button[] mobButtons = new Button[TYPES.length], lineButtons = new Button[TYPES.length], glowButtons = new Button[TYPES.length];
     private final Button[] popupButtons = new Button[POPUP_ROWS];
     private final String[] lineLabels = new String[TYPES.length], glowLabels = new String[TYPES.length];
     private final List<Button> bodyButtons = new ArrayList<>(), navigation = new ArrayList<>();
     private final IdentityHashMap<Button, Integer> baseY = new IdentityHashMap<>();
-    private Button enabledButton, allButton, noneButton, doneButton, safariButton, popupAnchor;
+    private Button enabledButton, allButton, noneButton, doneButton, homeButton, popupAnchor;
     private int left, top, panelWidth, panelHeight, bodyTop, bodyBottom, contentHeight, scroll, shownChunks = -1;
     private int cardHeight;
     private Button customButton;
@@ -114,20 +116,18 @@ public final class TracerSettingsScreen extends Screen {
         boolean narrowFooter = panelWidth < 470;
         int presetWidth = narrowFooter ? 58 : 81;
         int doneWidth = narrowFooter ? 46 : 68;
-        int safariWidth = narrowFooter ? 72 : 99;
-        safariButton = addRenderableWidget(Button.builder(Component.literal("Safari settings"), b ->
-                Minecraft.getInstance().gui.setScreen(new net.johnceo.sparklingmutuals.config.SafariConfigScreen(
-                        new net.johnceo.sparklingmutuals.config.SafariSettings(), null, this)))
-                .bounds(left + panelWidth - 16 - doneWidth - 6 - safariWidth, footer, safariWidth, 24).build());
+        int homeWidth = narrowFooter ? 72 : 99;
+        homeButton = addRenderableWidget(Button.builder(Component.literal("Home"), b -> onClose())
+                .bounds(left + panelWidth - 16 - doneWidth - 6 - homeWidth, footer, homeWidth, 24).build());
         allButton = addRenderableWidget(Button.builder(Component.literal("All presets"), b -> {
             select.accept(EnumSet.allOf(TracerTarget.class)); refreshLabels();
         }).bounds(left + 16, footer, presetWidth, 24).build());
         noneButton = addRenderableWidget(Button.builder(Component.literal("Clear presets"), b -> {
             select.accept(EnumSet.noneOf(TracerTarget.class)); refreshLabels();
         }).bounds(left + 22 + presetWidth, footer, presetWidth, 24).build());
-        doneButton = addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
+        doneButton = addRenderableWidget(Button.builder(Component.literal("Done"), b -> Minecraft.getInstance().gui.setScreen(null))
                 .bounds(left + panelWidth - 16 - doneWidth, footer, doneWidth, 24).build());
-        navigation.add(allButton); navigation.add(noneButton); navigation.add(safariButton); navigation.add(doneButton);
+        navigation.add(allButton); navigation.add(noneButton); navigation.add(homeButton); navigation.add(doneButton);
         for (int row = 0; row < POPUP_ROWS; row++) {
             final int index = row;
             popupButtons[row] = addRenderableWidget(Button.builder(Component.empty(), b -> choose(popupScroll + index))
@@ -213,12 +213,12 @@ public final class TracerSettingsScreen extends Screen {
             }
             smallButton(graphics, canvas, allButton, "All presets", mouseX, mouseY);
             smallButton(graphics, canvas, noneButton, "Clear presets", mouseX, mouseY);
-            smallButton(graphics, canvas, safariButton, "Safari settings", mouseX, mouseY);
+            smallButton(graphics, canvas, homeButton, "Home", mouseX, mouseY);
             smallButton(graphics, canvas, doneButton, "Done", mouseX, mouseY);
             if (panelWidth >= 560) {
                 int chunks = Minecraft.getInstance().options.getEffectiveRenderDistance();
                 if (shownChunks != chunks) { shownChunks = chunks; rangeLabel = chunks + "-chunk render distance"; }
-                center(graphics, rangeLabel, (noneButton.getRight() + safariButton.getX()) / 2, allButton.getY() + 8, .7, MenuTheme.MUTED);
+                center(graphics, rangeLabel, (noneButton.getRight() + homeButton.getX()) / 2, allButton.getY() + 8, .7, MenuTheme.MUTED);
             }
             if (popupTarget != null) drawPopup(graphics, canvas, mouseX, mouseY);
         } finally { MenuFont.opacity(1); }
@@ -429,5 +429,6 @@ public final class TracerSettingsScreen extends Screen {
     private static boolean hovered(Button button, double x, double y) {
         return x >= button.getX() && x < button.getRight() && y >= button.getY() && y < button.getBottom();
     }
+    @Override public void onClose() { Minecraft.getInstance().gui.setScreen(home); }
     @Override public boolean isPauseScreen() { return false; }
 }

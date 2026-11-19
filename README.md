@@ -1,6 +1,6 @@
 # Hunting Helper
 
-Hunting Helper draws tracers, matching boxes and colored model outlines for mobs in Hypixel SkyBlock. Open **`/hh`** to use the five hunting presets or build your own trackers.
+Hunting Helper draws tracers, matching boxes and colored model outlines for mobs in Hypixel SkyBlock. Open **`/hh`** for hunting presets, custom trackers, and the complete Sparkling Mutuals Safari suite.
 
 ![Hunting Helper's in-game settings opening](docs/media/1.5.0/menu-opening.gif)
 
@@ -31,7 +31,7 @@ Nametag matching ignores capitalization and Minecraft formatting. The tracker re
 
 ## Sparkling Mutuals Safari suite
 
-**/hh → Safari settings** opens the full Sparkling Mutuals 4.3.7 interface. Closing it takes you back to Hunting Helper. Its own **/sm** commands, settings and history also work. Safari HUDs and ESP, party sync, capture tools, warping, history, achievements, contests, Hunting Box value and the other upstream tools are included.
+**/hh → All Safari settings** opens the full Sparkling Mutuals 4.3.7 interface. Closing it takes you back to Hunting Helper. The dashboard also takes you directly to modes, critter highlights, HUDs, capture tools, party settings, contests, history, and SkyBlock helpers. The original **/sm** commands, settings and history also work. Safari HUDs and ESP, party sync, capture tools, warping, history, achievements, contests, Hunting Box value and the other upstream tools are included.
 
 Install the Hunting Helper JAR and Fabric API. Hunting Helper includes the matching Sparkling Mutuals and Fabric Language Kotlin JARs. The custom trackers and settings run locally. Party synchronization, live Bazaar/profile data and other online features use their respective services when active.
 
