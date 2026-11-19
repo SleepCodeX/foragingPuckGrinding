@@ -33,7 +33,8 @@ names = {
     "compact-dashboard": "home-compact",
     "field-journal": "field-journal",
     "field-report": "field-report",
-    "field-markers": "field-markers"
+    "field-markers": "field-markers",
+    "full-clear-remaining": "full-clear-remaining"
 }
 for original, published in names.items():
     copyfile(capture(original), output / f"{published}.png")

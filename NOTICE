@@ -26,6 +26,7 @@ The Gradle wrapper files are from Gradle and are licensed under Apache-2.0.
 See gradle/LICENSE for the license and the copyright notices in those files.
 
 Bundled, unmodified Fabric mods for Minecraft 26.2:
+- Fabric API 0.161.0+26.2 by FabricMC, licensed under Apache-2.0. The original nested JAR retains its license and modules. Source: https://github.com/FabricMC/fabric-api/tree/0.161.0%2B26.2
 - Sparkling Mutuals 4.3.7 by JohnCEO and JohnKuudra. The upstream JAR retains its CC0 dedication,
   dependency notices, licenses and Hypixel Mod API. Corresponding source and build scripts:
   https://github.com/johnceoskyblock/sparkling-mutuals/tree/2b361320476d7e6e6a42390d4b1c3b7ab5e20731

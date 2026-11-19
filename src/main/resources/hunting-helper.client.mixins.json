@@ -12,7 +12,10 @@
     "MarketCacheAccess",
     "NestSurveyAccess",
     "HypixelSessionAccess",
-    "SafariPartyConnectionMixin"
+    "SafariPartyConnectionMixin",
+    "SafariCatchReceiver",
+    "SafariLootShareMixin",
+    "FullClearPanelsMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }

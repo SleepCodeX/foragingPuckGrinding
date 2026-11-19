@@ -94,6 +94,7 @@ final class FieldJournalGameChecks {
         c.clickScreenButton("Stats");
         c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
         c.waitForScreen(FieldJournalScreen.class);
+        FullClearGameChecks.run(c, world);
         c.clickScreenButton("Back");
         c.waitForScreen(HuntingHomeScreen.class);
         System.out.println("PASS: standalone field journal, filtered catches, Hunter offers, local-only delivery and report navigation");

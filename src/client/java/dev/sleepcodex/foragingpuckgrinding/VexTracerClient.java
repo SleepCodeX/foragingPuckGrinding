@@ -1,6 +1,11 @@
 package dev.sleepcodex.foragingpuckgrinding;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.sleepcodex.foragingpuckgrinding.mixin.SafariCatchReceiver;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.johnceo.sparklingmutuals.safari.SafariCatch;
+import net.johnceo.sparklingmutuals.safari.SafariMessages;
+import net.johnceo.sparklingmutuals.safari.SafariTracking;
 import java.io.IOException;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -24,7 +29,7 @@ public final class VexTracerClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private final TracerConfig config = new TracerConfig(
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".properties"));
-    private boolean menuRequested, customRequested, journalRequested;
+    private boolean menuRequested, customRequested, journalRequested, remainingRequested;
 
     @Override
     public void onInitializeClient() {
@@ -33,6 +38,19 @@ public final class VexTracerClient implements ClientModInitializer {
         } catch (IOException | IllegalArgumentException exception) {
             LOGGER.warn("Could not read Vex tracer settings; using OFF", exception);
         }
+        // GAME and GAME_CANCELED are mutually exclusive. Visible and display-filtered lines already
+        // reach SafariTracking through GAME. Forward only valid captures from the canceled path.
+        ClientReceiveMessageEvents.GAME_CANCELED.register((message, overlay) -> {
+            if (overlay) return;
+            Minecraft.getInstance().execute(() -> {
+                var receiver = (SafariCatchReceiver)
+                        (Object) SafariTracking.INSTANCE;
+                for (String line : SafariMessages.INSTANCE.lines(message.getString(), null, null)) {
+                    if (SafariCatch.Companion.parse(line) != null)
+                        receiver.huntingHelper$receive(line);
+                }
+            });
+        });
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "tracers"));
         KeyMapping toggle = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.foragingpuckgrinding.toggle_vex_tracers", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, category));
@@ -52,7 +70,8 @@ public final class VexTracerClient implements ClientModInitializer {
                         (target, glow, color) -> setColor(client, target, glow, color));
                 var home = new HuntingHomeScreen(screen, config);
                 screen.home = home;
-                if (customRequested) home.openCustom();
+                if (remainingRequested) client.gui.setScreen(new FullClearScreen(null));
+                else if (customRequested) home.openCustom();
                 else if (journalRequested) client.gui.setScreen(new FieldJournalScreen(home));
                 else client.gui.setScreen(home);
                 journalRequested = false;
@@ -69,6 +88,7 @@ public final class VexTracerClient implements ClientModInitializer {
                         .then(literal("menu").executes(context -> requestMenu())));
             for (String name : new String[] {"huntinghelper", "hh"}) {
                 dispatcher.register(literal(name).executes(context -> requestMenu())
+                        .then(literal("remaining").executes(context -> { requestMenu(); remainingRequested = true; return 1; }))
                         .then(literal("journal").executes(context -> { requestMenu(); journalRequested = true; return 1; }))
                         .then(literal("custom").executes(context -> { requestMenu(); customRequested = true; return 1; }))
                         .then(literal("debug").executes(context -> toggleDebug())));
@@ -89,6 +109,7 @@ public final class VexTracerClient implements ClientModInitializer {
     private int requestMenu() {
         customRequested = false;
         journalRequested = false;
+        remainingRequested = false;
         menuRequested = true;
         return 1;
     }

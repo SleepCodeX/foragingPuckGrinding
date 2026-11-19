@@ -19,7 +19,7 @@ final class CustomTrackerGameChecks {
         captureHome(c);
         c.runOnClient(client -> {
             var loader = FabricLoader.getInstance();
-            for (String nested : java.util.List.of("sparkling-mutuals", "fabric-language-kotlin")) {
+            for (String nested : java.util.List.of("sparkling-mutuals", "fabric-language-kotlin", "fabric-api")) {
                 var container = loader.getModContainer(nested).orElseThrow();
                 var host = container.getContainingMod().orElseThrow(() -> new AssertionError(nested + " must load from the Hunting Helper JAR"));
                 if (!host.getMetadata().getId().equals(VexTracerClient.MOD_ID)) throw new AssertionError("Unexpected parent " + host);

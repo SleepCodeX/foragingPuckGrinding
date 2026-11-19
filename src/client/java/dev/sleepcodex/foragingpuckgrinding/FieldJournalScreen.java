@@ -62,6 +62,7 @@ public final class FieldJournalScreen extends TrackerPage {
         switch (group) {
             case HOME -> {
                 items.add(new Item("Open field report", () -> show(new CritterScreen(this))));
+                items.add(new Item("Remaining critters", () -> show(new FullClearScreen(this))));
                 items.add(new Item("Move journal panels", () -> show(new HudEditorScreen(this))));
                 for (Group target : Group.values()) {
                     if (target != Group.HOME)
