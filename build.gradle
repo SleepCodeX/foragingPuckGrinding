@@ -49,6 +49,8 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // The production Fabric API excludes the development-only client test runner.
+    productionRuntimeMods(fabricApi.module("fabric-client-gametest-api-v1", project.fabric_api_version)) { transitive = false }
     fabricBundle "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}@jar"
     clientCompileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.4.20'
     gametestCompileOnly 'org.jetbrains.kotlin:kotlin-stdlib:2.4.20'
