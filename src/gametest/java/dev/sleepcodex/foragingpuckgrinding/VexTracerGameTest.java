@@ -64,8 +64,8 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                     var board=server.getScoreboard();
                     var objective=board.addObjective("hh_test",ObjectiveCriteria.DUMMY,Component.literal("SKYBLOCK"),ObjectiveCriteria.RenderType.INTEGER,false,null);
                     board.setDisplayObjective(DisplaySlot.SIDEBAR,objective);
-                    board.getOrCreatePlayerScore(ScoreHolder.forNameOnly("location"),objective).set(1);
-                    var team=board.addPlayerTeam("hh_location");board.addPlayerToTeam("location",team);
+                    board.getOrCreatePlayerScore(ScoreHolder.forNameOnly(" "),objective).set(1);
+                    var team=board.addPlayerTeam("hh_location");board.addPlayerToTeam(" ",team);
                     team.setPlayerPrefix(Component.literal("⏣ Torrhus Heights"));
                 });
                 world.getConnection().waitForChunksRender();context.getInput().lookAt(0,0);
@@ -198,6 +198,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
         context.waitFor(client -> renderedParchedGlow==red && renderedPlainParchedGlow==0
                 && renderedPollendartTint==green && renderedPlainBeeTint==0
                 && renderedFarPollendart && !renderedFarPlainBee && HuntingDebug.FILLS.get()!=fills);
+        context.waitTicks(210); // Let command feedback fade out of the public visual guide.
         context.takeScreenshot("nametag-parched-and-pollendart");
         // Duplicate nametags must not produce duplicate candidates. Keep the original Hypixel name rules.
         server.runCommand(stand(4,-54,14,"[Lv24] Pollendart"));
@@ -218,8 +219,8 @@ public final class VexTracerGameTest implements FabricClientGameTest {
         server.runCommand("scoreboard objectives setdisplay sidebar hh_test");context.waitTicks(14);
         context.waitFor(client -> renderedParchedGlow==red && renderedPollendartTint==green);
         // Cross a spatial-column boundary; moving mobs must be found on the next discovery tick.
-        server.runCommand("tp @e[type=minecraft:bee,x=4,y=-56,z=14,distance=..1] 5 -56 14");
-        server.runCommand("tp @e[type=minecraft:armor_stand,x=4,y=-54,z=14,distance=..1] 5 -54 14");
+        server.runCommand("tp @e[type=minecraft:bee,x=4,y=-56,z=14,distance=..1] 5.0 -56 14.0");
+        server.runCommand("tp @e[type=minecraft:armor_stand,x=4,y=-54,z=14,distance=..1] 5.0 -54 14.0");
         context.waitTicks(5);
         context.waitFor(client -> {
             for (var entity:client.level.entitiesForRendering())
@@ -227,14 +228,15 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                         && TrackedOutlines.colorFor(entity)==green) return true;
             return false;
         });
-        server.runCommand("tp @e[type=minecraft:bee,x=5,y=-56,z=14,distance=..1] 4 -56 14");
-        server.runCommand("tp @e[type=minecraft:armor_stand,x=5,y=-54,z=14,distance=..1] 4 -54 14");
+        server.runCommand("tp @e[type=minecraft:bee,x=5,y=-56,z=14,distance=..1] 4.0 -56 14.0");
+        server.runCommand("tp @e[type=minecraft:armor_stand,x=5,y=-54,z=14,distance=..1] 4.0 -54 14.0");
         context.waitTicks(5);
         server.runCommand("summon minecraft:vex -8 -54 18 {NoAI:1b}");
         server.runCommand("summon minecraft:parrot -10 -52 20 {NoAI:1b,NoGravity:1b,Variant:1}");
         server.runCommand("summon minecraft:ghast 10 -53 24 {NoAI:1b,NoGravity:1b}");
         context.waitTicks(10);
         requireOutlines(context,OverlayColor.PURPLE.argb(),OverlayColor.GOLD.argb());
+        context.waitTicks(210);
         requireColors(context.takeScreenshot("all-five-trackers"),true,true,true);
         command(context,"huntinghelper debug");
         context.waitTicks(5);
