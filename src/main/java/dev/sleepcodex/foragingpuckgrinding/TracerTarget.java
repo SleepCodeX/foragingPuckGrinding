@@ -36,10 +36,10 @@ public enum TracerTarget {
         };
     }
 
-    /** The target named by a Hypixel nametag such as "[Lv58] Parched 25,000/25,000❤", or null. */
     /** Vex, Blue Jay and Hivethief are also found by entity type; Parched and Pollendart only by nametag. */
     public boolean typeDetected() { return this == VEX || this == BLUE_JAY || this == HIVE_THIEF; }
 
+    /** The target named by a Hypixel nametag such as "[Lv58] Parched 25,000/25,000❤", or null. */
     public static TracerTarget fromNametag(String text) {
         if (text == null) return null;
         Matcher matcher = NAMETAG.matcher(FORMATTING.matcher(text).replaceAll(""));

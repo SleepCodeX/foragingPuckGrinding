@@ -13,6 +13,8 @@ A matte charcoal redesign and five Hypixel hunting trackers.
 
 ![All five trackers through a wall](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.4.0/trackers.png)
 
+Thanks to [evolveperformance](https://github.com/SleepCodeX/foragingPuckGrinding/pull/5) for the new trackers, nametag detection and glow improvements.
+
 **Install:** Minecraft 26.2, Java 25, Fabric Loader 0.19.5+ and Fabric API 0.161.0+26.2. Replace the older Hunting Helper JAR.
 
 Tests cover unit/config migration, the packaged Minecraft client, small and large menu layouts, palette controls, name pairing, movement, distance, tint, location/F1/master gates and entity removal. Live Hypixel and the user's complete modpack are not reproduced by CI.

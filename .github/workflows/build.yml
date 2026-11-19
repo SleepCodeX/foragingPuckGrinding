@@ -72,7 +72,7 @@ jobs:
       GH_REPO: ${{ github.repository }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: hunting-helper-mc26.2
           path: release-assets
@@ -84,6 +84,8 @@ jobs:
           title="Hunting Helper ${version%%+*}"
           jar="hunting-helper-$version.jar"
           source="hunting-helper-$version-sources.jar"
+          media="docs/media/${version%%+*}"
+          test "$(sed -n 's/^Source commit: //p' release-assets/BUILD-INFO.txt)" = "$GITHUB_SHA"
           (cd release-assets && sha256sum -c SHA256SUMS)
           awk '/^# Hunting Helper / { sections++; if (sections > 1) exit } { print }' RELEASE-NOTES.md > /tmp/hunting-release-notes
           if gh release view "$tag" --json isDraft --jq .isDraft > /tmp/hunting-release-state; then
@@ -94,55 +96,7 @@ jobs:
           else
             gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$title" --notes-file /tmp/hunting-release-notes
           fi
-          gh release upload "$tag" "release-assets/$jar" "release-assets/$source" release-assets/SHA256SUMS release-assets/BUILD-INFO.txt docs/media/1.4.0/settings.png docs/media/1.4.0/compact.png docs/media/1.4.0/colors.png docs/media/1.4.0/trackers.png docs/media/1.4.0/menu-opening.gif --clobber
+          gh release upload "$tag" "release-assets/$jar" "release-assets/$source" release-assets/SHA256SUMS release-assets/BUILD-INFO.txt "$media"/*.png "$media/menu-opening.gif" --clobber
           gh release edit "$tag" --target "$GITHUB_SHA" --draft=false --prerelease=false --latest --title "$title" --notes-file /tmp/hunting-release-notes
           gh release download "$tag" --pattern "$jar" --dir verified-download
           cmp "release-assets/$jar" "verified-download/$jar"
-
-  capture_gallery:
-    needs: build
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'codex/integrate-nametag-trackers'
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-      actions: read
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: codex/integrate-nametag-trackers
-      - uses: actions/download-artifact@v4
-        with:
-          name: tracker-validation
-          path: validation-captures
-      - name: Prepare the native Minecraft visual guide
-        run: |
-          python -m pip install pillow
-          python - <<'PY'
-          from pathlib import Path
-          import shutil
-          from PIL import Image
-          root = Path("validation-captures")
-          dest = Path("docs/media/1.4.0")
-          dest.mkdir(parents=True, exist_ok=True)
-          captures = {
-              "tracker-menu-all": "settings", "tracker-menu-compact": "compact",
-              "tracker-menu-large": "large", "line-color-dropdown": "colors",
-              "all-five-trackers": "trackers", "nametag-parched-and-pollendart": "nametags"
-          }
-          for original, name in captures.items():
-              matches = [p for p in root.rglob("*.png") if original in p.stem]
-              assert len(matches) == 1, (original, matches, [p.name for p in root.rglob("*.png")])
-              shutil.copyfile(matches[0], dest / (name + ".png"))
-          paths = sorted(p for p in root.rglob("*.png") if "menu-opening-" in p.stem)
-          assert len(paths) == 15, len(paths)
-          frames = [Image.open(p).convert("RGB").quantize(colors=128) for p in paths]
-          frames[0].save(dest / "menu-opening.gif", save_all=True, append_images=frames[1:],
-                         duration=[40] * 14 + [1300], loop=0, disposal=2)
-          PY
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add docs/media/1.4.0
-          if ! git diff --cached --quiet; then
-            git commit -m 'Capture the matte charcoal settings and five-target overlays in Minecraft'
-            git push origin HEAD:codex/integrate-nametag-trackers
-          fi
