@@ -285,6 +285,14 @@ final class VexTracerRenderer {
         if (count > 0) context.levelState().setData(LINES, new Frame(ox, oy, oz, targets, colors, count));
     }
 
+    /** Read-only inspection of the line batch published for this frame. */
+    static boolean drawsColor(LevelExtractionContext context, int argb) {
+        Frame frame = context.levelState().getData(LINES);
+        if (frame == null) return false;
+        for (int i = 0; i < frame.count(); i++) if (frame.colors()[i] == argb) return true;
+        return false;
+    }
+
     void submit(LevelRenderContext context) {
         Frame frame = context.levelState().getData(LINES);
         if (frame == null || frame.count() == 0) return;

@@ -24,11 +24,17 @@ import org.lwjgl.glfw.GLFW;
 
 /** Real packaged-client rendering and input checks; this mod is never distributed. */
 public final class VexTracerGameTest implements FabricClientGameTest {
+    private static volatile int visibleLineMask;
     private volatile int renderedVexGlow, renderedGhastGlow;
     private volatile int renderedParchedGlow, renderedPlainParchedGlow, renderedPollendartTint, renderedPlainBeeTint;
     private volatile boolean renderedFarPollendart, renderedFarPlainBee;
     @Override public void runTest(ClientGameTestContext context) {
         LevelExtractionEvents.END_EXTRACTION.register(extraction -> {
+            int lines = 0;
+            if (VexTracerRenderer.drawsColor(extraction, OverlayColor.PURPLE.argb())) lines |= 1;
+            if (VexTracerRenderer.drawsColor(extraction, OverlayColor.CYAN.argb())) lines |= 2;
+            if (VexTracerRenderer.drawsColor(extraction, OverlayColor.GOLD.argb())) lines |= 4;
+            visibleLineMask = lines;
             int vex = 0, ghast = 0, parched = 0, plainParched = 0, pollendart = 0, plainBee = 0;
             boolean farPollendart = false, farPlainBee = false;
             for (var state : extraction.levelState().entityRenderStates) {
@@ -371,7 +377,15 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 if(r>220&&g>160&&g<225&&b<125)count[2]++;
             }
             boolean[] expected={vex,blueJay,hiveThief};
-            for(int i=0;i<3;i++)if(expected[i]?count[i]<80:count[i]>5)throw new AssertionError("Mob color "+i+" expected="+expected[i]+" pixels="+count[i]+" in "+screenshot);
+            int actual = visibleLineMask;
+            for (int i = 0; i < expected.length; i++) {
+                // A vanilla mob, unrelated HUD or particle can legitimately contain the same color
+                // with tracers off. Inspect the submitted batch for absence and the pixels for visibility.
+                boolean submitted = (actual & (1 << i)) != 0;
+                if (expected[i] != submitted || (expected[i] && count[i] < 80))
+                    throw new AssertionError("Mob color " + i + " expected=" + expected[i]
+                            + " submitted=" + submitted + " pixels=" + count[i] + " in " + screenshot);
+            }
         } catch(IOException e){throw new AssertionError(e);}
     }
 }
