@@ -11,10 +11,11 @@ Glow can **Match line**, use its own color, or turn **Off**.
 
 ![Colored tracers, boxes and model glow through walls](docs/media/1.3.0/trackers.png)
 
-**Purple Vex · Cyan Blue Jay · Gold Hivethief** by default.
+**Purple Vex · Cyan Blue Jay · Gold Hivethief · Red Parched · Green Pollendart** by default.
 
-Open **`/huntinghelper`**. **V** toggles your selection; **F1** hides all overlays.
-Scans the full loaded render distance. Blue Jay and Hivethief tracking apply in Torrhus.
+Open **`/huntinghelper`** or **`/hh`**. **V** toggles your selection; **F1** hides all overlays.
+Scans the full loaded render distance. Mobs are recognized by their Hypixel nametag;
+Blue Jay, Hivethief, Parched and Pollendart tracking apply in Torrhus.
 
 ## Install
 

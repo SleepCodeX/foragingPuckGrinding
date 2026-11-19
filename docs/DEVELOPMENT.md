@@ -4,9 +4,11 @@ Colored tracers and matching mob boxes for **Minecraft 26.2 / Fabric**.
 
 | Tracker | Color | Detection |
 | --- | --- | --- |
-| Vex | Purple | Loaded, living Vex entities |
-| Blue Jay | Cyan | Untamed blue parrots in Torrhus |
-| Hivethief | Gold | Ghast entities in Torrhus |
+| Vex | Purple | "Vex" nametag, else loaded, living Vex entities |
+| Blue Jay | Cyan | "Blue Jay" nametag, else untamed blue parrots, in Torrhus |
+| Hivethief | Gold | "Hivethief" nametag, else Ghast entities, in Torrhus |
+| Parched | Red | Mobs below a "Parched" nametag in Torrhus |
+| Pollendart | Green | Bees below a "Pollendart" nametag in Torrhus |
 
 Open **`/huntinghelper`**. Toggle each mob separately, use **Select all / Clear all**,
 or use the master switch. **V** toggles all selected trackers; F1 hides the overlays.
@@ -48,7 +50,8 @@ migrate without automatically enabling the new Ghast tracker.
 
 | Command | Effect |
 | --- | --- |
-| `/huntinghelper` | Open settings |
+| `/huntinghelper`, `/hh` | Open settings |
+| `/hh debug`, `/huntinghelper debug` | Toggle a detection summary in `latest.log` every 5 seconds |
 | `/vextracers menu` | Open the same settings |
 | `/vextracers` | Toggle the master switch |
 | `/vextracers on` / `/vextracers off` | Set the master switch |
@@ -56,16 +59,24 @@ migrate without automatically enabling the new Ghast tracker.
 ## Behavior and implementation
 
 Targets must already be loaded by Minecraft; this does not discover unloaded mobs.
-Blue Jay and Ghast tracking require a Torrhus Canyon/Heights/Springs location label
-in sidebar or tab. The Ghast tracker uses the entity type, so other Ghasts in the
-same area also match. Other parrot colors, tamed birds and Allays are excluded.
+Every tracker except Vex requires a Torrhus Canyon/Heights/Springs location label
+in sidebar or tab.
+
+Hypixel names each SkyBlock mob with a custom-named armor stand about two blocks above it.
+Each tick, named stands are matched against the tracker names (whole words, formatting
+removed) and paired with the closest living non-player mob 0.5 blocks above to 4 blocks below
+within 1.5 blocks horizontally; Pollendart pairs only with bees. Without a mob below, the
+nametag itself is tracked. Parched and Pollendart are nametag-only. Vex, Blue Jay and
+Hivethief additionally keep type detection for mobs without a matching nametag: the
+Ghast tracker uses the entity type, so other Ghasts in the same area also match. Other
+parrot colors, tamed birds and Allays are excluded.
 
 Discovery runs once per client tick; location text is cached. One native line render
 submission draws the interpolated tracers and twelve-edge boxes. OFF and an empty
 selection skip discovery and frame-array allocation. Changing worlds and removing
 entities clear their overlays. It does not send gameplay commands or perform hunts.
 
-CI covers configuration migration and all eight target combinations, box-edge
+CI covers configuration migration and every target combination, nametag parsing, box-edge
 geometry, and real packaged-client controls/colors/boxes, through-wall rendering,
 master/key/F1 toggles, persistence, location gating and removed/unrelated entities.
 Live Hypixel, the full personal modpack and shader combinations are not reproduced.
@@ -98,6 +109,6 @@ render snapshots. The menu uses a 560 ms Hivethief-to-header crossfade with no i
 
 `line.<TARGET>` and `glow.<TARGET>` store named palette choices. Existing settings gain the original per-mob line colors and matching glow. `MATCH` resolves to the current line color; `OFF` disables only the custom glow. Changing a target, master switch, area, world or F1 visibility also gates glow.
 
-Two client mixins add outline colors during native entity-state extraction and permit matching mobs through section occlusion. Native entity distance/frustum checks remain in place. The native outline post-process draws the actual animated model silhouette through walls. Entity flags, scoreboard teams, server data and other mobs' vanilla glow are preserved.
+Client mixins add outline colors during native entity-state extraction, permit matching mobs through section occlusion, and lift only the size-based entity distance cull for glowing mobs, so their glow reaches as far as the line; frustum checks remain. Glowing mobs also report as glowing to the client, which keeps the EntityCulling mod from hiding them behind walls. A second, see-through model pass adds a light tint (19% alpha) in the glow color under the outline. The native outline post-process draws the actual animated model silhouette through walls. Entity flags, scoreboard teams, server data and other mobs' vanilla glow are preserved.
 
-Native tests inspect actual extracted outline colors behind a wall, independent palette persistence, Off/F1/master behavior, dropdown keyboard scrolling and all thirteen menu controls. The opening frames use a deterministic clock with the real Minecraft renderer.
+Native tests inspect actual extracted outline colors behind a wall, independent palette persistence, Off/F1/master behavior, dropdown keyboard scrolling and every menu control, plus nametag pairing for Parched and Pollendart (only the bee under a Pollendart tag glows), the tint color, and glow on a bee beyond the vanilla distance cull. The opening frames use a deterministic clock with the real Minecraft renderer.

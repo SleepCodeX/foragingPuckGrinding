@@ -2,6 +2,13 @@
   "required": true,
   "package": "dev.sleepcodex.foragingpuckgrinding.mixin",
   "compatibilityLevel": "JAVA_25",
-  "client": ["EntityOutlineMixin", "OutlineVisibilityMixin"],
+  "client": [
+    "EntityOutlineMixin",
+    "EntityRenderDistanceMixin",
+    "EntityRenderStateMixin",
+    "GlowingEntityMixin",
+    "LivingEntityRendererMixin",
+    "OutlineVisibilityMixin"
+  ],
   "injectors": {"defaultRequire": 1}
 }

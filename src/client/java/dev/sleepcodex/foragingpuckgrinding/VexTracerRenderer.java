@@ -5,8 +5,12 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Optional;
+import java.util.Set;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
@@ -18,6 +22,10 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.bee.Bee;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.util.Mth;
@@ -39,6 +47,10 @@ final class VexTracerRenderer {
     private ClientLevel cachedLevel;
     private Entity[] candidates = new Entity[0];
     private TracerTarget[] candidateTypes = new TracerTarget[0];
+    // Resolved once per tick, so glow lookups also cover nametag-detected mobs; reused between ticks.
+    private final IdentityHashMap<Entity, TracerTarget> resolved = new IdentityHashMap<>();
+    private final Set<Entity> byNametag = Collections.newSetFromMap(new IdentityHashMap<>());
+    private final ArrayList<Entity> tags = new ArrayList<>(), mobs = new ArrayList<>();
     private int candidateCount;
     private TracerRange.Bounds range;
     private int rangeChunkX, rangeChunkZ, rangeChunks;
@@ -54,37 +66,94 @@ final class VexTracerRenderer {
             range = null;
         }
         boolean tracking = config.enabled() && config.hasTargets() && client.player != null && cachedLevel != null;
-        boolean area = torrhus.update(client, tracking &&
-                (config.isSelected(TracerTarget.BLUE_JAY) || config.isSelected(TracerTarget.HIVE_THIEF)));
+        boolean area = torrhus.update(client, tracking && torrhusTargetSelected());
         activeTorrhus = area;
+        HuntingDebug.beginTick(config.enabled(), area, torrhus.matched());
         if (!tracking) {
             clearCandidates();
+            HuntingDebug.endTick(resolved, byNametag, config);
             return;
         }
         updateRange(client);
-        int count = 0;
-        // Inspect every loaded entity in the complete chunk footprint once per tick.
-        // Reuse discovery storage and classify each mob here, never in the render loop.
+        resolved.clear();
+        byNametag.clear();
+        // Inspect every loaded entity once per tick and sort it into nametag stands and mobs.
+        // Reuse discovery storage and resolve each mob here, never in the render loop.
         for (Entity entity : cachedLevel.entitiesForRendering()) {
-            if (!entity.isAlive() || entity.isRemoved() || !range.contains(entity.getX(), entity.getZ())) continue;
-            TracerTarget type = typeOf(entity);
-            if (type == null || !config.isSelected(type) || (type != TracerTarget.VEX && !area)) continue;
+            if (!entity.isAlive() || entity.isRemoved()) continue;
+            if (entity instanceof ArmorStand) {
+                if (entity.hasCustomName()) tags.add(entity);
+            } else if (entity instanceof LivingEntity && !(entity instanceof Player)) {
+                mobs.add(entity);
+            }
+        }
+        boolean debug = HuntingDebug.due();
+        // Hypixel names every SkyBlock mob with a custom-named armor stand about two blocks above it.
+        for (Entity tag : tags) {
+            TracerTarget target = TracerTarget.fromNametag(tag.getCustomName().getString());
+            if (target == null || !tracked(target, area)) continue;
+            Entity mob = mobBelow(tag, target);
+            if (debug) HuntingDebug.nametag(tag, target, mob, mobs);
+            // Without a mob below, name-only targets still get a tracer to the nametag itself. Targets with
+            // type detection skip it: the type pass below finds the mob, and one creature never gets two tracers.
+            if (mob == null && target.typeDetected()) continue;
+            Entity entity = mob != null ? mob : tag;
+            if (range.contains(entity.getX(), entity.getZ()) && resolved.putIfAbsent(entity, target) == null) byNametag.add(entity);
+        }
+        // The original three keep their type detection for mobs without a matching nametag.
+        // Parched and Pollendart are nametag-only: plain bees and skeleton variants never match.
+        for (Entity mob : mobs) {
+            TracerTarget type = typeOf(mob);
+            if (type == null) continue;
+            if (debug) HuntingDebug.nametagsNear(mob, tags);
+            if (tracked(type, area) && range.contains(mob.getX(), mob.getZ())) resolved.putIfAbsent(mob, type);
+        }
+        tags.clear();
+        mobs.clear();
+        int count = 0;
+        for (var entry : resolved.entrySet()) {
             if (count == candidates.length) {
                 int capacity = Math.max(16, count * 2);
                 candidates = Arrays.copyOf(candidates, capacity);
                 candidateTypes = Arrays.copyOf(candidateTypes, capacity);
             }
-            candidates[count] = entity;
-            candidateTypes[count++] = type;
+            candidates[count] = entry.getKey();
+            candidateTypes[count++] = entry.getValue();
         }
         if (count < candidateCount) {
             Arrays.fill(candidates, count, candidateCount, null);
             Arrays.fill(candidateTypes, count, candidateCount, null);
         }
         candidateCount = count;
+        HuntingDebug.endTick(resolved, byNametag, config);
+    }
+
+    private boolean torrhusTargetSelected() {
+        for (TracerTarget target : TracerTarget.values()) if (target.torrhusOnly() && config.isSelected(target)) return true;
+        return false;
+    }
+
+    private boolean tracked(TracerTarget target, boolean area) {
+        return config.isSelected(target) && (!target.torrhusOnly() || area);
+    }
+
+    /** The mob a nametag floats over: the closest living mob just below it (only bees for Pollendart). */
+    private Entity mobBelow(Entity tag, TracerTarget target) {
+        Entity best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (Entity mob : mobs) {
+            if (target == TracerTarget.POLLENDART && !(mob instanceof Bee)) continue;
+            double dx = mob.getX() - tag.getX(), dz = mob.getZ() - tag.getZ(), dy = tag.getY() - mob.getY();
+            if (dy < -0.5 || dy > mob.getBbHeight() + 2.5 || dx * dx + dz * dz > 2.25) continue;
+            double distance = dx * dx + dz * dz + dy * dy;
+            if (distance < bestDistance) { bestDistance = distance; best = mob; }
+        }
+        return best;
     }
 
     private void clearCandidates() {
+        resolved.clear();
+        byNametag.clear();
         Arrays.fill(candidates, 0, candidateCount, null);
         Arrays.fill(candidateTypes, 0, candidateCount, null);
         candidateCount = 0;
@@ -109,13 +178,19 @@ final class VexTracerRenderer {
         return null;
     }
 
+    /** The target this entity was resolved to this tick, or null. */
+    TracerTarget trackedTarget(Entity entity) { return resolved.get(entity); }
+
     int glowColor(Entity entity) {
+        // Called by several render mixins for every entity each frame; untracked mobs stop at this lookup.
+        TracerTarget type = resolved.isEmpty() ? null : resolved.get(entity);
+        // A nametag stand used as tracer fallback gets the line and box, never a glowing armor-stand silhouette.
+        if (type == null || entity instanceof ArmorStand) return 0;
         Minecraft client = Minecraft.getInstance();
         if (!config.enabled() || client.player == null || client.level != cachedLevel || range == null
                 || client.gui.hud.isHidden() || !entity.isAlive() || entity.isRemoved()
                 || entity.level() != cachedLevel || !range.contains(entity.getX(), entity.getZ())) return 0;
-        TracerTarget type = typeOf(entity);
-        if (type == null || !config.isSelected(type) || (type != TracerTarget.VEX && !activeTorrhus)) return 0;
+        if (!config.isSelected(type) || (type.torrhusOnly() && !activeTorrhus)) return 0;
         return config.glowColor(type);
     }
 

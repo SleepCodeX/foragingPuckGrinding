@@ -20,7 +20,8 @@ abstract class OutlineVisibilityMixin {
     private void huntingHelperVisibleOutline(Entity entity, Frustum frustum, double x, double y, double z,
             CallbackInfoReturnable<Boolean> cir) {
         if (TrackedOutlines.colorFor(entity) != 0) {
-            // Keep native distance and frustum culling, but include outlined mobs in occluded sections.
+            // Keep frustum culling (the size-based distance cull is lifted by EntityRenderDistanceMixin),
+            // but include outlined mobs in occluded sections.
             cir.setReturnValue(levelRenderer.entityRenderDispatcher().shouldRender(entity, frustum, x, y, z));
         }
     }

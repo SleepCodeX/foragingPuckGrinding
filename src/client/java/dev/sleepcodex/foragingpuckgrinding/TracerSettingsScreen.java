@@ -24,6 +24,7 @@ public final class TracerSettingsScreen extends Screen {
     private static final OverlayColor[] GLOW_COLORS = OverlayColor.values();
     private static final OverlayColor[] LINE_COLORS = Arrays.stream(GLOW_COLORS).filter(OverlayColor::isSolid).toArray(OverlayColor[]::new);
     private static final int POPUP_ROWS = 5, POPUP_ROW_HEIGHT = 22;
+    private static final int COLUMNS = 3, CARD_ROWS = (TYPES.length + COLUMNS - 1) / COLUMNS;
     private final TracerConfig config;
     private final KeyMapping toggleKey;
     private final Consumer<Boolean> enable;
@@ -69,17 +70,20 @@ public final class TracerSettingsScreen extends Screen {
     @Override protected void init() {
         bodyButtons.clear(); navigation.clear(); baseY.clear(); popupTarget = null; draggingScrollbar = false;
         panelWidth = Math.min(570, width - 24);
-        panelHeight = Math.min(328, height - 16);
+        // Cards are chosen from the complete panel height they get, so the footer and Done always stay on screen;
+        // rows that do not fit scroll inside the body.
+        int cardsPanel = Math.min(76 + CARD_ROWS * (178 + 22) - 22 + 12 + 46, height - 16);
+        cards = panelWidth >= 430 && cardsPanel >= 280;
+        panelHeight = cards ? cardsPanel : Math.min(328, height - 16);
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
-        cards = panelWidth >= 430 && panelHeight >= 280;
         int footer = top + panelHeight - 34;
         bodyTop = top + (cards ? 76 : 64);
         bodyBottom = footer - 12;
         int gap = cards ? 22 : 16;
-        int cardWidth = cards ? (panelWidth - 40 - gap * 2) / 3 : panelWidth - 40;
+        int cardWidth = cards ? (panelWidth - 40 - gap * (COLUMNS - 1)) / COLUMNS : panelWidth - 40;
         int cardHeight = cards ? 178 : 112;
-        contentHeight = cards ? cardHeight + 12 : TYPES.length * (cardHeight + gap) - gap + 12;
+        contentHeight = (cards ? CARD_ROWS : TYPES.length) * (cardHeight + gap) - gap + 12;
         titleScale = Math.min(1.45, (panelWidth - 180) / MenuFont.width("Hunting Helper"));
         shortcut = MenuFont.ellipsis(toggleKey.getTranslatedKeyMessage().getString() + " toggles selected", panelWidth - 185);
         enabledButton = addRenderableWidget(Button.builder(masterLabel(), b -> {
@@ -87,8 +91,11 @@ public final class TracerSettingsScreen extends Screen {
         }).bounds(left + panelWidth - 112, top + 15, 96, 27).build());
         navigation.add(enabledButton);
         for (TracerTarget target : TYPES) {
-            int index = target.ordinal(), x = left + 20 + (cards ? index * (cardWidth + gap) : 0);
-            int y = bodyTop + 6 + (cards ? 0 : index * (cardHeight + gap));
+            int index = target.ordinal(), row = cards ? index / COLUMNS : index, column = cards ? index % COLUMNS : 0;
+            // A shorter last row of cards is centered under the full rows.
+            int inRow = cards ? Math.min(COLUMNS, TYPES.length - row * COLUMNS) : 1;
+            int x = left + 20 + (cards ? (COLUMNS - inRow) * (cardWidth + gap) / 2 + column * (cardWidth + gap) : 0);
+            int y = bodyTop + 6 + row * (cardHeight + gap);
             mobButtons[index] = bodyButton(mobLabel(target), x + 10, y + 8, cardWidth - 20, cards ? 80 : 34, b -> {
                 var selected = config.selectedTargets();
                 if (!selected.remove(target)) selected.add(target);
