@@ -1,24 +1,24 @@
 # Hunting Helper
 
-OneClient-inspired controls for colored mob tracers and matching boxes.
+OneClient-inspired controls for mob tracers, matching boxes and through-wall glow.
 
-![Colored tracers and mob boxes](docs/media/1.2.0/trackers.png)
+![Hivethief opening fade and tracker settings](docs/media/1.3.0/menu-opening.gif)
 
-**Purple Vex · Cyan Blue Jay · Gold Hivethief (Ghast)**
+Choose each mob's **line** and **glow** colors from scrollable dropdowns.
+Glow can **Match line**, use its own color, or turn **Off**.
 
-Open **`/huntinghelper`** to choose mobs. Toggle them separately or use **Select all / Clear all**.
-**V** toggles your selection; **F1** hides the overlays.
+![Colored tracers, boxes and model glow through walls](docs/media/1.3.0/trackers.png)
 
-![Tracker selection menu](docs/media/1.2.0/settings.png)
+**Purple Vex · Cyan Blue Jay · Gold Hivethief** by default.
 
-Scans the full loaded render-distance area, including corner chunks.
-Blue Jay and Ghast tracking apply in Torrhus.
+Open **`/huntinghelper`**. **V** toggles your selection; **F1** hides all overlays.
+Scans the full loaded render distance. Blue Jay and Hivethief tracking apply in Torrhus.
 
 ## Install
 
 **Minecraft 26.2 · Java 25 · Fabric Loader 0.19.5+ · Fabric API 0.161.0+26.2**
 
-Put [Hunting Helper 1.2.0](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.2.0/hunting-helper-1.2.0%2Bmc26.2.jar)
+Put [Hunting Helper 1.3.0](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.3.0/hunting-helper-1.3.0%2Bmc26.2.jar)
 in `mods`, replacing the older tracer JAR.
 
 [Source code](src) · [Build it yourself](docs/DEVELOPMENT.md) · [Downloads](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest)

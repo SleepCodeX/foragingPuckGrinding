@@ -37,12 +37,14 @@ public final class VexTracerClient implements ClientModInitializer {
         KeyMapping toggle = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.foragingpuckgrinding.toggle_vex_tracers", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, category));
         VexTracerRenderer renderer = new VexTracerRenderer(config);
+        TrackedOutlines.install(renderer);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggle.consumeClick()) setEnabled(client, !config.enabled());
             if (menuRequested) {
                 menuRequested = false;
                 client.gui.setScreen(new TracerSettingsScreen(config, toggle,
-                        enabled -> setEnabled(client, enabled), targets -> setTargets(client, targets)));
+                        enabled -> setEnabled(client, enabled), targets -> setTargets(client, targets),
+                        (target, glow, color) -> setColor(client, target, glow, color)));
             }
             renderer.tick(client);
         });
@@ -71,6 +73,16 @@ public final class VexTracerClient implements ClientModInitializer {
             LOGGER.warn("Hunting Helper target changed, but could not be saved", exception);
             if (client.player != null) client.player.sendSystemMessage(
                     Component.literal("Hunting Helper setting could not be saved; see the game log."));
+        }
+    }
+
+    private void setColor(Minecraft client, TracerTarget target, boolean glow, OverlayColor color) {
+        try {
+            config.setColor(target, glow, color);
+        } catch (IOException exception) {
+            LOGGER.warn("Hunting Helper color changed, but could not be saved", exception);
+            if (client.player != null) client.player.sendSystemMessage(
+                    Component.literal("Hunting Helper color could not be saved; see the game log."));
         }
     }
 

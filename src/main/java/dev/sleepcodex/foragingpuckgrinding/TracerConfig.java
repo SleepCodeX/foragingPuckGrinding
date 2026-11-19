@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,20 +19,36 @@ public final class TracerConfig {
     private final Path path;
     private boolean enabled;
     private EnumSet<TracerTarget> targets = EnumSet.of(TracerTarget.VEX);
+    private final EnumMap<TracerTarget, OverlayColor> lines = new EnumMap<>(TracerTarget.class);
+    private final EnumMap<TracerTarget, OverlayColor> glows = new EnumMap<>(TracerTarget.class);
 
     public TracerConfig(Path path) {
         this.path = path;
+        resetColors();
+    }
+
+    private void resetColors() {
+        for (TracerTarget target : TracerTarget.values()) {
+            lines.put(target, OverlayColor.defaultFor(target));
+            glows.put(target, OverlayColor.MATCH);
+        }
     }
 
     public void load() throws IOException {
         enabled = false;
         targets = EnumSet.of(TracerTarget.VEX);
+        resetColors();
         if (!Files.exists(path)) return;
         Properties properties = new Properties();
         try (Reader reader = Files.newBufferedReader(path)) {
             properties.load(reader);
         }
         enabled = Boolean.parseBoolean(properties.getProperty("enabled", "false").trim());
+        for (TracerTarget target : TracerTarget.values()) {
+            OverlayColor line = OverlayColor.parse(properties.getProperty("line." + target.name()), OverlayColor.defaultFor(target));
+            lines.put(target, line.isSolid() ? line : OverlayColor.defaultFor(target));
+            glows.put(target, OverlayColor.parse(properties.getProperty("glow." + target.name()), OverlayColor.MATCH));
+        }
         String value = properties.getProperty("targets");
         if (value == null) value = properties.getProperty("target", "VEX");
         value = value.strip().toUpperCase(Locale.ROOT);
@@ -62,6 +79,21 @@ public final class TracerConfig {
     public boolean hasTargets() { return !targets.isEmpty(); }
     public EnumSet<TracerTarget> selectedTargets() { return targets.clone(); }
 
+    public OverlayColor lineChoice(TracerTarget target) { return lines.get(target); }
+    public OverlayColor glowChoice(TracerTarget target) { return glows.get(target); }
+    public int lineColor(TracerTarget target) { return lineChoice(target).argb(); }
+    public int glowColor(TracerTarget target) {
+        OverlayColor color = glowChoice(target);
+        return color == OverlayColor.MATCH ? lineColor(target) : color.argb();
+    }
+    public void setColor(TracerTarget target, boolean glow, OverlayColor value) throws IOException {
+        java.util.Objects.requireNonNull(target);
+        java.util.Objects.requireNonNull(value);
+        if (!glow && !value.isSolid()) throw new IllegalArgumentException("Lines need a visible color");
+        (glow ? glows : lines).put(target, value);
+        save();
+    }
+
     public void setTargets(Set<TracerTarget> values) throws IOException {
         java.util.Objects.requireNonNull(values);
         targets = values.isEmpty() ? EnumSet.noneOf(TracerTarget.class) : EnumSet.copyOf(values);
@@ -75,6 +107,10 @@ public final class TracerConfig {
             Properties properties = new Properties();
             properties.setProperty("enabled", Boolean.toString(enabled));
             properties.setProperty("targets", targets.stream().map(Enum::name).collect(Collectors.joining(",")));
+            for (TracerTarget target : TracerTarget.values()) {
+                properties.setProperty("line." + target.name(), lineChoice(target).name());
+                properties.setProperty("glow." + target.name(), glowChoice(target).name());
+            }
             try (Writer writer = Files.newBufferedWriter(temporary)) {
                 properties.store(writer, "Hunting Helper: tracers");
             }
