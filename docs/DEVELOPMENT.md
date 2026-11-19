@@ -10,8 +10,8 @@ Colored tracers and matching mob boxes for **Minecraft 26.2 / Fabric**.
 | Parched | Red | Mobs below a "Parched" nametag in Torrhus |
 | Pollendart | Green | Bees below a "Pollendart" nametag in Torrhus |
 
-Open **`/huntinghelper`**. Toggle each mob separately, use **Select all / Clear all**,
-or use the master switch. **V** toggles all selected trackers; F1 hides the overlays.
+Open **`/hh` → Hunting presets**. Toggle each mob separately, use **All presets / Clear presets**,
+or use the master switch. **V** toggles all selected trackers and F1 hides the overlays.
 Lines and boxes match their mob's color and remain visible through blocks.
 
 ## Full source and build
@@ -103,7 +103,7 @@ Candidate entity/type arrays grow only when needed and are reused between ticks.
 Dead/world references are cleared promptly. Extraction uses cached classifications
 and four range comparisons, then publishes privately owned immutable frame arrays
 for the native renderer. There is no per-frame world scan or reuse of in-flight
-render snapshots. The menu uses a 400 ms Hivethief-to-header crossfade with no input lock. Smaller icons leave room for independent line/glow color dropdowns; compact screens scroll the card body while header/footer stay fixed.
+render snapshots. The dashboard opens in 400 ms. A 1254 × 1254 transparent Frost Hivethief travels from the expanding badge to the header. The controls accept input throughout. Smaller icons leave room for independent line/glow color dropdowns; compact screens scroll the card body while header/footer stay fixed.
 
 ## Model outlines and color preferences
 
@@ -115,7 +115,7 @@ Native tests inspect actual extracted outline colors behind a wall, independent 
 
 ## 1.4.0 implementation notes
 
-Hypixel nametag parsing and the existing pairing tolerance are preserved. A reusable index groups **all** loaded living mobs into 4-block horizontal columns. Looking in adjacent columns is only a nametag/body association optimization, not a range cap; there is no vertical bucketing or height limit. Clearing the index each tick and on world/disabled transitions removes stale references. A tie between equally close bodies is resolved by entity ID.
+Hypixel nametag parsing and the existing pairing tolerance are preserved. A reusable index groups **all** loaded living mobs into 4-block horizontal columns. Looking in adjacent columns is only a nametag/body association optimization, not a range cap; there is no vertical bucketing or height limit. Clearing the index each tick and on world/disabled transitions removes stale references. The current build prioritizes a living mounted body, then horizontal alignment, 3D distance and entity ID.
 
 The shared `MenuTheme` defines charcoal surfaces, cool gray text and restrained accents. At a 640 × 360 GUI, the hunting cards and custom library entry fit without scrolling; narrower windows keep the scrollable list and keyboard reveal. No extra blur shader or continuous animation loop is installed.
 

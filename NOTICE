@@ -14,8 +14,9 @@ https://github.com/SkyblockerMod/Skyblocker/blob/74fc9ae67c8eddf3dbf46f3eb2a884c
 
 Visual reference: SkyHanni's Fast Fairy Souls Pathfinder and camera-anchored
 line rendering were inspected to understand the requested appearance.
-SkyHanni is distributed under LGPL-2.1; no SkyHanni source or assets are included
-and this mod does not depend on SkyHanni.
+SkyHanni is distributed under LGPL-2.1. Hunting Helper's own tracer renderer was
+implemented independently. The nested Sparkling Mutuals JAR carries its separate
+SkyHanni notices for adapted Safari features.
 https://github.com/SkyHanniStudios/SkyHanni
 
 Project setup is based on FabricMC's CC0 fabric-example-mod (26.2 branch).
