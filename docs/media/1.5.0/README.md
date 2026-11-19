@@ -10,3 +10,5 @@
 | ![Preset color dropdown](colors.png) | ![Custom overlays](custom-targets.png) |
 
 The packaged Fabric client generated these images in a simulated SkyBlock scene.
+
+![Sparkling Mutuals Safari settings opened from Hunting Helper](safari.png)

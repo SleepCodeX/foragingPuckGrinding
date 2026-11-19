@@ -17,7 +17,33 @@ fabricApi.configureTests {
     enableGameTests = false
     enableClientGameTests = true
 }
+// Use the upstream Fabric jars intact so their nested dependencies, licenses and mod IDs survive packaging.
+repositories {
+    exclusiveContent {
+        forRepository {
+            ivy {
+                name = 'SparklingMutualsGitHubRelease'
+                url = uri('https://github.com/johnceoskyblock/sparkling-mutuals/releases/download')
+                patternLayout { artifact 'v[revision]/sparkling-mutuals-[revision]+mc26.2.jar' }
+                metadataSources { artifact() }
+            }
+        }
+        filter { includeModule 'net.johnceo', 'sparkling-mutuals' }
+    }
+}
+configurations {
+    safariBundle { canBeConsumed = false; transitive = false }
+    kotlinBundle { canBeConsumed = false; transitive = false }
+    clientCompileOnly.extendsFrom safariBundle
+    gametestCompileOnly.extendsFrom safariBundle
+    // Loom's development client uses the same standalone components as the packaged mod.
+    clientRuntimeOnly.extendsFrom safariBundle, kotlinBundle
+}
+def safariHash = 'd086e8303009cc0d16e3ae7c8360b5037e366ce60a70a66d400318af58940213'
+def kotlinHash = '620c2709be2a262b837cf976f6f85f6eda80a56af2ba4242e0bdc83a60fee7a5'
 dependencies {
+    safariBundle 'net.johnceo:sparkling-mutuals:4.3.7@jar'
+    kotlinBundle 'net.fabricmc:fabric-language-kotlin:1.14.1+kotlin.2.4.20@jar'
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
@@ -68,7 +94,22 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
 }
 test { useJUnitPlatform() }
+def checkEmbedded = tasks.register('verifyBundledMods') {
+    inputs.files(configurations.safariBundle, configurations.kotlinBundle)
+    inputs.property('safariSha256', safariHash)
+    inputs.property('kotlinSha256', kotlinHash)
+    doLast {
+        [ [configurations.safariBundle.singleFile, safariHash],
+          [configurations.kotlinBundle.singleFile, kotlinHash] ].each { pair ->
+            String actual = java.security.MessageDigest.getInstance('SHA-256').digest(pair[0].bytes).encodeHex().toString()
+            if (actual != pair[1]) throw new GradleException("Checksum mismatch for ${pair[0].name}: ${actual}")
+        }
+    }
+}
 jar {
+    dependsOn checkEmbedded
+    from(configurations.safariBundle) { into 'META-INF/jars'; rename { 'sparkling-mutuals.jar' } }
+    from(configurations.kotlinBundle) { into 'META-INF/jars'; rename { 'fabric-language-kotlin.jar' } }
     from('LICENSE', 'NOTICE')
     from('licenses') { into 'licenses' }
 }

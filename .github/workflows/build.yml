@@ -11,7 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 40
     env:
       LIBGL_ALWAYS_SOFTWARE: 'true'
     steps:
@@ -120,6 +120,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          python3 -m pip install --quiet Pillow
           python3 - <<'PY'
           from pathlib import Path
           from shutil import copyfile
@@ -140,6 +141,7 @@ jobs:
               "custom-mob-type-editor": "type-editor",
               "custom-tracker-library": "library",
               "custom-tracked-mobs": "custom-targets",
+              "bundled-safari-settings": "safari",
           }.items():
               copyfile(shot(name), out / (file + ".png"))
           frames = []

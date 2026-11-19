@@ -81,7 +81,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 });
                 requireButtonsFit(context);requireKeyboardReachability(context);
                 context.getInput().pressKey(GLFW.GLFW_KEY_HOME);context.takeScreenshot("tracker-menu-compact");
-                context.clickScreenButton("Tracers: OFF");context.clickScreenButton("Select all");
+                context.clickScreenButton("Tracers: OFF");context.clickScreenButton("All presets");
                 context.getInput().resizeWindow(1280,720);
                 context.runOnClient(client -> {client.options.guiScale().set(2);client.resizeGui();});context.waitTicks(3);requireButtonsFit(context);
                 captureOpening(context);
@@ -142,9 +142,9 @@ public final class VexTracerGameTest implements FabricClientGameTest {
                 requireColors(context.takeScreenshot("ghast-outside-torrhus"),false,false,false);
                 world.getServer().runCommand("scoreboard objectives setdisplay sidebar hh_test");context.waitTicks(14);
                 requireColors(context.takeScreenshot("hivethief-in-torrhus"),false,false,true);
-                openMenu(context);context.clickScreenButton("Clear all");context.clickScreenButton("Done");context.waitTicks(3);
+                openMenu(context);context.clickScreenButton("Clear presets");context.clickScreenButton("Done");context.waitTicks(3);
                 requireColors(context.takeScreenshot("no-selected-mobs"),false,false,false);
-                openMenu(context);context.clickScreenButton("Select all");context.clickScreenButton("Tracers: ON");context.clickScreenButton("Done");context.waitTicks(3);
+                openMenu(context);context.clickScreenButton("All presets");context.clickScreenButton("Tracers: ON");context.clickScreenButton("Done");context.waitTicks(3);
                 requireColors(context.takeScreenshot("master-hides-all-three"),false,false,false);
                 requireOutlines(context,0,0);
                 command(context,"vextracers on");
@@ -289,7 +289,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
             var buttons=client.gui.screen().children().stream()
                     .filter(net.minecraft.client.gui.components.Button.class::isInstance)
                     .map(net.minecraft.client.gui.components.Button.class::cast).filter(b->b.visible).toList();
-            if(buttons.size()!=TracerTarget.values().length*3+5)
+            if(buttons.size()!=TracerTarget.values().length*3+6)
                 throw new AssertionError("The normal menu must show every tracker and color control without scrolling");
         });
     }
@@ -318,7 +318,7 @@ public final class VexTracerGameTest implements FabricClientGameTest {
     private static void requireKeyboardReachability(ClientGameTestContext context) {
         HashSet<String> reached=new HashSet<>();
         context.runOnClient(client -> client.gui.screen().setFocused(null));
-        int controls=TracerTarget.values().length*3+5;
+        int controls=TracerTarget.values().length*3+6;
         for(int i=0;i<controls;i++) {
             context.getInput().pressKey(GLFW.GLFW_KEY_TAB);
             context.runOnClient(client -> {

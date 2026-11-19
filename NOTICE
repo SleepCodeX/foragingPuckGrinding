@@ -23,3 +23,14 @@ https://github.com/FabricMC/fabric-example-mod/tree/26.2
 
 The Gradle wrapper files are from Gradle and are licensed under Apache-2.0.
 See gradle/LICENSE for the license and the copyright notices in those files.
+
+Bundled, unmodified Fabric mods for Minecraft 26.2:
+- Sparkling Mutuals 4.3.7 by JohnCEO and JohnKuudra. The upstream JAR retains its CC0 dedication,
+  dependency notices, licenses and Hypixel Mod API. Corresponding source and build scripts:
+  https://github.com/johnceoskyblock/sparkling-mutuals/tree/2b361320476d7e6e6a42390d4b1c3b7ab5e20731
+- Fabric Language Kotlin 1.14.1+kotlin.2.4.20 by FabricMC. Its original JAR retains its
+  license and the bundled Kotlin libraries. Source and license:
+  https://github.com/FabricMC/fabric-language-kotlin/tree/1.14.1%2Bkotlin.2.4.20
+
+Hunting Helper uses Fabric Loader's native nested-mod support. Upstream components
+retain their licenses. Hunting Helper's MIT license applies to its own code.

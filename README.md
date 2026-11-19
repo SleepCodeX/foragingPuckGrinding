@@ -26,8 +26,18 @@ Nametag matching ignores capitalization and Minecraft formatting. The tracker re
 
 - **`/hh`** or **`/huntinghelper`** opens settings. You can also bind **Open tracker settings** in Minecraft Controls.
 - **V** toggles all selected trackers. **F1** hides overlays.
-- **Select all / Clear all** controls the five hunting presets.
+- **All presets / Clear presets** controls the five hunting presets.
 - **`/hh debug`** toggles detection summaries in the game log.
+
+## Sparkling Mutuals Safari suite
+
+**/hh → Safari settings** opens the full Sparkling Mutuals 4.3.7 interface. Closing it takes you back to Hunting Helper. Its own **/sm** commands, settings and history also work. Safari HUDs and ESP, party sync, capture tools, warping, history, achievements, contests, Hunting Box value and the other upstream tools are included.
+
+Install the Hunting Helper JAR and Fabric API. Hunting Helper includes the matching Sparkling Mutuals and Fabric Language Kotlin JARs. The custom trackers and settings run locally. Party synchronization, live Bazaar/profile data and other online features use their respective services when active.
+
+![Bundled Safari settings](docs/media/1.5.0/safari.png)
+
+[Upstream feature guide](https://github.com/johnceoskyblock/sparkling-mutuals/tree/v4.3.7) · [Upstream release](https://github.com/johnceoskyblock/sparkling-mutuals/releases/tag/v4.3.7)
 
 ## Install
 

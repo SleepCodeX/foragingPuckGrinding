@@ -24,7 +24,7 @@ public final class TracerSettingsScreen extends Screen {
     private static final OverlayColor[] GLOW_COLORS = OverlayColor.values();
     private static final OverlayColor[] LINE_COLORS = Arrays.stream(GLOW_COLORS).filter(OverlayColor::isSolid).toArray(OverlayColor[]::new);
     private static final int POPUP_ROWS = 5, POPUP_ROW_HEIGHT = 22;
-    private static final int COLUMNS = 3, CARD_ROWS = (TYPES.length + COLUMNS - 1) / COLUMNS;
+    private static final int COLUMNS = 3, CARD_ROWS = Math.ceilDiv(TYPES.length + 1, COLUMNS);
     private final TracerConfig config;
     private final KeyMapping toggleKey;
     private final Consumer<Boolean> enable;
@@ -37,7 +37,7 @@ public final class TracerSettingsScreen extends Screen {
     private final String[] lineLabels = new String[TYPES.length], glowLabels = new String[TYPES.length];
     private final List<Button> bodyButtons = new ArrayList<>(), navigation = new ArrayList<>();
     private final IdentityHashMap<Button, Integer> baseY = new IdentityHashMap<>();
-    private Button enabledButton, allButton, noneButton, doneButton, popupAnchor;
+    private Button enabledButton, allButton, noneButton, doneButton, safariButton, popupAnchor;
     private int left, top, panelWidth, panelHeight, bodyTop, bodyBottom, contentHeight, scroll, shownChunks = -1;
     private int cardHeight;
     private Button customButton;
@@ -111,15 +111,23 @@ public final class TracerSettingsScreen extends Screen {
         int customY = bodyTop + 6 + (cards ? TYPES.length / COLUMNS : TYPES.length) * (cardHeight + gap);
         customButton = bodyButton(Component.literal("Custom trackers"), customX, customY, cardWidth, cardHeight,
                 b -> openCustom());
-        allButton = addRenderableWidget(Button.builder(Component.literal("Select all"), b -> {
+        boolean narrowFooter = panelWidth < 470;
+        int presetWidth = narrowFooter ? 58 : 81;
+        int doneWidth = narrowFooter ? 46 : 68;
+        int safariWidth = narrowFooter ? 72 : 99;
+        safariButton = addRenderableWidget(Button.builder(Component.literal("Safari settings"), b ->
+                Minecraft.getInstance().gui.setScreen(new net.johnceo.sparklingmutuals.config.SafariConfigScreen(
+                        new net.johnceo.sparklingmutuals.config.SafariSettings(), null, this)))
+                .bounds(left + panelWidth - 16 - doneWidth - 6 - safariWidth, footer, safariWidth, 24).build());
+        allButton = addRenderableWidget(Button.builder(Component.literal("All presets"), b -> {
             select.accept(EnumSet.allOf(TracerTarget.class)); refreshLabels();
-        }).bounds(left + 16, footer, 83, 24).build());
-        noneButton = addRenderableWidget(Button.builder(Component.literal("Clear all"), b -> {
+        }).bounds(left + 16, footer, presetWidth, 24).build());
+        noneButton = addRenderableWidget(Button.builder(Component.literal("Clear presets"), b -> {
             select.accept(EnumSet.noneOf(TracerTarget.class)); refreshLabels();
-        }).bounds(left + 105, footer, 83, 24).build());
+        }).bounds(left + 22 + presetWidth, footer, presetWidth, 24).build());
         doneButton = addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
-                .bounds(left + panelWidth - 88, footer, 72, 24).build());
-        navigation.add(allButton); navigation.add(noneButton); navigation.add(doneButton);
+                .bounds(left + panelWidth - 16 - doneWidth, footer, doneWidth, 24).build());
+        navigation.add(allButton); navigation.add(noneButton); navigation.add(safariButton); navigation.add(doneButton);
         for (int row = 0; row < POPUP_ROWS; row++) {
             final int index = row;
             popupButtons[row] = addRenderableWidget(Button.builder(Component.empty(), b -> choose(popupScroll + index))
@@ -203,13 +211,14 @@ public final class TracerSettingsScreen extends Screen {
                 canvas.round(left + panelWidth - 11, bodyTop, 3, track, 1, MenuTheme.TRACK);
                 canvas.round(left + panelWidth - 11, bodyTop + (track - thumb) * scroll / maximumScroll(), 3, thumb, 1, MenuTheme.ACCENT);
             }
-            smallButton(graphics, canvas, allButton, "Select all", mouseX, mouseY);
-            smallButton(graphics, canvas, noneButton, "Clear all", mouseX, mouseY);
+            smallButton(graphics, canvas, allButton, "All presets", mouseX, mouseY);
+            smallButton(graphics, canvas, noneButton, "Clear presets", mouseX, mouseY);
+            smallButton(graphics, canvas, safariButton, "Safari settings", mouseX, mouseY);
             smallButton(graphics, canvas, doneButton, "Done", mouseX, mouseY);
-            if (cards) {
+            if (panelWidth >= 560) {
                 int chunks = Minecraft.getInstance().options.getEffectiveRenderDistance();
                 if (shownChunks != chunks) { shownChunks = chunks; rangeLabel = chunks + "-chunk render distance"; }
-                center(graphics, rangeLabel, left + panelWidth / 2, allButton.getY() + 8, .7, MenuTheme.MUTED);
+                center(graphics, rangeLabel, (noneButton.getRight() + safariButton.getX()) / 2, allButton.getY() + 8, .7, MenuTheme.MUTED);
             }
             if (popupTarget != null) drawPopup(graphics, canvas, mouseX, mouseY);
         } finally { MenuFont.opacity(1); }

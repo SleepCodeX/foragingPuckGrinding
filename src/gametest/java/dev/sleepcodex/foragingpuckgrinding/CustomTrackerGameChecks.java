@@ -16,7 +16,21 @@ final class CustomTrackerGameChecks {
         server.runCommand("scoreboard objectives setdisplay sidebar");
         server.runCommand("time set night");
         open(c, "hh", TracerSettingsScreen.class);
-        c.clickScreenButton("Clear all");
+        c.runOnClient(client -> {
+            var loader = FabricLoader.getInstance();
+            for (String nested : java.util.List.of("sparkling-mutuals", "fabric-language-kotlin")) {
+                var container = loader.getModContainer(nested).orElseThrow();
+                var host = container.getContainingMod().orElseThrow(() -> new AssertionError(nested + " must load from the Hunting Helper JAR"));
+                if (!host.getMetadata().getId().equals(VexTracerClient.MOD_ID)) throw new AssertionError("Unexpected parent " + host);
+            }
+        });
+        c.clickScreenButton("Safari settings");
+        c.waitForScreen(net.johnceo.sparklingmutuals.config.SafariConfigScreen.class);
+        c.waitTicks(4);
+        c.takeScreenshot("bundled-safari-settings");
+        c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        c.waitForScreen(TracerSettingsScreen.class);
+        c.clickScreenButton("Clear presets");
         c.clickScreenButton("Custom trackers");
         c.waitForScreen(CustomLibraryScreen.class);
         c.clickScreenButton("Add tracker");
