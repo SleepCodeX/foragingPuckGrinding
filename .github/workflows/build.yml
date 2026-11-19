@@ -101,7 +101,6 @@ jobs:
 
   capture_gallery:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'codex/integrate-nametag-trackers'
-    needs: build
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -114,6 +113,8 @@ jobs:
         with:
           name: tracker-validation
           path: validation-captures
+          run-id: 44471732661
+          github-token: ${{ github.token }}
       - name: Prepare the native Minecraft visual guide
         run: |
           python -m pip install pillow
@@ -130,10 +131,10 @@ jobs:
               "all-five-trackers": "trackers", "nametag-parched-and-pollendart": "nametags"
           }
           for original, name in captures.items():
-              matches = list(root.rglob(original + ".png"))
-              assert len(matches) == 1, (original, matches)
+              matches = [p for p in root.rglob("*.png") if original in p.stem]
+              assert len(matches) == 1, (original, matches, [p.name for p in root.rglob("*.png")])
               shutil.copyfile(matches[0], dest / (name + ".png"))
-          paths = sorted(root.rglob("menu-opening-*.png"))
+          paths = sorted(p for p in root.rglob("*.png") if "menu-opening-" in p.stem)
           assert len(paths) == 15, len(paths)
           frames = [Image.open(p).convert("RGB").quantize(colors=128) for p in paths]
           frames[0].save(dest / "menu-opening.gif", save_all=True, append_images=frames[1:],

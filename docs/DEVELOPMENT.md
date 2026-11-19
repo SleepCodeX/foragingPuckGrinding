@@ -46,7 +46,7 @@ Hunting Helper/Vex tracer JAR. Install only one version.
 
 Tracers start off, with Vex selected. Each choice persists in
 `config/foragingpuckgrinding.properties`. Older Vex / Blue Jay / Both configurations
-migrate without automatically enabling the new Ghast tracker.
+migrate without automatically enabling new targets.
 
 | Command | Effect |
 | --- | --- |
@@ -64,12 +64,12 @@ in sidebar or tab.
 
 Hypixel names each SkyBlock mob with a custom-named armor stand about two blocks above it.
 Each tick, every loaded entity across the complete render-distance footprint is checked.
-Named stands are matched against the tracker names (whole words, formatting removed) and paired with the closest living non-player mob 0.5 blocks above to 4 blocks below
+Named stands are matched against the tracker names (whole words, formatting removed) and paired with the closest living non-player mob from 0.5 blocks above the tag to its body height plus 2.5 blocks below it,
 within 1.5 blocks horizontally; Pollendart pairs only with bees. Without a mob below, the
 nametag itself is tracked. Parched and Pollendart are nametag-only. Vex, Blue Jay and
 Hivethief additionally keep type detection for mobs without a matching nametag: the
-Ghast tracker uses the entity type, so other Ghasts in the same area also match. Other
-parrot colors, tamed birds and Allays are excluded.
+Ghast tracker uses the entity type, so other Ghasts in the same area also match. The type fallback excludes other
+parrot colors, tamed birds and Allays; an explicit matching Hypixel nametag remains authoritative.
 
 Discovery runs once per client tick; location text is cached. One native line render
 submission draws the interpolated tracers and twelve-edge boxes. OFF and an empty
@@ -87,7 +87,7 @@ Live Hypixel, the full personal modpack and shader combinations are not reproduc
 Ghast model in Torrhus. [Skyblocker's Torrhus detector](https://github.com/SkyblockerMod/Skyblocker/blob/74fc9ae67c8eddf3dbf46f3eb2a884cd853feded/src/main/java/de/hysky/skyblocker/skyblock/entity/glow/adder/TorrhusCanyonGlowAdder.java)
 is the Blue Jay identity reference; no Skyblocker code or dependency is bundled.
 
-The menu uses an original axe icon and OneClient-inspired navy/lavender controls.
+The menu uses bundled mob symbols, matte charcoal surfaces and compact OneClient-inspired controls.
 Adapted helpers retain their MIT notices; Nunito assets use OFL. See [LICENSE](../LICENSE), [NOTICE](../NOTICE)
 and [licenses](../licenses).
 

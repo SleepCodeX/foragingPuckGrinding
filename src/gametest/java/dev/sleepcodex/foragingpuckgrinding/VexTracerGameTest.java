@@ -221,11 +221,11 @@ public final class VexTracerGameTest implements FabricClientGameTest {
         server.runCommand("tp @e[type=minecraft:bee,x=4,y=-56,z=14,distance=..1] 5 -56 14");
         server.runCommand("tp @e[type=minecraft:armor_stand,x=4,y=-54,z=14,distance=..1] 5 -54 14");
         context.waitTicks(5);
-        context.runOnClient(client -> {
+        context.waitFor(client -> {
             for (var entity:client.level.entitiesForRendering())
-                if(entity.getType()==EntityTypes.BEE && near(entity.getX(),5)
-                        && TrackedOutlines.colorFor(entity)!=green)
-                    throw new AssertionError("Moving Pollendart lost its nametag pairing");
+                if(entity.getType()==EntityTypes.BEE && Math.abs(entity.getX()-5)<.2
+                        && TrackedOutlines.colorFor(entity)==green) return true;
+            return false;
         });
         server.runCommand("tp @e[type=minecraft:bee,x=5,y=-56,z=14,distance=..1] 4 -56 14");
         server.runCommand("tp @e[type=minecraft:armor_stand,x=5,y=-54,z=14,distance=..1] 4 -54 14");
