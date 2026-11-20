@@ -98,6 +98,7 @@ public final class VexTracerClient implements ClientModInitializer {
         });
         LevelExtractionEvents.END_EXTRACTION.register(renderer::extract);
         LevelRenderEvents.COLLECT_SUBMITS.register(renderer::submit);
+        LevelRenderEvents.COLLECT_SUBMITS.register(puffs::drawLabels);
     }
 
     private int toggleDebug() {

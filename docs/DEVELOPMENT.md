@@ -30,8 +30,10 @@ Build from this checkout with **JDK 25**:
 
 Windows: `gradlew.bat build`. Output:
 
-- `build/libs/hunting-helper-1.7.0+mc26.2.jar` — installable mod.
-- `build/libs/hunting-helper-1.7.0+mc26.2-sources.jar` — Java and Kotlin source archive.
+- `build/libs/hunting-helper-1.7.1+mc26.2.jar` — installable mod.
+- `build/libs/hunting-helper-1.7.1+mc26.2-sources.jar` — Java and Kotlin source archive.
+
+Puffs are identified from loaded equipment using the [NEU Puff model](https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/blob/f315a139f067c1ac65272b70b294336b5327038e/mobs/puff.json) and its [PUFF_MONSTER head](https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/blob/f315a139f067c1ac65272b70b294336b5327038e/items/PUFF_MONSTER.json). Rift mob labels provide a second signal. The native client check covers delayed equipment, marker stands, item displays, split labels and despawns.
 
 [GitHub Actions](https://github.com/SleepCodeX/foragingPuckGrinding/actions/workflows/build.yml)
 builds the mod and source JARs from the visible commit and uploads both, alongside

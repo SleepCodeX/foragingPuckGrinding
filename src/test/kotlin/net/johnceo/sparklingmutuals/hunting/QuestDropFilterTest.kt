@@ -16,7 +16,8 @@ class QuestDropFilterTest {
     @Test fun `quest items only hides rewards and keeps quest items`() {
         assertEquals(false, decide(GENERIC, true, false))
         for (type in FloorDropType.entries - GENERIC) assertNull(decide(type, true, false, collected = 9), type.name)
-        assertEquals(setOf(LIME, PURPLE, ORANGE, WORM, BERRY, SEEDS, INCENSE, COIN, ICEBREAKER), QuestDropFilter.needed.keys)
+        assertEquals(setOf(LIME, PURPLE, ORANGE, WORM, BERRY, SEEDS, INCENSE, COIN, ICEBREAKER),
+            FloorDropType.entries.filter(QuestDropFilter::quest).toSet())
     }
 
     @Test fun `hide collected stops once the run has what its objectives need`() {

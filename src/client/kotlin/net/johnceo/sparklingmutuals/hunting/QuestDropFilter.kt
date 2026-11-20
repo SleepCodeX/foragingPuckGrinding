@@ -18,15 +18,12 @@ import net.johnceo.sparklingmutuals.safari.resources.FloorDropType
  * Exception: an item an active Hunter trade asks for (found by you or shared by the party) stays highlighted.
  */
 object QuestDropFilter {
-    val needed: Map<FloorDropType, Int> = mapOf(
+    private val caps: Map<FloorDropType, Int> = mapOf(
         FloorDropType.LIME to 1, FloorDropType.PURPLE to 1, FloorDropType.ORANGE to 1,
         FloorDropType.WORM to 3, FloorDropType.BERRY to 3, FloorDropType.SEEDS to 3,
-        FloorDropType.INCENSE to 4, FloorDropType.COIN to 3, FloorDropType.ICEBREAKER to 1)
+        FloorDropType.INCENSE to 4, FloorDropType.ICEBREAKER to 1)
 
-    fun quest(type: FloorDropType) = type in needed
-
-    /** Quest items that "Hide collected quest items" may hide once [needed] is reached. */
-    fun capped(type: FloorDropType) = quest(type) && type != FloorDropType.COIN
+    fun quest(type: FloorDropType) = type == FloorDropType.COIN || type in caps
 
     /** Whether a trade item name ("Lime Gem", "a Yogi Berry", "Bags of Seeds") is this floor drop. */
     fun matches(type: FloorDropType, item: String): Boolean {
@@ -44,7 +41,8 @@ object QuestDropFilter {
     fun decide(type: FloorDropType, questOnly: Boolean, hideCollected: Boolean, collected: Int, tradeItems: Collection<String>): Boolean? {
         if (wantedByTrade(type, tradeItems)) return true
         if (questOnly && !quest(type)) return false
-        if (hideCollected && capped(type) && collected >= needed.getValue(type)) return false
+        val cap = caps[type]
+        if (hideCollected && cap != null && collected >= cap) return false
         return null
     }
 

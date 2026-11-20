@@ -10,11 +10,11 @@ One Fabric mod for hunting, Rift Puffs and Critter Safari in Hypixel SkyBlock. O
 
 ## Puff Crux
 
-Open **/hh → Puff Crux** or type **/hh puff** and switch the timer on. On the Rift Mountaintop, the HUD shows how many Puffs are loaded and the estimated time left for the oldest. The optional action-bar reminder appears at about 25 seconds left. Popping a chain clears its timers.
+Open **/hh → Puff Crux** or type **/hh puff** and switch the timer on. A countdown appears above each detected Puff, including unnamed floating heads. The HUD shows the loaded count and oldest estimate. The optional action-bar reminder appears at about 25 seconds left. Popping a chain clears its timers.
 
 The estimate uses the roughly 100-second Puff lifetime and starts at the first sighting on your client. A Puff already on the mountain when you arrive can pop sooner. The timer runs locally, independently of the tracer switch. [Puff farming observations](https://hypixel.net/threads/puff-crux-farming-method.5830761/)
 
-![Puff Crux countdown in the packaged Minecraft client](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.7.0/puff-hud.png)
+![Puff Crux countdown in the packaged Minecraft client](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest/download/puff-hud.png)
 
 ## Custom trackers
 

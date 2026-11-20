@@ -26,7 +26,7 @@ final class PuffCruxScreen extends TrackerPage {
     }
 
     @Override void content(GuiGraphicsExtractor g, MenuCanvas c, int mx, int my, float delta) {
-        row(g, 54, "Despawn timer", "Estimate from the first sighting of each Puff.");
+        row(g, 54, "Despawn timer", "Show a countdown above each spotted Puff.");
         row(g, 92, "Pop reminder", "Warn with about " + PuffTimers.WARNING_SECONDS + " seconds left.");
         if (!status.isEmpty()) MenuFont.text(g, status, left + 16, footer + 5, .75, MenuTheme.MUTED);
     }

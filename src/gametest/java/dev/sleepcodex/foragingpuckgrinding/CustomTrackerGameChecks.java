@@ -172,19 +172,33 @@ final class CustomTrackerGameChecks {
         c.waitForScreen(HuntingHomeScreen.class);
         c.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
         var server = world.getServer();
+        String skin = "{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/"
+                + "ba5f715a62a29054622412eb673dff548e35061ad845caf4317b1b2ee8f408f0\"}}}";
+        String encoded = java.util.Base64.getEncoder().encodeToString(skin.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String head = "{id:'minecraft:player_head',count:1,components:{'minecraft:profile':{properties:[{name:'textures',value:'"
+                + encoded + "'}]}}}";
+        // A zero-hitbox Puff with delayed equipment, no name and no location text.
+        server.runCommand("summon armor_stand 0 -59 7 {Invisible:1b,Marker:1b,NoGravity:1b,Tags:['hh_puff','puff_head']}");
+        server.runCommand("data merge entity @e[tag=puff_head,limit=1] {equipment:{head:" + head + "}}");
+        c.waitFor(client -> tracker.visibleCount() == 1);
+        server.runCommand("summon item_display 3 -57 8 {item:" + head + ",Tags:['hh_puff','puff_display']}");
+        c.waitFor(client -> tracker.visibleCount() == 2);
         server.runCommand("scoreboard objectives add hh_puff dummy");
         server.runCommand("scoreboard players set Mountaintop hh_puff 1");
         server.runCommand("scoreboard objectives setdisplay sidebar hh_puff");
         server.runCommand("summon armor_stand 0 -57 4 {NoGravity:1b,CustomName:'[Lv7] Puff 100/100❤',Tags:['hh_puff']}");
         server.runCommand("summon text_display 1 -57 5 {text:'Puff',Tags:['hh_puff']}");
         server.runCommand("summon armor_stand 2 -57 6 {NoGravity:1b,CustomName:'Puff Crux',Tags:['hh_puff']}");
-        c.waitFor(client -> tracker.visibleCount() == 2);
+        server.runCommand("summon text_display 0 -57 7 {text:'[Lv7] Puff 100❤',Tags:['hh_puff']}");
+        c.waitFor(client -> tracker.visibleCount() == 4);
+        c.waitTicks(5);
         c.takeScreenshot("puff-crux-countdown");
         server.runCommand("kill @e[type=text_display,tag=hh_puff]");
-        c.waitFor(client -> tracker.visibleCount() == 1);
+        c.waitFor(client -> tracker.visibleCount() == 3);
         server.runCommand("scoreboard objectives remove hh_puff");
-        c.waitFor(client -> tracker.visibleCount() == 0);
+        c.waitFor(client -> tracker.visibleCount() == 2);
         server.runCommand("kill @e[tag=hh_puff]");
+        c.waitFor(client -> tracker.visibleCount() == 0);
         open(c, "hh puff", PuffCruxScreen.class);
         c.clickScreenButton("Timer on");
         c.clickScreenButton("Back");
