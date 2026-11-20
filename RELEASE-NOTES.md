@@ -1,3 +1,9 @@
+# Hunting Helper 1.7.1
+
+- **Puffs on sight.** Hunting Helper recognizes the Puff head on invisible armor stands and item displays. A small countdown appears above each Puff as soon as the client recognizes it. A separate health label shares the same timer.
+- **Safari glow.** Selected critters stay eligible for their outline behind walls. The game still checks camera direction and render distance.
+- **Shining Coins.** The collected-item filter keeps coin markers eligible after the third pickup. Gems, food, incense and the Icebreaker keep their existing limits.
+
 # Hunting Helper 1.7.0
 
 - **Rift Puff Crux timer.** Open **/hh → Puff Crux** or **/hh puff** to enable the estimated despawn countdown and optional pop reminder. The timer runs locally and works with hunting tracers switched off.

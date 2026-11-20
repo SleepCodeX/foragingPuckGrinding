@@ -10,9 +10,10 @@ import java.util.regex.Pattern;
 final class PuffTimers {
     static final int LIFETIME_SECONDS = 100;
     static final int WARNING_SECONDS = 25;
-    private static final Pattern FORMATTING = Pattern.compile("§.|[\\p{Cf}]");
+    private static final Pattern FORMATTING = Pattern.compile("§.|[\\p{Cf}\\p{Co}]");
     private static final Pattern NAME = Pattern.compile(
-            "(?:\\[Lv\\s*\\d+\\]\\s*)?Puff(?:\\s+[\\d,.kKmM/]+\\s*[❤♥]?)?", Pattern.CASE_INSENSITIVE);
+            "(?:[^\\p{L}\\p{N}]*\\[Lv\\.?\\s*\\d+\\]\\s*)?Puff(?:\\s+[\\d,.kKmM/]+)?[\\s❤♥✯✧★✫]*",
+            Pattern.CASE_INSENSITIVE);
     private static final Pattern AREA = Pattern.compile(
             "(?:(?:Area|Zone):|[фϕφ⏣])?\\s*(?:The\\s+)?(?:Mountaintop|Rift)", Pattern.CASE_INSENSITIVE);
     private final Map<UUID, Long> firstSeen = new HashMap<>();
@@ -28,6 +29,22 @@ final class PuffTimers {
         return label != null && AREA.matcher(FORMATTING.matcher(label).replaceAll("").strip()).matches();
     }
 
+    /** Metadata and equipment can arrive in either order for a head and its floating health label. */
+    void link(UUID model, UUID label, long now) {
+        long first = Math.min(firstSeen.getOrDefault(model, now), firstSeen.getOrDefault(label, now));
+        firstSeen.put(model, first);
+        firstSeen.put(label, first);
+    }
+
+    int remaining(UUID id, long now) {
+        return remaining(firstSeen.getOrDefault(id, now), now);
+    }
+
+    private static int remaining(long start, long now) {
+        long remaining = Math.max(0, LIFETIME_SECONDS * 1000L - (now - start));
+        return (int) Math.ceilDiv(remaining, 1000L);
+    }
+
     /** Returns true once as the oldest visible Puff enters the warning window. */
     boolean update(Set<UUID> seen, long now) {
         long lifetime = LIFETIME_SECONDS * 1000L;
@@ -38,8 +55,7 @@ final class PuffTimers {
             if (start != null) oldest = Math.min(oldest, start);
         }
         visible = seen.size();
-        long remaining = Math.max(0, lifetime - (now - oldest));
-        secondsLeft = (int) Math.ceilDiv(remaining, 1000L);
+        secondsLeft = remaining(oldest, now);
         boolean warn = visible > 0 && secondsLeft <= WARNING_SECONDS;
         boolean entered = warn && !warningActive;
         warningActive = warn;

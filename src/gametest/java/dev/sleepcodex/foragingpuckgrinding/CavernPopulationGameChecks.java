@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.Locale;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.azureaaron.hmapi.events.HypixelPacketEvents;
+import net.azureaaron.hmapi.network.packet.v1.s2c.LocationUpdateS2CPacket;
+import net.johnceo.sparklingmutuals.config.SafariEspConfig;
+import net.johnceo.sparklingmutuals.safari.SafariIsland;
+import net.johnceo.sparklingmutuals.safari.esp.SafariEsp;
 import net.johnceo.sparklingmutuals.safari.SafariAssist;
 import net.johnceo.sparklingmutuals.safari.SafariBiome;
 import net.johnceo.sparklingmutuals.safari.SafariRoster;
@@ -69,6 +74,23 @@ final class CavernPopulationGameChecks {
             c.waitTicks(6);
         }
         c.runOnClient(client -> {
+            var empty = java.util.Optional.<String>empty();
+            HypixelPacketEvents.LOCATION_UPDATE.invoker().onPacket(new LocationUpdateS2CPacket(
+                    "fixture", java.util.Optional.of("SKYBLOCK"), empty, java.util.Optional.of("safari"), empty));
+            var armadillo = java.util.stream.StreamSupport.stream(client.level.entitiesForRendering().spliterator(), false)
+                    .filter(e -> e.getType() == net.minecraft.world.entity.EntityTypes.ARMADILLO).findFirst().orElseThrow();
+            boolean glow = SafariEspConfig.INSTANCE.getCritterGlow();
+            try {
+                SafariEspConfig.INSTANCE.setCritterGlow(true);
+                if (SafariEsp.INSTANCE.outlineColor(armadillo) == null || !client.shouldEntityAppearGlowing(armadillo))
+                    throw new AssertionError("A highlighted Scrappy must be eligible for native glow even in another room");
+                SafariEspConfig.INSTANCE.setCritterGlow(false);
+                if (client.shouldEntityAppearGlowing(armadillo))
+                    throw new AssertionError("Disabling critter outlines must restore ordinary culling");
+            } finally {
+                SafariEspConfig.INSTANCE.setCritterGlow(glow);
+                SafariIsland.INSTANCE.reset();
+            }
             for (var model : MODELS) check(model.species(), 0, model.count());
             SafariRosterGameChecks.message("The Shyworm burrowed into the ground!", false);
             SafariRosterGameChecks.message("The Chuckwalla dodged your critter capsule and started running away!", false);

@@ -9,12 +9,29 @@ class PuffTimersTest {
     @Test void acceptsMobAndAreaLabels() {
         assertTrue(PuffTimers.isPuff("§8[Lv7] §aPuff §c100/100❤"));
         assertTrue(PuffTimers.isPuff("Puff"));
+        assertTrue(PuffTimers.isPuff("✯ [Lv. 7] Puff 100/100❤"));
         assertFalse(PuffTimers.isPuff("Puff Crux"));
         assertFalse(PuffTimers.isPuff("Puffercloud"));
         assertTrue(PuffTimers.isRift("§7ф §aThe Mountaintop"));
         assertTrue(PuffTimers.isRift("Area: The Rift"));
+        assertTrue(PuffTimers.isRift("\ue020 The Mountaintop"));
         assertFalse(PuffTimers.isRift("Objective: Enter The Rift"));
         assertFalse(PuffTimers.isRift(null));
+    }
+
+    @Test void lateModelKeepsTimeFromLabelAndSurvivesLabelChanges() {
+        var timers = new PuffTimers();
+        var label = UUID.randomUUID();
+        var model = UUID.randomUUID();
+        timers.update(Set.of(label), 0);
+        timers.link(model, label, 30_000);
+        timers.update(Set.of(model), 30_000);
+        assertEquals(1, timers.visible());
+        assertEquals(70, timers.remaining(model, 30_000));
+        var newLabel = UUID.randomUUID();
+        timers.link(model, newLabel, 50_000);
+        timers.update(Set.of(newLabel), 55_000);
+        assertEquals(45, timers.secondsLeft());
     }
 
     @Test void keepsEachAgeAndWarnsOnceUntilTheOldPuffsLeave() {

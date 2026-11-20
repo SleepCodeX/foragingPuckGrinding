@@ -55,7 +55,7 @@ All marks are off by default and use SM's color picker.
 
 Under **ESP → Floor drops**, both off by default:
 
-- **Quest items only** highlights only quest items: Lime, Purple and Orange Gem (one each, Gemzie chamber), Wriggleworm, Yogi Berry and Bag of Seeds (three each, the nine feeder foods), Soothing Incense (four, the Doomspiral candles), Shining Coin (three, Gimmiegold) and the Icebreaker (one, Wumpa). XP, essence and shard drops are hidden.
+- **Quest items only** highlights only quest items: Lime, Purple and Orange Gem (one each, Gemzie chamber), Wriggleworm, Yogi Berry and Bag of Seeds (three each, the nine feeder foods), Soothing Incense (four, the Doomspiral candles), Shining Coin (every coin, Gimmiegold; never hidden as collected) and the Icebreaker (one, Wumpa). XP, essence and shard drops are hidden.
 - **Hide collected quest items** stops highlighting a quest item once the run has collected that many (SM's ledger: starting grants plus floor pickups). One Lime Gem picked up hides further Lime Gems.
 
 An item that an untaken Hunter trade wants (found by you or shared by the party) stays highlighted either way, for example a Lime Gem for "Gimmiegold Shard for Lime Gem".

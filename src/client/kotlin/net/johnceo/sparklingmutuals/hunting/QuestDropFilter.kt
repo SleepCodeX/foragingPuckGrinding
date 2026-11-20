@@ -10,19 +10,20 @@ import net.johnceo.sparklingmutuals.safari.resources.FloorDropType
  * Quest items are the floor drops a Safari objective consumes, with how many one run needs (Sparkling Mutuals'
  * objectives and CritterMod's encounter notes): one each of the Lime, Purple and Orange Gem (Gemzie chamber),
  * three each of Wriggleworm, Yogi Berry and Bag of Seeds (nine feeder foods), four Soothing Incense (four
- * Doomspiral candles), three Shining Coins (Gimmiegold) and one Icebreaker (Wumpa). XP, essence and shard drops are
- * not quest items. "Collected" is the run ledger's own count: starting grants plus floor pickups
+ * Doomspiral candles), Shining Coins (Gimmiegold) and one Icebreaker (Wumpa). XP, essence and shard drops are
+ * not quest items. Shining Coins have no fixed amount: every coin floor of the run is Gimmiegold demand
+ * ([net.johnceo.sparklingmutuals.safari.completion.GimmiegoldSparklingCheck]), so they are never hidden as collected. "Collected" is the run ledger's own count: starting grants plus floor pickups
  * ([net.johnceo.sparklingmutuals.safari.resources.SafariResources.discoveredCount]).
  *
  * Exception: an item an active Hunter trade asks for (found by you or shared by the party) stays highlighted.
  */
 object QuestDropFilter {
-    val needed: Map<FloorDropType, Int> = mapOf(
+    private val caps: Map<FloorDropType, Int> = mapOf(
         FloorDropType.LIME to 1, FloorDropType.PURPLE to 1, FloorDropType.ORANGE to 1,
         FloorDropType.WORM to 3, FloorDropType.BERRY to 3, FloorDropType.SEEDS to 3,
-        FloorDropType.INCENSE to 4, FloorDropType.COIN to 3, FloorDropType.ICEBREAKER to 1)
+        FloorDropType.INCENSE to 4, FloorDropType.ICEBREAKER to 1)
 
-    fun quest(type: FloorDropType) = type in needed
+    fun quest(type: FloorDropType) = type == FloorDropType.COIN || type in caps
 
     /** Whether a trade item name ("Lime Gem", "a Yogi Berry", "Bags of Seeds") is this floor drop. */
     fun matches(type: FloorDropType, item: String): Boolean {
@@ -40,7 +41,8 @@ object QuestDropFilter {
     fun decide(type: FloorDropType, questOnly: Boolean, hideCollected: Boolean, collected: Int, tradeItems: Collection<String>): Boolean? {
         if (wantedByTrade(type, tradeItems)) return true
         if (questOnly && !quest(type)) return false
-        if (hideCollected && quest(type) && collected >= needed.getValue(type)) return false
+        val cap = caps[type]
+        if (hideCollected && cap != null && collected >= cap) return false
         return null
     }
 
