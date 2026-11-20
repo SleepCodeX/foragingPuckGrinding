@@ -55,4 +55,9 @@ class QuestDropFilterTest {
         assertTrue(QuestDropFilter.matches(SEEDS, "Bag of Seeds") && QuestDropFilter.matches(ORANGE, "Orange Gem"))
         assertNull(parser.parse("[NPC] Hunter Harry: I'll give you it in exchange for a Purple Gem!"), "no offer pending")
     }
+
+    @org.junit.jupiter.api.Test
+    fun `collected coins stay highlighted because every coin floor is Gimmiegold demand`() {
+        assertEquals(null, QuestDropFilter.decide(COIN, true, true, 6, emptyList()))
+    }
 }

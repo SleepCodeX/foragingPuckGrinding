@@ -553,6 +553,16 @@ object SafariEsp {
         return targetColor(target)
     }
 
+    /**
+     * True for every entity SM outlines. EntityCulling and Sodium skip entities that are out of sight unless the
+     * client treats them as glowing, so without this the critter glow only shows inside the same room.
+     */
+    @JvmStatic fun outlinedThroughWalls(entity: Entity): Boolean {
+        if (entity.type == EntityType.INTERACTION) return false
+        return SafariAssist.isGlowHighlighted(entity.id) || outlineColor(entity) != null ||
+            ConfigManager.highlightTeammates && TeammateEsp.isTeammate(entity)
+    }
+
     fun sparklingDuplicoColor(entity: Entity): Int? {
         if (entity.type != EntityType.INTERACTION) return null
         val client = Minecraft.getInstance()
