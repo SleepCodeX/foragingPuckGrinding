@@ -31,8 +31,8 @@ import net.minecraft.network.chat.Component;
  * changes; pages this screen does not know yet are listed under "More".
  */
 final class SafariSettingsScreen extends Screen {
-    /** Areas shown in the side navigation, by SM page (category) name, with the tab label for each page. */
     private static final int TITLE_STEP = 14, DESCRIPTION_STEP = 12;
+    /** Areas shown in the side navigation, by SM page (category) name, with the tab label for each page. */
     private static final Map<String, Map<String, String>> AREAS = new LinkedHashMap<>();
     static {
         AREAS.put("HUDs", tabs("General", "Overview", "HUDs", "HUDs", "Customization", "Appearance"));

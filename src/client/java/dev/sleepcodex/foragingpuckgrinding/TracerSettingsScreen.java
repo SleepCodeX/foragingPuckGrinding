@@ -76,7 +76,7 @@ public final class TracerSettingsScreen extends Screen {
         panelWidth = Math.min(600, width - 24);
         // Fit all five cards at the usual 640 x 360 GUI size. Smaller windows retain
         // the same controls in a scrollable single column, including keyboard reveal.
-        cards = panelWidth >= 430 && height >= 320;
+        cards = panelWidth >= 500 && height >= 320;
         panelHeight = Math.min(cards ? 68 + CARD_ROWS * 152 + (CARD_ROWS - 1) * 14 + 12 + 46 : 328, height - 20);
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
@@ -114,9 +114,9 @@ public final class TracerSettingsScreen extends Screen {
         customButton = bodyButton(Component.literal("Custom trackers"), customX, customY, cardWidth, cardHeight,
                 b -> openCustom());
         boolean narrowFooter = panelWidth < 470;
-        int presetWidth = narrowFooter ? 67 : 81;
+        int presetWidth = narrowFooter ? 74 : 81;
         int doneWidth = narrowFooter ? 46 : 68;
-        int homeWidth = narrowFooter ? 54 : 99;
+        int homeWidth = narrowFooter ? 50 : 99;
         homeButton = addRenderableWidget(Button.builder(Component.literal("Home"), b -> onClose())
                 .bounds(left + panelWidth - 16 - doneWidth - 6 - homeWidth, footer, homeWidth, 24).build());
         allButton = addRenderableWidget(Button.builder(Component.literal("All presets"), b -> {
