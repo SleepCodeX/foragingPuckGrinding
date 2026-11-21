@@ -132,10 +132,13 @@ final class RunReportScreen extends TrackerPage {
         }
         boolean insta = ConfigManager.INSTANCE.getRunCoinsInstaSell();
         long total = value(shards, insta), other = value(shards, !insta);
-        String summary = !BazaarPrices.INSTANCE.ready() ? "Run value: loading Bazaar prices…"
-                : "Run value " + BazaarPrices.INSTANCE.format(total) + " " + (insta ? "instant sell" : "as sell offers")
-                + "  ·  " + BazaarPrices.INSTANCE.format(other) + " " + (insta ? "as sell offers" : "instant sell")
-                + (HuntingConfig.INSTANCE.getSubtractTax() ? "  ·  after tax" : "");
+        String summary = "Loading Bazaar prices…";
+        if (BazaarPrices.INSTANCE.ready()) {
+            String sell = "Sell offers " + BazaarPrices.INSTANCE.format(insta ? other : total);
+            String instant = "Instant sell " + BazaarPrices.INSTANCE.format(insta ? total : other);
+            summary = (insta ? instant + "  ·  " + sell : sell + "  ·  " + instant)
+                    + (HuntingConfig.INSTANCE.getSubtractTax() ? "  ·  after tax" : "");
+        }
         int summaryX = compact ? x : left + 86;
         MenuFont.text(g, MenuFont.ellipsis(summary, (right - summaryX) / .78), summaryX,
                 compact ? footer - 12 : footer + 7, .78, MenuTheme.MUTED);
