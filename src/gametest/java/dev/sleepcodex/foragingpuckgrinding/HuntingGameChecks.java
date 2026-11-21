@@ -193,6 +193,13 @@ final class HuntingGameChecks {
         c.waitForScreen(RunReportScreen.class);
         c.waitTicks(3);
         c.takeScreenshot("hunting-run-report");
+        c.getInput().resizeWindow(960, 720);
+        c.runOnClient(client -> { client.options.guiScale().set(3); client.resizeGui(); });
+        c.clickScreenButton("Show drops");
+        c.takeScreenshot("compact-report-drops");
+        c.clickScreenButton("Show catches");
+        c.getInput().resizeWindow(1280, 720);
+        c.runOnClient(client -> { client.options.guiScale().set(2); client.resizeGui(); });
         c.runOnClient(client -> client.gui.setScreen(new net.johnceo.sparklingmutuals.contest.ContestGui(null)));
         c.waitTicks(3);
         c.takeScreenshot("hud-editor-with-hunting-panels");

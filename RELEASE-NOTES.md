@@ -1,3 +1,9 @@
+# Hunting Helper 1.7.2
+
+The settings menu and Puff timer use larger, semibold Nunito lettering. Labels render at your GUI scale, Safari descriptions wrap with more space, and compact run reports let you switch between catches and drops.
+
+![Hunting Helper settings in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.7.2/home.png)
+
 # Hunting Helper 1.7.1
 
 - **Puffs on sight.** Hunting Helper recognizes the Puff head on invisible armor stands and item displays. A small countdown appears above each Puff as soon as the client recognizes it. A separate health label shares the same timer.
