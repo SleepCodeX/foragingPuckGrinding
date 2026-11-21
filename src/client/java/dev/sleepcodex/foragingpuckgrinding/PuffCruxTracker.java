@@ -142,11 +142,11 @@ final class PuffCruxTracker {
         String count = total == 1 ? "1 Puff" : total + " Puffs";
         String expiry = timers.secondsLeft() == 0 ? "Despawn due" : "Oldest ~" + timers.secondsLeft() + "s";
         int x = 8, y = 8;
-        int width = 18 + Math.max(client.font.width(count), client.font.width(expiry));
+        int width = 18 + (int) Math.ceil(Math.max(MenuFont.width(count), .84 * MenuFont.width(expiry)));
         var canvas = new MenuCanvas(g, 1);
-        canvas.round(x, y, width, 29, 5, 0xEC202328);
-        canvas.round(x + 3, y + 5, 2, 19, 1, timers.warningActive() ? 0xFFFFB46B : MenuTheme.ACCENT);
-        g.text(client.font, count, x + 9, y + 4, MenuTheme.TEXT, false);
-        g.text(client.font, expiry, x + 9, y + 16, timers.warningActive() ? 0xFFFFB46B : MenuTheme.MUTED, false);
+        canvas.round(x, y, width, 32, 5, 0xEC202328);
+        canvas.round(x + 3, y + 5, 2, 22, 1, timers.warningActive() ? 0xFFFFB46B : MenuTheme.ACCENT);
+        MenuFont.text(g, count, x + 9, y + 3, 1, MenuTheme.TEXT);
+        MenuFont.text(g, expiry, x + 9, y + 18, .84, timers.warningActive() ? 0xFFFFB46B : MenuTheme.MUTED);
     }
 }

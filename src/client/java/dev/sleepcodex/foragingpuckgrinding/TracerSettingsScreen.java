@@ -114,9 +114,9 @@ public final class TracerSettingsScreen extends Screen {
         customButton = bodyButton(Component.literal("Custom trackers"), customX, customY, cardWidth, cardHeight,
                 b -> openCustom());
         boolean narrowFooter = panelWidth < 470;
-        int presetWidth = narrowFooter ? 58 : 81;
+        int presetWidth = narrowFooter ? 67 : 81;
         int doneWidth = narrowFooter ? 46 : 68;
-        int homeWidth = narrowFooter ? 72 : 99;
+        int homeWidth = narrowFooter ? 54 : 99;
         homeButton = addRenderableWidget(Button.builder(Component.literal("Home"), b -> onClose())
                 .bounds(left + panelWidth - 16 - doneWidth - 6 - homeWidth, footer, homeWidth, 24).build());
         allButton = addRenderableWidget(Button.builder(Component.literal("All presets"), b -> {
@@ -198,7 +198,7 @@ public final class TracerSettingsScreen extends Screen {
             canvas.round(left + 16, top + (cards ? 57 : 54), panelWidth - 32, 1, 0, MenuTheme.BORDER);
             smallButton(graphics, canvas, enabledButton, "Tracers", mouseX, mouseY);
             toggle(canvas, enabledButton.getRight() - 37, enabledButton.getY() + 6, config.enabled(), MenuTheme.ACCENT);
-            center(graphics, selectionLabel, enabledButton.getX() + 48, top + 46, .66, MenuTheme.MUTED);
+            center(graphics, selectionLabel, enabledButton.getX() + 48, top + 44, .78, MenuTheme.MUTED);
             graphics.enableScissor(left + 12, bodyTop, left + panelWidth - 12, bodyBottom);
             try {
                 for (TracerTarget target : TYPES) drawTarget(graphics, canvas, target, mouseX, mouseY);

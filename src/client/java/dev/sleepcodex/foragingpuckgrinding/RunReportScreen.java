@@ -22,6 +22,7 @@ import net.minecraft.client.gui.screens.Screen;
 final class RunReportScreen extends TrackerPage {
     private static final double TAX = .9875;
     private SafariBiome area;
+    private boolean showDrops;
 
     RunReportScreen(Screen parent) {
         super("Safari run", parent);
@@ -55,6 +56,8 @@ final class RunReportScreen extends TrackerPage {
             x += tabWidth + 4;
         }
         button("Back", left + 15, footer, 61, 23, Tone.NORMAL, this::onClose);
+        if (w < 484) button(showDrops ? "Show catches" : "Show drops", left + w - 100, footer, 85, 23,
+                Tone.NORMAL, () -> { showDrops = !showDrops; refresh(); });
     }
 
     private static double price(String species, boolean insta) {
@@ -75,21 +78,27 @@ final class RunReportScreen extends TrackerPage {
         boolean unique = HuntingConfig.INSTANCE.getUniquesOnly();
         Map<String, Integer> shards = run == null ? Map.of() : RunHistory.INSTANCE.liveShards(run);
         String self = Minecraft.getInstance().getUser().getName();
-        int x = left + 18, right = left + w - 18, y = top + 80;
+        int x = left + 18, right = left + w - 18, y = top + (h < 250 ? 75 : 80);
         int caughtX = x + 94, locatedX = x + 146, byX = x + 186, triedX = right - 168, escapedX = right - 128, shardsX = right - 88;
-        double head = .72;
+        boolean compact = w < 484;
+        boolean catches = !compact || !showDrops, drops = !compact || showDrops;
+        double head = .8;
         MenuFont.text(g, "Critter", x, y, head, MenuTheme.MUTED);
-        MenuFont.text(g, "Caught", caughtX, y, head, MenuTheme.MUTED);
-        MenuFont.text(g, "Located", locatedX, y, head, MenuTheme.MUTED);
-        MenuFont.text(g, "By", byX, y, head, MenuTheme.MUTED);
-        MenuFont.text(g, "Tried", triedX, y, head, MenuTheme.MUTED);
-        MenuFont.text(g, "Esc.", escapedX, y, head, MenuTheme.MUTED);
-        MenuFont.text(g, "Shards", shardsX, y, head, MenuTheme.MUTED);
-        MenuFont.text(g, "Value", right - MenuFont.width("Value") * head, y, head, MenuTheme.MUTED);
+        if (catches) {
+            MenuFont.text(g, "Caught", caughtX, y, head, MenuTheme.MUTED);
+            MenuFont.text(g, "Located", locatedX, y, head, MenuTheme.MUTED);
+            MenuFont.text(g, "By", byX, y, head, MenuTheme.MUTED);
+        }
+        if (drops) {
+            MenuFont.text(g, "Tried", triedX, y, head, MenuTheme.MUTED);
+            MenuFont.text(g, "Esc.", escapedX, y, head, MenuTheme.MUTED);
+            MenuFont.text(g, "Shards", shardsX, y, head, MenuTheme.MUTED);
+            MenuFont.text(g, "Value", right - MenuFont.width("Value") * head, y, head, MenuTheme.MUTED);
+        }
         y += 13;
         var critters = area.getCritters();
-        int step = Math.max(10, Math.min(15, (footer - 22 - y) / Math.max(1, critters.size())));
-        double scale = Math.min(.8, step / 15.0 * .82);
+        int step = Math.max(8, Math.min(15, (footer - (compact ? 14 : 3) - y) / Math.max(1, critters.size())));
+        double scale = Math.min(.86, step / 13.0);
         for (var critter : critters) {
             String name = critter.getName();
             int caught = source.caught(name);
@@ -97,24 +106,28 @@ final class RunReportScreen extends TrackerPage {
             boolean gone = HuntingCompletion.INSTANCE.unavailable(critter, source);
             boolean done = HuntingCompletion.INSTANCE.done(critter, source, unique);
             MenuFont.text(g, name, x, y, scale, done ? MenuTheme.TEXT : MenuTheme.MUTED);
-            String count = gone ? "none this run" : target > 1 ? caught + "/" + target : Integer.toString(caught);
-            MenuFont.text(g, count, caughtX, y, scale, done ? 0xFF7FD6A0 : MenuTheme.TEXT);
-            Integer located = HuntingCompletion.INSTANCE.located(critter, source);
-            MenuFont.text(g, located == null ? "-" : located.toString(), locatedX, y, scale, located == null ? MenuTheme.MUTED : MenuTheme.TEXT);
-            StringBuilder by = new StringBuilder();
-            for (var entry : HuntingRuns.INSTANCE.catchers(run, name, self)) {
-                if (!by.isEmpty()) by.append(", ");
-                by.append(entry.getFirst().equals(self) ? "You" : entry.getFirst());
-                if (entry.getSecond() > 1) by.append(" ×").append(entry.getSecond());
+            if (catches) {
+                String count = gone ? "None" : target > 1 ? caught + "/" + target : Integer.toString(caught);
+                MenuFont.text(g, count, caughtX, y, scale, done ? 0xFF7FD6A0 : MenuTheme.TEXT);
+                Integer located = HuntingCompletion.INSTANCE.located(critter, source);
+                MenuFont.text(g, located == null ? "-" : located.toString(), locatedX, y, scale, located == null ? MenuTheme.MUTED : MenuTheme.TEXT);
+                StringBuilder by = new StringBuilder();
+                for (var entry : HuntingRuns.INSTANCE.catchers(run, name, self)) {
+                    if (!by.isEmpty()) by.append(", ");
+                    by.append(entry.getFirst().equals(self) ? "You" : entry.getFirst());
+                    if (entry.getSecond() > 1) by.append(" ×").append(entry.getSecond());
+                }
+                MenuFont.text(g, MenuFont.ellipsis(by.toString(), ((compact ? right : triedX) - byX - 8) / scale), byX, y, scale, MenuTheme.ACCENT);
             }
-            MenuFont.text(g, MenuFont.ellipsis(by.toString(), (triedX - byX - 8) / scale), byX, y, scale, MenuTheme.ACCENT);
-            int tried = HuntingRuns.INSTANCE.attempts(run, name), escaped = HuntingRuns.INSTANCE.escapes(run, name);
-            MenuFont.text(g, tried == 0 ? "–" : Integer.toString(tried), triedX, y, scale, MenuTheme.TEXT);
-            MenuFont.text(g, escaped == 0 ? "–" : Integer.toString(escaped), escapedX, y, scale, MenuTheme.TEXT);
-            int amount = shards.getOrDefault(name, 0);
-            MenuFont.text(g, amount == 0 ? "–" : Integer.toString(amount), shardsX, y, scale, MenuTheme.TEXT);
-            String value = amount == 0 ? "–" : BazaarPrices.INSTANCE.format(Math.round(price(name) * amount));
-            MenuFont.text(g, value, right - MenuFont.width(value) * scale, y, scale, 0xFFE6D08A);
+            if (drops) {
+                int tried = HuntingRuns.INSTANCE.attempts(run, name), escaped = HuntingRuns.INSTANCE.escapes(run, name);
+                MenuFont.text(g, tried == 0 ? "–" : Integer.toString(tried), triedX, y, scale, MenuTheme.TEXT);
+                MenuFont.text(g, escaped == 0 ? "–" : Integer.toString(escaped), escapedX, y, scale, MenuTheme.TEXT);
+                int amount = shards.getOrDefault(name, 0);
+                MenuFont.text(g, amount == 0 ? "–" : Integer.toString(amount), shardsX, y, scale, MenuTheme.TEXT);
+                String value = amount == 0 ? "–" : BazaarPrices.INSTANCE.format(Math.round(price(name) * amount));
+                MenuFont.text(g, value, right - MenuFont.width(value) * scale, y, scale, 0xFFE6D08A);
+            }
             y += step;
         }
         boolean insta = ConfigManager.INSTANCE.getRunCoinsInstaSell();
@@ -123,6 +136,8 @@ final class RunReportScreen extends TrackerPage {
                 : "Run value " + BazaarPrices.INSTANCE.format(total) + " " + (insta ? "instant sell" : "as sell offers")
                 + "  ·  " + BazaarPrices.INSTANCE.format(other) + " " + (insta ? "as sell offers" : "instant sell")
                 + (HuntingConfig.INSTANCE.getSubtractTax() ? "  ·  after tax" : "");
-        MenuFont.text(g, summary, left + 86, footer + 7, .78, MenuTheme.MUTED);
+        int summaryX = compact ? x : left + 86;
+        MenuFont.text(g, MenuFont.ellipsis(summary, (right - summaryX) / .78), summaryX,
+                compact ? footer - 12 : footer + 7, .78, MenuTheme.MUTED);
     }
 }

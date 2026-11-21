@@ -215,6 +215,9 @@ final class CustomTrackerGameChecks {
             c.takeScreenshot(String.format("home-opening-%02d", i));
         }
         c.takeScreenshot("home-dashboard");
+        c.runOnClient(client -> { client.options.guiScale().set(1); client.resizeGui(); });
+        c.waitTicks(2);
+        c.takeScreenshot("home-type-scale-one");
         c.getInput().resizeWindow(960, 720);
         c.runOnClient(client -> { client.options.guiScale().set(3); client.resizeGui(); });
         c.waitTicks(2);

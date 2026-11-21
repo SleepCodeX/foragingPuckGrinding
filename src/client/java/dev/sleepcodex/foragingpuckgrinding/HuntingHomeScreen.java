@@ -69,11 +69,11 @@ final class HuntingHomeScreen extends Screen {
         int top = y + (compact ? 39 : 55);
         int featureHeight = compact ? 29 : 53;
         int featureWidth = (w - inset * 2 - gutter * 2) / 3;
-        tile("Hunting presets", "Vex, Blue Jay and Torrhus mobs", x + inset, top, featureWidth, featureHeight, true, () -> {
+        tile("Hunting presets", "Five hunting presets", x + inset, top, featureWidth, featureHeight, true, () -> {
             presets.settle();
             Minecraft.getInstance().gui.setScreen(presets);
         });
-        String detail = config.custom().all.isEmpty() ? "Build a nametag or mob type rule" : config.custom().all.size() + " saved";
+        String detail = config.custom().all.isEmpty() ? "Nametag or mob type" : config.custom().all.size() + " saved";
         tile("Custom trackers", detail, x + inset + featureWidth + gutter, top, featureWidth, featureHeight, true, this::openCustom);
         int puffX = x + inset + (featureWidth + gutter) * 2;
         tile("Puff Crux", "Rift despawn timer", puffX, top, x + w - inset - puffX, featureHeight, true, this::openPuffCrux);
@@ -166,10 +166,17 @@ final class HuntingHomeScreen extends Screen {
             }
             start+=34;
         }
+        if (compact && tile.featured()) {
+            String label = b.getMessage().getString();
+            int split = label.indexOf(' ');
+            MenuFont.text(g, label.substring(0, split), start, by + 3, .9, MenuTheme.TEXT);
+            MenuFont.text(g, label.substring(split + 1), start, by + 15, .9, MenuTheme.TEXT);
+            return;
+        }
         boolean twoLines=!compact && bh>=31;
         double scale=tile.featured()?1.02:.92;
         String label=MenuFont.ellipsis(b.getMessage().getString(),(b.getRight()-start-18)/scale);
-        MenuFont.text(g,label,start,by+bh/2.-(twoLines?10:4),scale,MenuTheme.TEXT);
+        MenuFont.text(g,label,start,by+bh/2.-(twoLines?12:6),scale,MenuTheme.TEXT);
         if (twoLines) MenuFont.text(g,MenuFont.ellipsis(tile.detail(),(b.getRight()-start-16)/.75),
                 start,by+bh/2.+3,.75,MenuTheme.MUTED);
         int arrowX = b.getRight() - 14, midY = by + bh / 2;

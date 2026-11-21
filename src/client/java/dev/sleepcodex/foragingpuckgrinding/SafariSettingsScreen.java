@@ -32,6 +32,7 @@ import net.minecraft.network.chat.Component;
  */
 final class SafariSettingsScreen extends Screen {
     /** Areas shown in the side navigation, by SM page (category) name, with the tab label for each page. */
+    private static final int TITLE_STEP = 14, DESCRIPTION_STEP = 12;
     private static final Map<String, Map<String, String>> AREAS = new LinkedHashMap<>();
     static {
         AREAS.put("HUDs", tabs("General", "Overview", "HUDs", "HUDs", "Customization", "Appearance"));
@@ -272,8 +273,8 @@ final class SafariSettingsScreen extends Screen {
             int textWidth = stacked || control == 0 ? width - 24 : width - control - 34;
             String heading = searching ? catalog.location(row) + " › " + row.getName() : row.getName();
             List<String> title = wrap(heading, .86, textWidth - (row.getGroup() ? 14 : 0));
-            List<String> description = row.getDescription().isBlank() ? List.of() : wrap(row.getDescription(), .7, textWidth);
-            int text = title.size() * 11 + (description.isEmpty() ? 0 : 3 + description.size() * 9);
+            List<String> description = row.getDescription().isBlank() ? List.of() : wrap(row.getDescription(), .8, textWidth - (row.getGroup() ? 14 : 0));
+            int text = title.size() * TITLE_STEP + (description.isEmpty() ? 0 : 3 + description.size() * DESCRIPTION_STEP);
             int height = row.getGroup() ? Math.max(28, 14 + text) : stacked ? 16 + text + 26 : Math.max(32, 16 + text);
             cards.add(new Card(row, depth, height, title, description, control, stacked));
         }
@@ -303,7 +304,8 @@ final class SafariSettingsScreen extends Screen {
         c.round(left + 1, top + 1, w - 2, h - 2, 12, MenuTheme.PANEL);
         c.round(left + 16, top + 1, w - 32, 1, 0, 0x527B8794);
         c.hivethief(left + 28, top + 24, 26);
-        MenuFont.text(g, "Safari settings", left + 46, top + 11, 1.25, MenuTheme.TEXT);
+        double titleScale = Math.min(1.25, (w - 215) / MenuFont.width("Safari settings"));
+        MenuFont.text(g, "Safari settings", left + 46, top + 11, titleScale, MenuTheme.TEXT);
         String subtitle = search.getValue().isBlank() ? area + (areaPages.get(area).size() > 1 ? "  ·  " + tabLabel(page) : "")
                 : "Search results";
         MenuFont.text(g, MenuFont.ellipsis(subtitle, (w - 220) / .76), left + 47, top + 29, .76, MenuTheme.MUTED);
@@ -332,7 +334,7 @@ final class SafariSettingsScreen extends Screen {
             b.visible = search.getValue().isBlank();
         }
         drawCards(g, c, px, py);
-        MenuFont.text(g, "Changes save automatically", bodyLeft, footer + 7, .74, MenuTheme.MUTED);
+        MenuFont.text(g, "Changes save automatically", left + 16, footer + 7, .8, MenuTheme.MUTED);
         footerButton(g, c, back, false, px, py);
         footerButton(g, c, done, true, px, py);
         if (blocked) { hits.clear(); drawModal(g, c, mx, my); }
@@ -388,8 +390,8 @@ final class SafariSettingsScreen extends Screen {
             c.round(x, y, cw, ch, 7, highlighted ? MenuTheme.ACCENT : MenuTheme.BORDER);
             c.round(x + 1, y + 1, cw - 2, ch - 2, 6, over ? MenuTheme.HOVER : row.getGroup() ? 0xF0262930 : MenuTheme.CARD);
         }
-        int textTop = row.getGroup() || card.stacked() ? y + 8 : y + (ch - (card.title().size() * 11
-                + (card.description().isEmpty() ? 0 : 3 + card.description().size() * 9))) / 2;
+        int textTop = row.getGroup() || card.stacked() ? y + 8 : y + (ch - (card.title().size() * TITLE_STEP
+                + (card.description().isEmpty() ? 0 : 3 + card.description().size() * DESCRIPTION_STEP))) / 2;
         int textX = x + 11;
         if (row.getGroup()) {
             boolean open = expanded.contains(row.getPath());
@@ -398,9 +400,9 @@ final class SafariSettingsScreen extends Screen {
             hit(r, () -> { if (!expanded.add(row.getPath())) expanded.remove(row.getPath()); });
         }
         int ty = textTop;
-        for (String line : card.title()) { MenuFont.text(g, line, textX, ty, .86, row.getStandalone() ? MenuTheme.ACCENT : MenuTheme.TEXT); ty += 11; }
+        for (String line : card.title()) { MenuFont.text(g, line, textX, ty, .86, row.getStandalone() ? MenuTheme.ACCENT : MenuTheme.TEXT); ty += TITLE_STEP; }
         if (!card.description().isEmpty()) ty += 3;
-        for (String line : card.description()) { MenuFont.text(g, line, textX, ty, .7, MenuTheme.MUTED); ty += 9; }
+        for (String line : card.description()) { MenuFont.text(g, line, textX, ty, .8, MenuTheme.MUTED); ty += DESCRIPTION_STEP; }
         if (row.getGroup()) {
             var toggle = row.getPrimaryToggle();
             if (toggle != null && !expanded.contains(row.getPath())) control(g, c, toggle, new Rect(x + cw - 12 - 40, y + (ch - 18) / 2, 40, 18), mx, my);

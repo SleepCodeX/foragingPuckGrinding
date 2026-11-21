@@ -6,7 +6,7 @@ One Fabric mod for hunting, Rift Puffs and Critter Safari in Hypixel SkyBlock. O
 
 [Download the latest release](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest) · [Safari hunting features](docs/HUNTING.md)
 
-![The HD Frost Hivethief opening into the matte charcoal dashboard](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest/download/menu-opening.gif)
+![Hunting Helper settings in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest/download/home.png)
 
 ## Puff Crux
 
@@ -30,7 +30,7 @@ Open **Custom trackers → Add tracker**, or go straight to the library with **`
 
 Nametag matching ignores capitalization and Minecraft formatting. The tracker reads armor stands, text displays and custom names on mobs. If several rules match one body, a matching nametag takes priority over a mob type. The first saved custom rule wins within the same mode.
 
-![Custom library in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/download/v1.6.2/library.png)
+![Custom library in Minecraft](https://github.com/SleepCodeX/foragingPuckGrinding/releases/latest/download/library.png)
 
 ## Hunting presets and controls
 

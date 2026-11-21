@@ -2,7 +2,8 @@ Hunting Helper's tracer implementation and axe icon are original work for SleepC
 
 Menu typography and rounded texture helpers are adapted from the user's Trevor
 Roll mod, Copyright (c) 2026 Anish, under MIT. See licenses/Trevor-MIT.txt.
-The menu also uses its circle texture and Nunito glyph atlas/metrics. Nunito is
+The menu uses its circle texture. The Nunito atlas is baked from google/fonts
+at commit 604936664fd62c14271209b51f98e7f495dd1a3e. Nunito is
 Copyright 2014 The Nunito Project Authors, licensed under SIL OFL 1.1; see
 assets/foragingpuckgrinding/NUNITO-OFL.txt.
 Reference: https://github.com/SleepCodeX/trevorRngMod/tree/dac1b7e1e68fc3f803be69db5e16a97a85e4cebf
